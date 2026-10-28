@@ -1,0 +1,975 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>AuraAgent - Manual Oficial y Dossier Ejecutivo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    :root {
+      --primary: #8b5cf6;
+      --primary-dark: #6d28d9;
+      --accent: #ec4899;
+      --accent-gradient: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
+      --bg-dark: #09090b;
+      --bg-card: #18181b;
+      --border: #27272a;
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --cyan: #06b6d4;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #0b0d13;
+      color: var(--text-main);
+      line-height: 1.55;
+      font-size: 13px;
+      -webkit-font-smoothing: antialiased;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+
+    @page {
+      size: A4;
+      margin: 12mm 12mm 14mm 12mm;
+    }
+
+    .page {
+      width: 100%;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 18px 24px;
+      position: relative;
+    }
+
+    .page-break {
+      page-break-before: always;
+      break-before: page;
+    }
+
+    .avoid-break {
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    /* Cover Styling */
+    .cover {
+      min-height: 270mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 40px 30px;
+      background: radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.25) 0%, transparent 60%),
+                  radial-gradient(circle at 10% 80%, rgba(236, 72, 153, 0.2) 0%, transparent 50%),
+                  #0c0f17;
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 16px;
+      margin-bottom: 20px;
+    }
+
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      background: rgba(139, 92, 246, 0.15);
+      border: 1px solid rgba(139, 92, 246, 0.4);
+      color: #c4b5fd;
+      font-weight: 600;
+      font-size: 11px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .cover-title {
+      font-size: 44px;
+      font-weight: 800;
+      line-height: 1.1;
+      margin: 20px 0 12px;
+      background: linear-gradient(135deg, #ffffff 30%, #c4b5fd 70%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+    }
+
+    .cover-subtitle {
+      font-size: 17px;
+      color: #d4d4d8;
+      max-width: 620px;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+
+    .meta-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 35px;
+      padding-top: 25px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .meta-card {
+      background: rgba(24, 24, 27, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 14px 16px;
+      border-radius: 10px;
+    }
+
+    .meta-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #a1a1aa;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .meta-value {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fafafa;
+    }
+
+    /* Section Styles */
+    .section-header {
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .section-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      background: var(--accent-gradient);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .section-title {
+      font-size: 19px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .lead-paragraph {
+      font-size: 13px;
+      color: #d4d4d8;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .feature-card {
+      background: #141721;
+      border: 1px solid #232736;
+      border-radius: 10px;
+      padding: 14px;
+      position: relative;
+    }
+
+    .feature-card.highlight {
+      border-color: rgba(139, 92, 246, 0.45);
+      background: linear-gradient(180deg, rgba(139, 92, 246, 0.08) 0%, #141721 100%);
+    }
+
+    .feature-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #f4f4f5;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .feature-desc {
+      font-size: 11.5px;
+      color: #a1a1aa;
+      line-height: 1.45;
+    }
+
+    /* Screenshot Display */
+    .screenshot-container {
+      background: #0f121d;
+      border: 1px solid #262c40;
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 16px 0;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+    }
+
+    .screenshot-header {
+      background: #161b2c;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #262c40;
+    }
+
+    .window-dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #ef4444; }
+    .dot.yellow { background: #f59e0b; }
+    .dot.green { background: #10b981; }
+
+    .screenshot-caption {
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #94a3b8;
+    }
+
+    .screenshot-badge {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(139, 92, 246, 0.2);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.3);
+    }
+
+    .screenshot-img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .screenshot-notes {
+      padding: 10px 14px;
+      background: #121624;
+      font-size: 11px;
+      color: #cbd5e1;
+      border-top: 1px solid #1f2538;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
+      font-size: 11.5px;
+    }
+
+    th {
+      background: #181d2e;
+      color: #cbd5e1;
+      text-align: left;
+      padding: 8px 12px;
+      font-weight: 600;
+      border-bottom: 1px solid #2b334c;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.05em;
+    }
+
+    td {
+      padding: 8px 12px;
+      border-bottom: 1px solid #1f2538;
+      color: #e2e8f0;
+    }
+
+    tr:nth-child(even) td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-purple { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; }
+    .badge-pink { background: rgba(236, 72, 153, 0.2); color: #f472b6; }
+    .badge-green { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
+    .badge-amber { background: rgba(245, 158, 11, 0.2); color: #fcd34d; }
+    .badge-cyan { background: rgba(6, 182, 212, 0.2); color: #67e8f9; }
+
+    /* Callout */
+    .callout {
+      border-left: 3px solid var(--primary);
+      background: rgba(139, 92, 246, 0.08);
+      padding: 12px 14px;
+      border-radius: 0 8px 8px 0;
+      margin: 14px 0;
+      font-size: 11.5px;
+      color: #ddd6fe;
+    }
+
+    .callout strong {
+      color: #ffffff;
+    }
+
+    /* Step Guide */
+    .step-item {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 14px;
+      background: #131724;
+      border: 1px solid #22283b;
+      padding: 12px;
+      border-radius: 8px;
+    }
+
+    .step-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(139, 92, 246, 0.2);
+      border: 1px solid var(--primary);
+      color: #c4b5fd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 12px;
+      flex-shrink: 0;
+    }
+
+    .step-content {
+      flex: 1;
+    }
+
+    .step-title {
+      font-weight: 700;
+      font-size: 12.5px;
+      color: #fff;
+      margin-bottom: 3px;
+    }
+
+    .step-desc {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.45;
+    }
+
+    .footer-bar {
+      margin-top: 25px;
+      padding-top: 12px;
+      border-top: 1px solid #1f2538;
+      display: flex;
+      justify-content: space-between;
+      color: #64748b;
+      font-size: 10px;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 11px;
+      color: #f472b6;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== COVER PAGE ==================== -->
+  <div class="page">
+    <div class="cover">
+      <div>
+        <div class="brand-pill">
+          <span>● AGENTE EN VIVO 100% OPERATIVO</span>
+          <span>•</span>
+          <span>EDICIÓN OFICIAL 2026</span>
+        </div>
+        
+        <h1 class="cover-title">AuraAgent</h1>
+        <p class="cover-subtitle">
+          Sistema Agéntico Autónomo de Ventas, Fidelización y Conversión VIP para Modelos y Creadoras de Contenido
+        </p>
+        <p style="margin-top: 12px; color: #94a3b8; font-size: 13px; max-width: 580px;">
+          Manual de Especificaciones, Arquitectura Psicológica, Operación en Vivo e Integración Oficial con X (Twitter) y OnlyFans.
+        </p>
+      </div>
+
+      <div style="margin: 30px 0;">
+        <div style="background: rgba(255,255,255,0.03); border: 1px dashed rgba(139, 92, 246, 0.3); border-radius: 12px; padding: 18px 22px;">
+          <h4 style="font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #c4b5fd; margin-bottom: 8px;">Resumen Ejecutivo</h4>
+          <p style="font-size: 12px; color: #cbd5e1; line-height: 1.6;">
+            AuraAgent sustituye los chatters manuales y los bots genéricos por una <strong>entidad agéntica hiperrealista</strong> con memoria emocional acumulativa, análisis de sentimiento en tiempo real, síntesis de notas de voz íntimas y medidor de confianza algorítmico que automatiza la venta y suscripción a plataformas VIP (OnlyFans/Fanvue) sin quemar a la creadora ni perder la autenticidad humana.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <div class="meta-grid">
+          <div class="meta-card">
+            <div class="meta-label">Desarrollado para</div>
+            <div class="meta-value">Creadoras & Agencias OnlyFans</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Motor de Inteligencia</div>
+            <div class="meta-value">Gemini 3 + Adaptive Neural Memory</div>
+          </div>
+          <div class="meta-card">
+            <div class="meta-label">Canales Nativos</div>
+            <div class="meta-value">X (Twitter) DMs, Web VIP, Webhooks</div>
+          </div>
+        </div>
+
+        <div style="margin-top: 25px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #64748b;">
+          <span>Confidencial • Documento de Arquitectura y Operación</span>
+          <span>Versión 2.5 • Compilación Estable</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN 1: ¿QUÉ ES AURAAGENT? ==================== -->
+  <div class="page page-break">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <h2 class="section-title">¿Qué es AuraAgent?</h2>
+    </div>
+
+    <p class="lead-paragraph">
+      <strong>AuraAgent</strong> no es un chatbot tradicional de preguntas y respuestas, ni un asistente virtual corporativo. Es un <strong>motor agéntico de interacción íntima, seducción psicológica y conversión automatizada</strong> concebido específicamente para el mercado de creadoras de contenido exclusivo y agencias de gestión de talentos.
+    </p>
+
+    <div class="grid-2">
+      <div class="feature-card highlight">
+        <div class="feature-title">
+          <span style="color: #a78bfa;">🧠</span> Identidad y Personalidad Cautivadora
+        </div>
+        <p class="feature-desc">
+          El agente asume por completo la biografía, edad, gustos, anécdotas cotidianas, tono de coqueteo y picardía de la modelo elegida (ej. Valeria Gómez, Elena Russo, Mia Soler, Camila Torres). <strong>Tiene terminantemente prohibido usar clichés de asistente</strong> como <em>"¡Hola! ¿Cómo estás? ¿En qué te ayudo hoy?"</em>, los cuales rompen instantáneamente la ilusión de realidad.
+        </p>
+      </div>
+
+      <div class="feature-card highlight">
+        <div class="feature-title">
+          <span style="color: #f472b6;">🎙️</span> Síntesis Vocal y Bóveda Casual
+        </div>
+        <p class="feature-desc">
+          Combina generación de texto ultra-natural con notas de voz audibles sintetizadas (Gemini TTS con modulación de risitas y susurros) y envío estratégico de fotografías casuales protegidas (café matutino, descanso en el gimnasio, relax en sofá, atardecer en playa) para detonar intimidad orgánica.
+        </p>
+      </div>
+    </div>
+
+    <div class="callout">
+      <strong>Principio Fundamental de AuraAgent:</strong> La venta no se presiona; se suscita. El usuario debe sentir que se está ganando la atención y complicidad de una mujer atractiva y real. El sistema monitorea la reciprocidad antes de presentar cualquier propuesta de pago o membresía OnlyFans.
+    </div>
+
+    <!-- IMAGEN 1: Interfaz Principal y Chat -->
+    <div class="screenshot-container avoid-break">
+      <div class="screenshot-header">
+        <div class="window-dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="screenshot-caption">FIGURA 1.1: Interfaz de Operaciones en Vivo, Chat Cifrado y Puntos de Entrada en X</div>
+        <div class="screenshot-badge">LIVE OPS VIEW</div>
+      </div>
+      <img src="manual_assets/01_live_ops_chat.png" alt="AuraAgent Live Ops Chat Interface" class="screenshot-img">
+      <div class="screenshot-notes">
+        <span>📍 <strong>Componentes visibles:</strong> Puntos de entrada contextuales (Story Café, Story Gym, DM Espontáneo), simulador de DMs en X cifrados con fotos casuales, notas de voz y sugerencias reactivas rápidas.</span>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top: 14px;">
+      <div class="feature-card">
+        <div class="feature-title"><span class="badge badge-purple">MEMORIA</span> Retención Activa</div>
+        <p class="feature-desc">Recuerda datos clave del fan: profesión, viajes, mascota, horarios y preferencias para traerlos a colación naturalmente.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-title"><span class="badge badge-green">TRUST METER</span> Medición Algorítmica</div>
+        <p class="feature-desc">Evalúa el nivel de apego (0 a 100%) y no habilita el pitch de venta hasta alcanzar el umbral de confianza óptimo.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-title"><span class="badge badge-pink">CIERRE VIP</span> Conversión Suave</div>
+        <p class="feature-desc">Genera el llamado a la acción hacia OnlyFans con enlaces dinámicos y cupones de descuento personalizados.</p>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <span>AuraAgent Dossier Oficial • Sección 1: Definición de Plataforma</span>
+      <span>Página 2</span>
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN 2: ¿CON QUÉ OBJETIVO? ==================== -->
+  <div class="page page-break">
+    <div class="section-header">
+      <div class="section-num">2</div>
+      <h2 class="section-title">¿Con qué Objetivo fue Creado?</h2>
+    </div>
+
+    <p class="lead-paragraph">
+      En la industria del contenido exclusivo y OnlyFans, el <strong>80% de los ingresos no proviene de las publicaciones del muro, sino de las conversaciones directas en DMs</strong> (propinas, paquetes personalizados, PPV y suscripciones recurrentes). Sin embargo, las creadoras y agencias enfrentan tres cuellos de botella críticos:
+    </p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 28%;">Problema Tradicional</th>
+          <th style="width: 36%;">Consecuencia en el Negocio</th>
+          <th style="width: 36%;">Solución de AuraAgent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Agotamiento de la Creadora (Burnout)</strong></td>
+          <td>Contestar más de 500 DMs diarios es físicamente imposible. La creadora deja miles de mensajes sin responder y pierde miles de dólares.</td>
+          <td><span class="badge badge-green">Automatización 24/7</span><br>AuraAgent conversa de inmediato con cualquier seguidor en cualquier huso horario sin fatiga.</td>
+        </tr>
+        <tr>
+          <td><strong>Chatters Tradicionales Incompetentes</strong></td>
+          <td>Las agencias contratan redactores que no conocen el tono de la modelo, usan respuestas genéricas o se equivocan en datos básicos.</td>
+          <td><span class="badge badge-purple">Personalidad Inquebrantable</span><br>El agente replica el ADN, acento, jerga y recuerdos biográficos precisos de la modelo sin desviarse.</td>
+        </tr>
+        <tr>
+          <td><strong>Venta Precipitada (Spam)</strong></td>
+          <td>Los bots antiguos envían el link de OnlyFans en el primer mensaje, ahuyentando al usuario de inmediato con sensación de estafa.</td>
+          <td><span class="badge badge-pink">Embudo Psicológico de 3 Fases</span><br>Solo tras calentar la confianza (Rapport) y construir apego emocional, se realiza la invitación exclusiva VIP.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div style="margin: 20px 0;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #fff; margin-bottom: 10px;">Las 3 Fases Psicológicas del Cierre de Ventas en AuraAgent:</h3>
+      
+      <div class="step-item">
+        <div class="step-circle">F1</div>
+        <div class="step-content">
+          <div class="step-title">Fase de Gancho y Espejo (Trust &lt; 45%) — Conexión Inicial</div>
+          <div class="step-desc">El agente responde con chispa al contexto específico del fan (una historia de café, una rutina de sentadillas en el gimnasio). No habla de dinero ni de OnlyFans. Establece juego verbal, picardía y simetría de estatus.</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">F2</div>
+        <div class="step-content">
+          <div class="step-title">Fase de Micro-Intimidad y Estilo de Vida (Trust 45% - 74%) — Apego</div>
+          <div class="step-desc">Comparte anécdotas reales del día (salir de la ducha con frío, elegir lencería, viajes). Envía fotos de bóveda y notas de voz sintéticas. Empieza a sembrar curiosidad sobre su contenido íntimo no apto para redes públicas.</div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">F3</div>
+        <div class="step-content">
+          <div class="step-title">Fase de Cierre Asertivo VIP (Trust &ge; 75%) — Monetización</div>
+          <div class="step-desc">El agente argumenta con encanto que en X/Twitter le censuran y restringen el contacto. Invita al fan a su OnlyFans con enlace directo y código de descuento con trato preferencial.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGEN 2: Medidor de Confianza y VIP -->
+    <div class="screenshot-container avoid-break">
+      <div class="screenshot-header">
+        <div class="window-dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="screenshot-caption">FIGURA 2.1: Medidor de Confianza, Reciprocidad y Gatillo de Conversión VIP</div>
+        <div class="screenshot-badge">TRUST & VIP ENGINE</div>
+      </div>
+      <img src="manual_assets/02_trust_meter.png" alt="AuraAgent Trust Meter" class="screenshot-img">
+      <div class="screenshot-notes">
+        <span>📍 <strong>Métricas clave calculadas:</strong> Índice de Confianza (Trust Score), Nivel de Reciprocidad, Fluidez de Respuesta, Umbral de Activación VIP y razonamiento táctico del bot en cada interacción.</span>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <span>AuraAgent Dossier Oficial • Sección 2: Objetivos y Economía de Creadoras</span>
+      <span>Página 3</span>
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN 3: FUNCIONES PRINCIPALES ==================== -->
+  <div class="page page-break">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2 class="section-title">Funciones Principales de AuraAgent</h2>
+    </div>
+
+    <p class="lead-paragraph">
+      AuraAgent está compuesto por seis submódulos interconectados en tiempo real. A continuación se detallan las características operativas de cada subsistema:
+    </p>
+
+    <!-- Subsección A: Memoria y Análisis Emocional -->
+    <div style="margin-bottom: 22px;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #a78bfa; margin-bottom: 8px;">
+        A. Memoria Adaptativa y Detección de Estados Emocionales (Adaptive Neural Memory)
+      </h3>
+      <p style="font-size: 12px; color: #cbd5e1; margin-bottom: 12px; line-height: 1.5;">
+        El motor analiza cada mensaje entrante del usuario y clasifica automáticamente su estado anímico en una de 6 categorías emocionales, ajustando la respuesta al instante:
+      </p>
+
+      <div class="grid-3">
+        <div class="feature-card">
+          <div class="feature-title">🥺 Triste / Bajón</div>
+          <p class="feature-desc">Brinda refugio afectivo y escucha empática. <em>Prohíbe ofertas comerciales</em> hasta que el usuario se sienta comprendido.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-title">🧊 Cortante / Seco</div>
+          <p class="feature-desc">Si el usuario responde "ok" o "si", el bot no manda párrafos largos; responde con intriga pícara y desinterés elegante.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-title">😏 Coqueto / Fuego</div>
+          <p class="feature-desc">Devuelve la energía seductora con picardía, notas de voz y fotos de bóveda, acelerando la puntuación de confianza hacia el cierre.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGEN 3: HUD Agéntico y Cerebro -->
+    <div class="screenshot-container avoid-break">
+      <div class="screenshot-header">
+        <div class="window-dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="screenshot-caption">FIGURA 3.1: HUD del Cerebro Agéntico — Telemetría, Memoria y Generación Neural</div>
+        <div class="screenshot-badge">AGENT BRAIN HUD</div>
+      </div>
+      <img src="manual_assets/03_brain_hud.png" alt="AuraAgent Brain HUD" class="screenshot-img">
+      <div class="screenshot-notes">
+        <span>📍 <strong>Diagnóstico Técnico:</strong> Inspección en tiempo real de prompts dinámicos inyectados, análisis semántico de Gemini 3, latencias de inferencia y registro de anti-repetición de frases.</span>
+      </div>
+    </div>
+
+    <!-- Subsección B: Twitter Hub -->
+    <div style="margin-top: 18px;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #38bdf8; margin-bottom: 8px;">
+        B. Hub de Integración con X (Twitter) & Webhook API Universal
+      </h3>
+      <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5;">
+        AuraAgent se conecta bidireccionalmente con la plataforma X (Twitter):
+      </p>
+      <ul style="margin: 8px 0 12px 20px; font-size: 11.5px; color: #cbd5e1; line-height: 1.6;">
+        <li><strong>Twitter Account Activity API Oficial:</strong> Endpoint <code>/api/webhooks/twitter-x</code> con resolución del desafío CRC firmado vía HMAC-SHA256 con el Consumer Secret de la cuenta.</li>
+        <li><strong>External Connection API (REST Inbound):</strong> Endpoint <code>/api/webhooks/external/dm-inbound</code> para conectar cualquier bot externo, flujos de n8n, Make.com, scripts en Python o bots de Telegram.</li>
+        <li><strong>Firma Criptográfica de Salida:</strong> Todas las respuestas del webhook emiten la cabecera <code>X-Aura-Signature</code> calculada con HMAC-SHA256 para validación de autenticidad.</li>
+      </ul>
+    </div>
+
+    <div class="footer-bar">
+      <span>AuraAgent Dossier Oficial • Sección 3: Funciones Principales (Parte 1)</span>
+      <span>Página 4</span>
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN 3: FUNCIONES PRINCIPALES (PARTE 2) ==================== -->
+  <div class="page page-break">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2 class="section-title">Funciones Principales (Continuación)</h2>
+    </div>
+
+    <!-- IMAGEN 4: Twitter Integration Hub -->
+    <div class="screenshot-container avoid-break">
+      <div class="screenshot-header">
+        <div class="window-dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="screenshot-caption">FIGURA 3.2: Hub de Integración con X (Twitter) — Credenciales, Webhooks y Auditoría</div>
+        <div class="screenshot-badge">X INTEGRATION & LOGS</div>
+      </div>
+      <img src="manual_assets/04_twitter_hub.png" alt="Twitter Integration Hub" class="screenshot-img">
+      <div class="screenshot-notes">
+        <span>📍 <strong>Métricas y Auditoría:</strong> Entorno de actividad de cuentas, Secret Keys, firmas HMAC-SHA256, simulador de eventos de DM y tabla de logs de peticiones procesadas.</span>
+      </div>
+    </div>
+
+    <!-- Subsección C: Laboratorio de Entrenamiento -->
+    <div style="margin-top: 18px;">
+      <h3 style="font-size: 14px; font-weight: 700; color: #f59e0b; margin-bottom: 8px;">
+        C. Laboratorio de Entrenamiento y Reglas de Negocio (Agent Training Lab)
+      </h3>
+      <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 12px;">
+        Permite calibrar la agresividad comercial, el tono y la personalidad de la modelo sin tocar una sola línea de código:
+      </p>
+
+      <div class="grid-2">
+        <div class="feature-card">
+          <div class="feature-title">⚙️ Reglas de Conversión Personalizables</div>
+          <p class="feature-desc">Fijación del porcentaje de confianza mínimo para habilitar el pitch de OnlyFans (por defecto 75%), precio de la membresía y enlace dinámico de destino.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-title">🛡️ Filtros de Seguridad y Anti-Alucinación</div>
+          <p class="feature-desc">Control estricto de palabras prohibidas, protección de la privacidad física de la creadora (nunca revelar dirección real) y modismos regionales.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGEN 5: Training Lab -->
+    <div class="screenshot-container avoid-break">
+      <div class="screenshot-header">
+        <div class="window-dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="screenshot-caption">FIGURA 3.3: Laboratorio de Entrenamiento de Habilidades y Directivas de Personalidad</div>
+        <div class="screenshot-badge">TRAINING LAB VIEW</div>
+      </div>
+      <img src="manual_assets/05_training_lab.png" alt="Agent Training Lab" class="screenshot-img">
+      <div class="screenshot-notes">
+        <span>📍 <strong>Configuración en vivo:</strong> Arquetipo seductor, modulación de calidez, umbral de cierre VIP en porcentaje y parámetros de voz y bóveda multimedia.</span>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <span>AuraAgent Dossier Oficial • Sección 3: Funciones Principales (Parte 2)</span>
+      <span>Página 5</span>
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN 3: CRM Y CATÁLOGO ==================== -->
+  <div class="page page-break">
+    <div class="section-header">
+      <div class="section-num">3</div>
+      <h2 class="section-title">Panel CRM & Catálogo Multimodelo</h2>
+    </div>
+
+    <p class="lead-paragraph">
+      Para agencias y creadoras profesionales, AuraAgent incluye un <strong>CRM de Leads y Suscripciones</strong> que rastrea cada interacción individual a través del embudo de conversión, junto con un <strong>Catálogo Multimodelo</strong> que permite operar varias creadoras desde el mismo panel unificado:
+    </p>
+
+    <!-- IMAGEN 6: CRM Subscriptions -->
+    <div class="screenshot-container avoid-break">
+      <div class="screenshot-header">
+        <div class="window-dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="screenshot-caption">FIGURA 3.4: Panel de Control & CRM de Suscriptores — Pipeline de Conversión y MRR</div>
+        <div class="screenshot-badge">CRM PIPELINE VIEW</div>
+      </div>
+      <img src="manual_assets/06_crm_subscriptions.png" alt="CRM Subscriptions and Leads" class="screenshot-img">
+      <div class="screenshot-notes">
+        <span>📍 <strong>Métricas de Negocio:</strong> MRR estimado, Tasa de Cierre %, Fans Fidelizados, Pipeline dividido en Prospecto Frío, Rapport, Tibio, VIP Listo y Convertido.</span>
+      </div>
+    </div>
+
+    <!-- IMAGEN 7: Model Catalog -->
+    <div class="screenshot-container avoid-break" style="margin-top: 14px;">
+      <div class="screenshot-header">
+        <div class="window-dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="screenshot-caption">FIGURA 3.5: Catálogo de Modelos Disponibles en la Agencia con Arquetipos Únicos</div>
+        <div class="screenshot-badge">MULTI-MODEL ROSTER</div>
+      </div>
+      <img src="manual_assets/07_model_catalog.png" alt="Model Catalog Roster" class="screenshot-img">
+      <div class="screenshot-notes">
+        <span>📍 <strong>Roster de Modelos:</strong> Valeria Gómez (Seductora & Cercana), Elena Russo (Elegante & Sensual), Mia Soler (Fitness & Motivadora) y Camila Torres (Tierna & Juguetona).</span>
+      </div>
+    </div>
+
+    <div class="footer-bar">
+      <span>AuraAgent Dossier Oficial • Sección 3: CRM y Gestión Multimodelo</span>
+      <span>Página 6</span>
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN 4: ¿CÓMO SE USA? ==================== -->
+  <div class="page page-break">
+    <div class="section-header">
+      <div class="section-num">4</div>
+      <h2 class="section-title">Guía Práctica: ¿Cómo se Usa AuraAgent?</h2>
+    </div>
+
+    <p class="lead-paragraph">
+      Implementar y operar AuraAgent es un proceso estructurado que puede ejecutarse tanto en modo simulación para validar respuestas, como en modo producción conectándolo a cuentas reales de X y OnlyFans:
+    </p>
+
+    <div style="margin: 18px 0;">
+      <div class="step-item">
+        <div class="step-circle">1</div>
+        <div class="step-content">
+          <div class="step-title">Paso 1: Seleccionar o Configurar el Perfil de la Modelo</div>
+          <div class="step-desc">
+            En la barra superior, haz clic en el selector de modelo (ej: <strong>Valeria Gómez</strong>) o abre el <em>Catálogo de Modelos</em>. Elige el arquetipo que mejor encaje con tu público objetivo (Seductora, Elegante, Fitness o Tierna).
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-content">
+          <div class="step-title">Paso 2: Calibrar Reglas de Negocio en el Training Lab</div>
+          <div class="step-desc">
+            Ve a la pestaña <strong>"Entrenar Habilidades"</strong>. Configura tu enlace real de OnlyFans (ej: <code>https://onlyfans.com/tu_perfil</code>), el precio de la membresía y el <strong>Umbral de Confianza</strong> (recomendado entre 70% y 80%). Ajusta la directiva de tono si deseas mayor timidez o mayor osadía.
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">3</div>
+        <div class="step-content">
+          <div class="step-title">Paso 3: Realizar Pruebas en el Simulador de Operaciones en Vivo</div>
+          <div class="step-desc">
+            En la pestaña <strong>"Operaciones en Vivo"</strong>, interactúa con el chat:
+            <ul style="margin: 6px 0 0 18px; line-height: 1.5;">
+              <li>Prueba los <em>Puntos de Entrada</em> predefinidos (Story de Café, Story de Gym, DM Espontáneo o Chat Limpio).</li>
+              <li>Usa los botones de estado emocional rápido (🥺 Triste, 🧊 Cortante, 😏 Coqueto) para observar cómo el bot adapta su vocabulario.</li>
+              <li>Envía notas de voz para probar la transcripción y el análisis de tono auditivo.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">4</div>
+        <div class="step-content">
+          <div class="step-title">Paso 4: Conectar la Cuenta de X (Twitter) o Webhooks de Terceros</div>
+          <div class="step-desc">
+            Ve a la pestaña <strong>"Integración X (Twitter)"</strong>:
+            <ul style="margin: 6px 0 0 18px; line-height: 1.5;">
+              <li><strong>Conexión con X:</strong> Registra la URL del Webhook oficial (<code>/api/webhooks/twitter-x</code>) en el Developer Portal de Twitter y proporciona tu <code>TWITTER_CONSUMER_SECRET</code>.</li>
+              <li><strong>Conexión Externa (n8n, Make, Bots):</strong> Utiliza el endpoint <code>/api/webhooks/external/dm-inbound</code> enviando un POST JSON con el mensaje del fan y la cabecera <code>x-aura-secret</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-item">
+        <div class="step-circle">5</div>
+        <div class="step-content">
+          <div class="step-title">Paso 5: Monitorear el Pipeline en el Panel CRM</div>
+          <div class="step-desc">
+            Accede a <strong>"Panel & CRM"</strong> periódicamente. Revisa los leads calificados que han alcanzado el estado <em>VIP Listo</em> o <em>Convertido</em>. Los prospectos en fase fría o de rapport continúan siendo nutridos automáticamente por AuraAgent.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Callout de Variable de Entorno -->
+    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 14px 18px; margin-top: 14px;">
+      <h4 style="color: #6ee7b7; font-size: 12px; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+        🔑 Nota sobre la Variable de Entorno <code>GEMINI_API_KEY</code>:
+      </h4>
+      <p style="font-size: 11.5px; color: #cbd5e1; line-height: 1.5;">
+        AuraAgent cuenta con un <strong>motor híbrido de doble capa</strong>. Funciona con respuestas contextuales inteligentes de alta fidelidad de inmediato, y al proveer tu variable <code>GEMINI_API_KEY</code> en el servidor, se activa automáticamente la inferencia profunda de <strong>Gemini 3 Flash</strong> con síntesis TTS hiperrealista de voz, transcripción auditiva avanzada y aprendizaje dinámico sin límite.
+      </p>
+    </div>
+
+    <div class="footer-bar">
+      <span>AuraAgent Dossier Oficial • Sección 4: Guía de Implementación Paso a Paso</span>
+      <span>Página 7</span>
+    </div>
+  </div>
+
+  <!-- ==================== SECCIÓN 5: RESUMEN Y CONCLUSIONES ==================== -->
+  <div class="page page-break">
+    <div class="section-header">
+      <div class="section-num">5</div>
+      <h2 class="section-title">Resumen Técnico y Mejores Prácticas</h2>
+    </div>
+
+    <div class="grid-2" style="margin-bottom: 20px;">
+      <div class="feature-card highlight">
+        <div class="feature-title">🔒 Seguridad y Privacidad Garantizada</div>
+        <p class="feature-desc">
+          Toda la comunicación de AuraAgent utiliza cifrado TLS 1.3 de extremo a extremo simulado y protección estricta contra inyecciones de prompt. Los datos biográficos sensibles de las creadoras nunca son expuestos al usuario.
+        </p>
+      </div>
+
+      <div class="feature-card highlight">
+        <div class="feature-title">📈 Escalabilidad Infinita para Agencias</div>
+        <p class="feature-desc">
+          Capacidad de gestionar simultáneamente decenas de miles de conversaciones directas en X sin pérdida de rendimiento, con latencias de respuesta menores a 200 milisegundos en servidores perimetrales.
+        </p>
+      </div>
+    </div>
+
+    <div style="background: #141724; border: 1px solid #232738; border-radius: 12px; padding: 18px 22px; margin-bottom: 25px;">
+      <h3 style="font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 10px;">Checklist de Operación Diaria para la Creadora o Agencia:</h3>
+      <table style="margin: 0;">
+        <tbody>
+          <tr>
+            <td style="width: 30px;"><span class="badge badge-green">✓</span></td>
+            <td><strong>Verificar fotos de bóveda actualizadas:</strong> Subir periódicamente nuevas fotos casuales en café, gimnasio y hogar para mantener la frescura del contenido.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-green">✓</span></td>
+            <td><strong>Monitorear el medidor de reciprocidad:</strong> Asegurarse de que el umbral de cierre VIP esté calibrado de acuerdo al ticket de suscripción de la modelo.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-green">✓</span></td>
+            <td><strong>Auditar los logs de X (Twitter):</strong> Confirmar que las llamadas entrantes de webhook estén respondiendo con código <code>200 OK</code> y firma válida.</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-green">✓</span></td>
+            <td><strong>Exportar métricas de CRM:</strong> Revisar la tasa de conversión semanal y la cantidad de suscriptores fidelizados.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; padding: 25px; background: radial-gradient(circle at center, rgba(139, 92, 246, 0.15) 0%, transparent 70%); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 12px;">
+      <h3 style="font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 6px;">AuraAgent Platform</h3>
+      <p style="font-size: 12px; color: #a1a1aa; max-width: 500px; margin: 0 auto 12px;">
+        La vanguardia en agentes de inteligencia artificial para monetización y protección de creadoras de contenido exclusivo.
+      </p>
+      <div style="font-size: 11px; font-family: 'JetBrains Mono', monospace; color: #c4b5fd;">
+        https://github.com/compuappscolombia-vega/Aura-Agent
+      </div>
+    </div>
+
+    <div class="footer-bar" style="margin-top: 50px;">
+      <span>AuraAgent Dossier Oficial • Fin del Documento</span>
+      <span>Página 8</span>
+    </div>
+  </div>
+
+</body>
+</html>

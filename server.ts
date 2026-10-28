@@ -2,13 +2,15 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import crypto from 'crypto';
 import { GoogleGenAI } from '@google/genai';
 
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+// Must strictly use port 3000 for AI Studio dev server environment
+const PORT = 3000;
 
 app.use(express.json({ limit: '25mb' }));
 
@@ -1309,6 +1311,46 @@ app.post('/api/webhooks/external/dm-inbound', async (req, res) => {
   res.setHeader('X-Aura-Signature', `sha256=${responseHmac}`);
 
   return res.json(responseData);
+});
+
+// Explicit routes for downloading and viewing the manual
+app.get('/api/manual/pdf-base64', (req, res) => {
+  try {
+    const filePath = path.resolve('public/AuraAgent_Manual_Oficial.pdf');
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'Manual no encontrado' });
+    }
+    const fileBuffer = fs.readFileSync(filePath);
+    return res.json({
+      success: true,
+      size: fileBuffer.length,
+      base64: fileBuffer.toString('base64'),
+      filename: 'AuraAgent_Manual_Oficial.pdf',
+    });
+  } catch (error: any) {
+    return res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/api/download-manual', (req, res) => {
+  try {
+    const filePath = path.resolve('public/AuraAgent_Manual_Oficial.pdf');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="AuraAgent_Manual_Oficial.pdf"');
+    const stream = fs.createReadStream(filePath);
+    stream.pipe(res);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.get('/AuraAgent_Manual_Oficial.pdf', (req, res) => {
+  const filePath = path.resolve('public/AuraAgent_Manual_Oficial.pdf');
+  res.download(filePath, 'AuraAgent_Manual_Oficial.pdf');
+});
+
+app.get('/manual', (req, res) => {
+  res.sendFile(path.resolve('public/aura_agent_dossier.html'));
 });
 
 // Mount Vite or serve static files

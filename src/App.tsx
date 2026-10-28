@@ -20,9 +20,12 @@ import { AgentTrainingLab } from './components/AgentTrainingLab';
 import { TwitterIntegrationHub } from './components/TwitterIntegrationHub';
 import { ModelCatalogModal } from './components/ModelCatalogModal';
 import { AuthLoginModal } from './components/AuthLoginModal';
+import { ShareLiveWithModelModal } from './components/ShareLiveWithModelModal';
+import { ManualViewerModal } from './components/ManualViewerModal';
 import { DEFAULT_MODELS } from './data/modelsRoster';
 import {
   Sparkles,
+  Share2,
   ShieldCheck,
   RotateCcw,
   LayoutDashboard,
@@ -38,6 +41,7 @@ import {
   Flame,
   Radio,
   GraduationCap,
+  FileText,
 } from 'lucide-react';
 
 const INITIAL_MODEL_PROFILE: ModelProfile = DEFAULT_MODELS[0];
@@ -200,6 +204,31 @@ export default function App() {
     xAccountConnected: true,
   });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+
+  // Desktop keyboard shortcuts for high performance
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey) {
+        if (e.key === '1') {
+          e.preventDefault();
+          setActiveTab('live_ops');
+        } else if (e.key === '2') {
+          e.preventDefault();
+          setActiveTab('twitter_x');
+        } else if (e.key === '3') {
+          e.preventDefault();
+          setActiveTab('training');
+        } else if (e.key === '4') {
+          e.preventDefault();
+          setActiveTab('crm');
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Sync auth session from server on mount
   useEffect(() => {
@@ -692,6 +721,27 @@ export default function App() {
             </button>
           </div>
 
+          {/* Compartir con la Modelo Button */}
+          <button
+            onClick={() => setIsShareModalOpen(true)}
+            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-sky-500/20 hover:from-emerald-500/30 hover:to-sky-500/30 text-emerald-300 hover:text-white border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            title="Compartir enlace en vivo con la modelo para supervisión en directo"
+          >
+            <Share2 className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">Compartir con la Modelo</span>
+            <span className="sm:hidden">Compartir</span>
+          </button>
+
+          {/* Manual PDF Viewer & Download Button */}
+          <button
+            onClick={() => setIsManualModalOpen(true)}
+            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/20 to-purple-600/20 hover:from-rose-500/30 hover:to-purple-600/30 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            title="Abrir o descargar el Manual Oficial y Dossier Ejecutivo"
+          >
+            <FileText className="w-3.5 h-3.5 text-rose-400" />
+            <span className="hidden md:inline">Manual PDF</span>
+          </button>
+
           {/* Reset button */}
           <button
             onClick={handleResetConversation}
@@ -916,6 +966,19 @@ export default function App() {
         currentSession={currentUserSession}
         onLogin={(sess) => setCurrentUserSession(sess)}
         onLogout={() => setCurrentUserSession(null)}
+      />
+
+      {/* Share Live with Model Modal */}
+      <ShareLiveWithModelModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        model={modelProfile}
+      />
+
+      {/* Manual & Dossier Interactive Viewer Modal */}
+      <ManualViewerModal
+        isOpen={isManualModalOpen}
+        onClose={() => setIsManualModalOpen(false)}
       />
 
       {/* Footer / Privacy note */}
