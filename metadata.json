@@ -1,0 +1,6 @@
+{
+  "name": "AuraAgent - Sistema Agentico de Ventas y Fidelización",
+  "description": "Plataforma agentica de IA con síntesis de voz hiperrealista, medidor de confianza/fluidez y conversión automatizada a OnlyFans y contenido VIP para creadoras.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
