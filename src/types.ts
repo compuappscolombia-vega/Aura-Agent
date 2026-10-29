@@ -76,6 +76,33 @@ export interface AgentSkillSettings {
   storyContextAwareness: boolean; // Capacidad de vincular stories/tweets al diálogo
 }
 
+export interface ModelVoiceClip {
+  id: string;
+  modelId: string;
+  title: string;
+  category: 'saludo' | 'coqueto' | 'gym' | 'cafe' | 'cierre_vip' | 'susurro' | 'personalizado';
+  audioBase64?: string;
+  audioUrl?: string;
+  durationSeconds: number;
+  transcription: string;
+  triggerKeywords: string[];
+  createdAt: string;
+  isCustomUploaded?: boolean;
+}
+
+export interface ModelMediaItem {
+  id: string;
+  modelId: string;
+  title: string;
+  category: 'cafe' | 'gym' | 'cozy' | 'beach' | 'teaser' | 'exclusive_ppv';
+  url: string;
+  caption: string;
+  isExclusive: boolean;
+  unlockPrice?: string;
+  watermark?: string;
+  createdAt: string;
+}
+
 export interface ModelProfile {
   id: string;
   name: string;
@@ -96,6 +123,8 @@ export interface ModelProfile {
     accent: string;
     description: string;
   };
+  voiceClips?: ModelVoiceClip[];
+  mediaVault?: ModelMediaItem[];
   rules: {
     conversionThreshold: number; // default 75
     autoSendVoiceNotes: boolean;

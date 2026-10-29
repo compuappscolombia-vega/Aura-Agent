@@ -234,6 +234,12 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
                         : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
                     }`}
                   >
+                    {model.id === 'afire-sb' && (
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-black flex items-center gap-1 z-10 shadow">
+                        <Sparkles className="w-2.5 h-2.5 text-amber-300" /> MODELO REAL OFICIAL
+                      </div>
+                    )}
+
                     {isActive && (
                       <div className="absolute top-3 right-3 px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold flex items-center gap-1">
                         <Check className="w-3 h-3" /> ACTIVA AHORA

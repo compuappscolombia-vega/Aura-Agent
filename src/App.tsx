@@ -191,12 +191,12 @@ export default function App() {
     'Aura activa: interpretación profunda de contexto, adaptación al estado anímico y orientación estratégica a cierre VIP.'
   );
 
-  // Creator / Admin Auth Session State
+  // Creator / Admin Auth Session State (Connected to @afire_sb)
   const [currentUserSession, setCurrentUserSession] = useState<UserSession | null>({
-    id: 'usr-sess-prod-1',
-    name: 'Valeria Gómez',
+    id: 'usr-sess-prod-afire',
+    name: 'Ana María',
     email: 'gato-284@hotmail.com',
-    handle: '@valeriag_official',
+    handle: '@afire_sb',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
     provider: 'x',
     role: 'creator',
@@ -720,6 +720,17 @@ export default function App() {
               <span>Panel & CRM</span>
             </button>
           </div>
+
+          {/* Voz y Fotos de Mi Modelo Shortcut */}
+          <button
+            onClick={() => setActiveTab('twitter_x')}
+            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/20 to-purple-600/20 hover:from-rose-500/30 hover:to-purple-600/30 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            title="Administrar las notas de voz, grabaciones y fotos de la modelo para X DMs"
+          >
+            <Volume2 className="w-3.5 h-3.5 text-rose-400" />
+            <span className="hidden lg:inline">Voz & Bóveda de Mi Modelo</span>
+            <span className="lg:hidden">Voz & Fotos</span>
+          </button>
 
           {/* Compartir con la Modelo Button */}
           <button
