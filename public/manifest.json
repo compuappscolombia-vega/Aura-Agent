@@ -1,0 +1,32 @@
+{
+  "id": "/",
+  "name": "AuraAgent - Sistema Agentico de Ventas y Fidelización",
+  "short_name": "AuraAgent",
+  "description": "Plataforma agentica de IA con síntesis de voz hiperrealista, clonación de voz, bóveda de fotos y conversión automatizada a OnlyFans.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#020617",
+  "theme_color": "#e11d48",
+  "icons": [
+    {
+      "src": "/assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

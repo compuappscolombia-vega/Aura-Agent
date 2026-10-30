@@ -1,18 +1,35 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>AuraAgent - Sistema Agentico de Ventas y Fidelización</title>
     <meta name="description" content="Plataforma agentica de IA con síntesis de voz hiperrealista, medidor de confianza/fluidez y conversión automatizada a OnlyFans y contenido VIP para creadoras." />
     <meta property="og:title" content="AuraAgent - Sistema Agentico de Ventas y Fidelización" />
     <meta property="og:description" content="Plataforma agentica de IA con síntesis de voz hiperrealista, medidor de confianza/fluidez y conversión automatizada a OnlyFans y contenido VIP para creadoras." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
+    
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#020617" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="AuraAgent" />
+    <link rel="apple-touch-icon" href="/assets/icon-192.png" />
   </head>
-  <body>
+  <body class="bg-slate-950 text-slate-100 antialiased overflow-x-hidden">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.info('ServiceWorker not registered in current context:', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>
-

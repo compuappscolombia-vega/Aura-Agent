@@ -53,7 +53,7 @@ export interface ChatMessage {
   timestamp: string;
   mediaType?: 'image' | 'audio';
   mediaUrl?: string;
-  photoCategory?: 'cafe' | 'gym' | 'cozy' | 'beach';
+  photoCategory?: 'cafe' | 'gym' | 'cozy' | 'beach' | 'teaser' | 'exclusive_ppv';
   photoCaption?: string;
   audioDuration?: number; // in seconds
   audioBase64?: string;
@@ -65,6 +65,9 @@ export interface ChatMessage {
   vipPrice?: string;
   isEncrypted?: boolean;
   transcription?: string; // if user sent audio
+  isXSynced?: boolean;
+  xDmId?: string;
+  xDeliveryStatus?: string;
 }
 
 export interface AgentSkillSettings {
@@ -103,6 +106,20 @@ export interface ModelMediaItem {
   createdAt: string;
 }
 
+export interface ModelVoiceDNA {
+  isCloned: boolean;
+  sampleDurationSeconds: number;
+  sampleAudioUrl?: string;
+  sampleAudioBase64?: string;
+  sampleTranscription?: string;
+  detectedTone: string;
+  pitch: number;
+  rate: number;
+  timbreScore: number;
+  calibratedAt?: string;
+  learningGenerationsCount: number;
+}
+
 export interface ModelProfile {
   id: string;
   name: string;
@@ -122,6 +139,17 @@ export interface ModelProfile {
     rate: number;
     accent: string;
     description: string;
+  };
+  voiceDna?: ModelVoiceDNA;
+  xProfileMetrics?: {
+    followers: number;
+    following: number;
+    tweets: number;
+    isVerified: boolean;
+    bannerUrl?: string;
+    restId?: string;
+    lastSyncedAt?: string;
+    liveFromX?: boolean;
   };
   voiceClips?: ModelVoiceClip[];
   mediaVault?: ModelMediaItem[];

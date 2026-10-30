@@ -56,6 +56,7 @@ interface TwitterIntegrationHubProps {
   onSelectModel: (model: ModelProfile) => void;
   currentSession?: UserSession | null;
   onOpenAuthModal?: () => void;
+  onOpenInstallers?: () => void;
 }
 
 const DEFAULT_CONFIG: TwitterIntegrationConfig = {
@@ -123,6 +124,7 @@ export const TwitterIntegrationHub: React.FC<TwitterIntegrationHubProps> = ({
   onSelectModel,
   currentSession,
   onOpenAuthModal,
+  onOpenInstallers,
 }) => {
   // Navigation tabs
   const [activeSubTab, setActiveSubTab] = useState<
@@ -1916,6 +1918,7 @@ print("Estado emocional:", data['reply']['detectedMood'])`;
             setTestDmText(sampleText);
             setActiveSubTab('external_api');
           }}
+          onOpenInstallers={onOpenInstallers}
         />
       )}
 

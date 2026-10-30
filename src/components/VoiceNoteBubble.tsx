@@ -5,20 +5,29 @@ import { voiceEngine } from '../utils/audioPlayer';
 interface VoiceNoteBubbleProps {
   text: string;
   audioBase64?: string;
+  audioUrl?: string;
   durationSeconds?: number;
   sender: 'user' | 'model';
   modelName?: string;
   voiceStyle?: string;
+  voiceProfile?: {
+    pitch?: number;
+    rate?: number;
+    accent?: string;
+    voiceName?: string;
+  };
   isEncrypted?: boolean;
 }
 
 export const VoiceNoteBubble: React.FC<VoiceNoteBubbleProps> = ({
   text,
   audioBase64,
+  audioUrl,
   durationSeconds = 8,
   sender,
   modelName = 'Valeria',
   voiceStyle = 'Tono natural, cálido y fluido',
+  voiceProfile,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -34,14 +43,17 @@ export const VoiceNoteBubble: React.FC<VoiceNoteBubbleProps> = ({
     setIsPlaying(true);
     setProgress(0);
 
+    const audioSource = audioUrl || audioBase64;
+
     await voiceEngine.playVoiceNote(
       text,
-      audioBase64,
+      audioSource,
       (p) => setProgress(p),
       () => {
         setIsPlaying(false);
         setProgress(0);
-      }
+      },
+      voiceProfile
     );
   };
 

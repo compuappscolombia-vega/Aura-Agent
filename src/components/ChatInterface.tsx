@@ -28,6 +28,8 @@ import {
   Meh,
   Flame,
   AlertTriangle,
+  Camera,
+  Image as ImageIcon,
 } from 'lucide-react';
 
 interface ChatInterfaceProps {
@@ -37,6 +39,7 @@ interface ChatInterfaceProps {
   userMemory?: UserMemory;
   onSendMessage: (text: string) => void;
   onSendAudio: (audioBase64: string, durationSeconds: number, simulatedTranscription?: string) => void;
+  onSendPhoto?: (url: string, caption?: string) => void;
   isModelTyping: boolean;
   platformSkin: 'X (Twitter)' | 'Web';
   onChangeSkin: (skin: 'X (Twitter)' | 'Web') => void;
@@ -49,6 +52,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   userMemory,
   onSendMessage,
   onSendAudio,
+  onSendPhoto,
   isModelTyping,
   platformSkin,
   onChangeSkin,
@@ -57,6 +61,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   const [showRecorder, setShowRecorder] = useState(false);
   const [activePhotoModal, setActivePhotoModal] = useState<string | null>(null);
   const [likedMessageIds, setLikedMessageIds] = useState<Record<string, boolean>>({});
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -237,41 +242,64 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     <VoiceNoteBubble
                       text={msg.text}
                       audioBase64={msg.audioBase64}
+                      audioUrl={msg.mediaUrl}
                       durationSeconds={msg.audioDuration || 6}
                       sender={msg.sender}
                       modelName={modelProfile.name}
                       voiceStyle={modelProfile.voice.description}
+                      voiceProfile={{
+                        pitch: modelProfile.voice.pitch,
+                        rate: modelProfile.voice.rate,
+                        accent: modelProfile.voice.accent,
+                        voiceName: modelProfile.voice.name,
+                      }}
                       isEncrypted={msg.isEncrypted}
                     />
                   </div>
                 ) : (
                   <div className="p-3.5">
-                    {/* Attached Casual Photo */}
-                    {msg.photoCategory && CASUAL_PHOTOS[msg.photoCategory] && (
-                      <div className="mb-3 rounded-xl overflow-hidden border border-white/10 relative group/img shadow-lg">
-                        <img
-                          src={CASUAL_PHOTOS[msg.photoCategory].url}
-                          alt={CASUAL_PHOTOS[msg.photoCategory].title}
-                          className="w-full max-h-72 object-cover cursor-pointer hover:scale-[1.02] transition-transform"
-                          onClick={() =>
-                            setActivePhotoModal(CASUAL_PHOTOS[msg.photoCategory!].url)
-                          }
-                        />
-                        {/* Expand Button */}
-                        <button
-                          onClick={() =>
-                            setActivePhotoModal(CASUAL_PHOTOS[msg.photoCategory!].url)
-                          }
-                          className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white backdrop-blur-sm opacity-0 group-hover/img:opacity-100 transition-opacity"
-                        >
-                          <Maximize2 className="w-3.5 h-3.5" />
-                        </button>
-                        {/* Watermark Tag */}
-                        <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[9px] text-white/80 font-mono tracking-wider">
-                          🔒 {CASUAL_PHOTOS[msg.photoCategory].watermark}
+                    {/* Attached Photo: prioritize model's real media vault or mediaUrl */}
+                    {(() => {
+                      const photoUrl =
+                        msg.mediaUrl ||
+                        (msg.photoCategory &&
+                          (modelProfile.mediaVault?.find((p) => p.category === msg.photoCategory)?.url ||
+                            CASUAL_PHOTOS[msg.photoCategory]?.url));
+                      const photoTitle =
+                        (msg.photoCategory &&
+                          modelProfile.mediaVault?.find((p) => p.category === msg.photoCategory)?.title) ||
+                        (msg.photoCategory && CASUAL_PHOTOS[msg.photoCategory]?.title) ||
+                        'Foto casual de la modelo';
+                      const watermark =
+                        (msg.photoCategory &&
+                          modelProfile.mediaVault?.find((p) => p.category === msg.photoCategory)?.watermark) ||
+                        `${modelProfile.handle} / AURA_VERIFIED`;
+
+                      if (!photoUrl) return null;
+
+                      return (
+                        <div className="mb-3 rounded-xl overflow-hidden border border-white/10 relative group/img shadow-lg">
+                          <img
+                            src={photoUrl}
+                            alt={photoTitle}
+                            className="w-full max-h-72 object-cover cursor-pointer hover:scale-[1.02] transition-transform"
+                            onClick={() => setActivePhotoModal(photoUrl)}
+                          />
+                          {/* Expand Button */}
+                          <button
+                            type="button"
+                            onClick={() => setActivePhotoModal(photoUrl)}
+                            className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white backdrop-blur-sm opacity-0 group-hover/img:opacity-100 transition-opacity cursor-pointer"
+                          >
+                            <Maximize2 className="w-3.5 h-3.5" />
+                          </button>
+                          {/* Watermark Tag */}
+                          <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[9px] text-white/80 font-mono tracking-wider">
+                            🔒 {watermark}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      );
+                    })()}
 
                     {/* Text Message Content */}
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
@@ -405,10 +433,40 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
           <button
             type="button"
             onClick={() => setShowRecorder(true)}
-            className="p-2.5 rounded-full bg-slate-800 hover:bg-slate-700 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer"
+            className="p-2.5 rounded-full bg-slate-800 hover:bg-slate-700 text-rose-400 hover:text-rose-300 transition-colors cursor-pointer shrink-0"
             title="Grabar nota de voz"
           >
             <Mic className="w-5 h-5" />
+          </button>
+
+          {/* Attach / Upload Photo Button */}
+          <input
+            type="file"
+            accept="image/*"
+            ref={photoInputRef}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const dataUri = reader.result as string;
+                if (onSendPhoto) {
+                  onSendPhoto(dataUri, file.name);
+                } else {
+                  onSendMessage(`[Foto adjuntada: ${file.name}]`);
+                }
+              };
+              reader.readAsDataURL(file);
+            }}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => photoInputRef.current?.click()}
+            className="p-2.5 rounded-full bg-slate-800 hover:bg-slate-700 text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer shrink-0"
+            title="Subir foto desde celular o computador"
+          >
+            <Camera className="w-5 h-5" />
           </button>
 
           {/* Text Input */}

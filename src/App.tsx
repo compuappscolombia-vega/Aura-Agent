@@ -22,6 +22,7 @@ import { ModelCatalogModal } from './components/ModelCatalogModal';
 import { AuthLoginModal } from './components/AuthLoginModal';
 import { ShareLiveWithModelModal } from './components/ShareLiveWithModelModal';
 import { ManualViewerModal } from './components/ManualViewerModal';
+import { InstallersModal } from './components/InstallersModal';
 import { DEFAULT_MODELS } from './data/modelsRoster';
 import {
   Sparkles,
@@ -42,6 +43,8 @@ import {
   Radio,
   GraduationCap,
   FileText,
+  X,
+  Download,
 } from 'lucide-react';
 
 const INITIAL_MODEL_PROFILE: ModelProfile = DEFAULT_MODELS[0];
@@ -206,6 +209,48 @@ export default function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [isInstallersModalOpen, setIsInstallersModalOpen] = useState(false);
+  const [isModelValidationMode, setIsModelValidationMode] = useState(false);
+
+  // Parse URL query parameters to support live model preview (?model=... & ?view=model)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const modelParam = params.get('model');
+      const viewParam = params.get('view');
+
+      if (modelParam) {
+        const cleanParam = modelParam.toLowerCase().replace('@', '');
+        const matched = models.find(
+          (m) =>
+            m.id.toLowerCase() === cleanParam ||
+            m.handle.toLowerCase().replace('@', '') === cleanParam ||
+            m.name.toLowerCase().includes(cleanParam)
+        );
+
+        if (matched) {
+          setModelProfile(matched);
+          setMessages([
+            {
+              id: `msg-model-live-${Date.now()}`,
+              sender: 'model',
+              text: `¡Hola! Soy ${matched.name} (${matched.handle}) ✨ Ya tengo mi personalidad, mi voz configurada (${matched.voice.accent}) y mi bóveda de fotos activa. Escríbeme o envíame una nota de voz para probar en vivo cómo respondo y cómo fidelizo a tus suscriptores 😉`,
+              timestamp: 'Ahora',
+              isEncrypted: true,
+            },
+          ]);
+        }
+      }
+
+      if (viewParam === 'model' || modelParam) {
+        setIsModelValidationMode(true);
+        setActiveTab('live_ops');
+      }
+    } catch (err) {
+      console.warn('Error reading URL params:', err);
+    }
+  }, [models]);
 
   // Desktop keyboard shortcuts for high performance
   useEffect(() => {
@@ -353,6 +398,8 @@ export default function App() {
       text,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isEncrypted: true,
+      isXSynced: true,
+      xDeliveryStatus: 'Reflejado en X DMs (Entregado)',
     };
 
     const updatedMessages = [...messages, userMsg];
@@ -446,6 +493,51 @@ export default function App() {
         }
       }
 
+      // Attached photo selection if sendPhoto is true
+      let photoCategory = agentData.photoCategory as (
+        | 'cafe'
+        | 'gym'
+        | 'cozy'
+        | 'beach'
+        | 'teaser'
+        | 'exclusive_ppv'
+        | undefined
+      );
+      let mediaUrl: string | undefined = undefined;
+      let photoCaption: string | undefined = undefined;
+
+      if (agentData.sendPhoto) {
+        // Priority 1: Match from model's real media vault
+        const matchingVaultPhoto =
+          modelProfile.mediaVault?.find((p) => p.category === photoCategory) ||
+          modelProfile.mediaVault?.[0];
+        if (matchingVaultPhoto) {
+          mediaUrl = matchingVaultPhoto.url;
+          photoCategory = matchingVaultPhoto.category;
+          photoCaption = matchingVaultPhoto.caption;
+        } else if (photoCategory && CASUAL_PHOTOS[photoCategory]) {
+          mediaUrl = CASUAL_PHOTOS[photoCategory].url;
+          photoCaption = CASUAL_PHOTOS[photoCategory].caption;
+        } else {
+          photoCategory = 'cozy';
+          mediaUrl = CASUAL_PHOTOS.cozy.url;
+          photoCaption = CASUAL_PHOTOS.cozy.caption;
+        }
+
+        // If agent didn't provide a contextual text, supply a short punchy caption directly referencing the photo
+        if (!agentData.replyText || agentData.replyText.trim().length === 0) {
+          if (photoCategory === 'cafe') {
+            agentData.replyText = 'Tomándome un cafecito frío ☕ ¿Tú ya tomaste café hoy?';
+          } else if (photoCategory === 'gym') {
+            agentData.replyText = 'Terminando rutina en el gym 💪 ¿Hiciste ejercicio hoy o te pongo a sudar? 😉';
+          } else if (photoCategory === 'beach') {
+            agentData.replyText = 'Atardecer en la playita 🌊 Ojalá estuvieras aquí conmigo.';
+          } else if (photoCategory === 'cozy') {
+            agentData.replyText = 'Modo relax en casita ✨ ¿Qué planes tienes hoy?';
+          }
+        }
+      }
+
       // Add model response message
       const modelMsg: ChatMessage = {
         id: `msg-model-${Date.now()}`,
@@ -453,15 +545,20 @@ export default function App() {
         text: agentData.replyText || 'Jajaja qué risa contigo, me caes súper bien 😉',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         mediaType: agentData.sendVoice ? 'audio' : agentData.sendPhoto ? 'image' : undefined,
+        mediaUrl,
         audioBase64,
         audioDuration: Math.max(4, Math.round((agentData.replyText || '').length / 18)),
-        photoCategory: agentData.sendPhoto ? agentData.photoCategory || 'cozy' : undefined,
+        photoCategory,
+        photoCaption,
         confidenceSnapshot: newMetrics,
         userMoodSnapshot: agentData.detectedMood,
         pitchVip: Boolean(agentData.pitchVip || isVipReady),
         vipLink: modelProfile.vipLink,
         vipPrice: modelProfile.vipPrice,
         isEncrypted: true,
+        isXSynced: true,
+        xDmId: agentData.xDmId || `${Date.now()}`,
+        xDeliveryStatus: agentData.xDeliveryStatus || 'Reflejado en X DMs',
       };
 
       setMessages((prev) => [...prev, modelMsg]);
@@ -473,6 +570,8 @@ export default function App() {
         text: 'Jajaja a ver... me encanta tu vibra, cuéntame más 😉',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isEncrypted: true,
+        isXSynced: true,
+        xDeliveryStatus: 'Reflejado en X DMs',
       };
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
@@ -517,6 +616,21 @@ export default function App() {
     await handleSendMessage(transcriptionText);
   };
 
+  const handleSendPhoto = async (url: string, caption?: string) => {
+    const userPhotoMsg: ChatMessage = {
+      id: `msg-user-photo-${Date.now()}`,
+      sender: 'user',
+      text: caption ? `[Foto compartida: ${caption}]` : '[Foto compartida]',
+      mediaUrl: url,
+      mediaType: 'image',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isEncrypted: true,
+    };
+
+    setMessages((prev) => [...prev, userPhotoMsg]);
+    await handleSendMessage('Te comparto esta foto mía, ¿qué te parece?');
+  };
+
   const handleResetConversation = () => {
     const defaultScen = INBOUND_SCENARIOS.find((s) => s.id === activeScenarioId) || INBOUND_SCENARIOS[0];
     setMessages(defaultScen.initialMessages);
@@ -528,21 +642,25 @@ export default function App() {
   };
 
   const handleForcePhoto = (category: 'cafe' | 'gym' | 'cozy' | 'beach') => {
+    const vaultPhoto = modelProfile.mediaVault?.find((p) => p.category === category);
     const photo = CASUAL_PHOTOS[category];
+    const photoCaption = vaultPhoto?.caption || photo?.caption || 'Foto casual';
     const photoMsg: ChatMessage = {
       id: `msg-force-photo-${Date.now()}`,
       sender: 'model',
-      text: photo.caption,
+      text: photoCaption,
+      mediaUrl: vaultPhoto?.url || photo?.url,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       mediaType: 'image',
       photoCategory: category,
+      photoCaption,
       isEncrypted: true,
     };
     setMessages((prev) => [...prev, photoMsg]);
     setMetrics((prev) => ({
       ...prev,
       trustScore: Math.min(100, prev.trustScore + 10),
-      reasoning: `Envío de foto casual real (${photo.title}). Genera cercanía cotidiana.`,
+      reasoning: `Envío de foto casual real (${category}). Saludo corto y referente a la foto.`,
     }));
   };
 
@@ -753,6 +871,17 @@ export default function App() {
             <span className="hidden md:inline">Manual PDF</span>
           </button>
 
+          {/* Ejecutable Local Windows 64-bits & APK Instalador */}
+          <button
+            onClick={() => setIsInstallersModalOpen(true)}
+            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-sky-500/20 via-indigo-500/20 to-purple-500/20 hover:from-sky-500/30 hover:to-purple-500/30 text-sky-300 hover:text-white border border-sky-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            title="Descargar ejecutable local para Windows 64-bits o instalar APK para celular"
+          >
+            <Download className="w-3.5 h-3.5 text-sky-400" />
+            <span className="hidden sm:inline">Win64 & APK</span>
+            <span className="sm:hidden">App</span>
+          </button>
+
           {/* Reset button */}
           <button
             onClick={handleResetConversation}
@@ -799,8 +928,60 @@ export default function App() {
         </div>
       </header>
 
+      {/* Model Live Validation Banner (when opened via share link ?model=... & ?view=model) */}
+      {isModelValidationMode && (
+        <div className="bg-gradient-to-r from-emerald-950/90 via-teal-950/80 to-slate-900 border-b border-emerald-500/40 px-4 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3 text-xs shadow-lg animate-fadeIn">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-emerald-400/60 shadow-md flex-shrink-0">
+              <img src={modelProfile.avatarUrl} alt={modelProfile.name} className="w-full h-full object-cover" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-bold text-white flex items-center gap-1.5 text-sm">
+                  <Radio className="w-3.5 h-3.5 text-emerald-400 animate-pulse" />
+                  Modo Supervisión en Vivo de Modelo: {modelProfile.name}
+                </span>
+                <span className="text-emerald-400 font-mono text-xs font-semibold">{modelProfile.handle}</span>
+                <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                  Voz: {modelProfile.voice.name} ({modelProfile.voice.accent})
+                </span>
+                <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                  OnlyFans VIP: {modelProfile.vipPrice}
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Estás interactuando en tiempo real con el clon agentico de <strong>{modelProfile.name}</strong>. Escribe un mensaje o envía un audio para escuchar su respuesta con tu tono de voz y verificar la progresión del Medidor de Confianza.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setIsModelCatalogOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-200 text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
+            >
+              <Users className="w-3.5 h-3.5" />
+              Cambiar Modelo
+            </button>
+            <button
+              onClick={() => setIsShareModalOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              Compartir Enlace
+            </button>
+            <button
+              onClick={() => setIsModelValidationMode(false)}
+              className="p-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="Ocultar banner"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Main Content Area */}
-      <main className="flex-1 p-3 sm:p-6 max-w-7xl w-full mx-auto flex flex-col gap-6">
+      <main className="flex-1 p-3 sm:p-6 pb-24 md:pb-6 max-w-7xl w-full mx-auto flex flex-col gap-6">
         {activeTab === 'live_ops' ? (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left Column: Live Chat Interface with Context Selector (7 cols) */}
@@ -839,6 +1020,7 @@ export default function App() {
                   userMemory={userMemory}
                   onSendMessage={handleSendMessage}
                   onSendAudio={handleSendAudio}
+                  onSendPhoto={handleSendPhoto}
                   isModelTyping={isModelTyping}
                   platformSkin={platformSkin}
                   onChangeSkin={setPlatformSkin}
@@ -932,6 +1114,7 @@ export default function App() {
             onSelectModel={handleSelectModel}
             currentSession={currentUserSession}
             onOpenAuthModal={() => setIsAuthModalOpen(true)}
+            onOpenInstallers={() => setIsInstallersModalOpen(true)}
           />
         ) : activeTab === 'training' ? (
           /* Agent Training & Skill Benchmark Lab */
@@ -984,6 +1167,8 @@ export default function App() {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         model={modelProfile}
+        models={models}
+        onSelectModel={handleSelectModel}
       />
 
       {/* Manual & Dossier Interactive Viewer Modal */}
@@ -991,6 +1176,66 @@ export default function App() {
         isOpen={isManualModalOpen}
         onClose={() => setIsManualModalOpen(false)}
       />
+
+      {/* Local Windows 64-bit & Mobile APK Installers Modal */}
+      <InstallersModal
+        isOpen={isInstallersModalOpen}
+        onClose={() => setIsInstallersModalOpen(false)}
+      />
+
+      {/* Mobile Bottom Navigation Bar (Visible on phones & tablets) */}
+      <nav
+        aria-label="Navegación móvil"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 px-2 py-2 flex items-center justify-around shadow-2xl"
+      >
+        <button
+          onClick={() => setActiveTab('live_ops')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl transition-colors cursor-pointer ${
+            activeTab === 'live_ops' ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <MessageSquare className="w-4 h-4" />
+          <span>Chat</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('twitter_x')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl transition-colors cursor-pointer ${
+            activeTab === 'twitter_x' ? 'text-rose-400 bg-rose-500/10' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <Volume2 className="w-4 h-4" />
+          <span>Voz & Fotos</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('training')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl transition-colors cursor-pointer ${
+            activeTab === 'training' ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" />
+          <span>Lab</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('crm')}
+          className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl transition-colors cursor-pointer ${
+            activeTab === 'crm' ? 'text-indigo-400 bg-indigo-500/10' : 'text-slate-400 hover:text-white'
+          }`}
+        >
+          <LayoutDashboard className="w-4 h-4" />
+          <span>CRM</span>
+        </button>
+
+        <button
+          onClick={() => setIsInstallersModalOpen(true)}
+          className="flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl text-sky-400 hover:text-sky-300 bg-sky-500/10 transition-colors cursor-pointer"
+        >
+          <Download className="w-4 h-4 text-sky-400" />
+          <span>Win64 / APK</span>
+        </button>
+      </nav>
 
       {/* Footer / Privacy note */}
       <footer className="border-t border-slate-800/80 bg-slate-950 py-4 px-6 text-center text-xs text-slate-500 flex flex-wrap items-center justify-between gap-4 max-w-7xl mx-auto w-full">
