@@ -922,14 +922,24 @@ app.post('/api/gemini/transcribe', async (req, res) => {
 
     if (aiClient) {
       try {
+        let cleanBase64 = audioBase64;
+        let actualMime = mimeType;
+        if (cleanBase64.startsWith('data:')) {
+          const match = cleanBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            actualMime = match[1];
+            cleanBase64 = match[2];
+          }
+        }
+
         const response = await aiClient.models.generateContent({
-          model: 'gemini-3.5-transcribe',
+          model: 'gemini-3.8-flash',
           contents: {
             parts: [
               {
                 inlineData: {
-                  mimeType,
-                  data: audioBase64,
+                  mimeType: actualMime,
+                  data: cleanBase64,
                 },
               },
               {
@@ -942,7 +952,9 @@ app.post('/api/gemini/transcribe', async (req, res) => {
           },
         });
 
-        const result = JSON.parse(response.text || '{}');
+        const raw = (response.text || '{}').trim();
+        const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+        const result = JSON.parse(cleaned);
         return res.json({
           success: true,
           transcription: result.transcription || 'Audio escuchado',
@@ -2111,14 +2123,24 @@ app.post('/api/model/:modelId/clone-voice', async (req, res) => {
 
     if (aiClient && audioBase64) {
       try {
+        let cleanBase64 = audioBase64;
+        let detectedMime = 'audio/webm';
+        if (cleanBase64.startsWith('data:')) {
+          const match = cleanBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            detectedMime = match[1];
+            cleanBase64 = match[2];
+          }
+        }
+
         const genResponse = await aiClient.models.generateContent({
-          model: 'gemini-3.5-transcribe',
+          model: 'gemini-3.8-flash',
           contents: {
             parts: [
               {
                 inlineData: {
-                  mimeType: 'audio/webm',
-                  data: audioBase64,
+                  mimeType: detectedMime,
+                  data: cleanBase64,
                 },
               },
               {
@@ -2130,11 +2152,13 @@ app.post('/api/model/:modelId/clone-voice', async (req, res) => {
             responseMimeType: 'application/json',
           },
         });
-        const parsed = JSON.parse(genResponse.text || '{}');
+        const raw = (genResponse.text || '{}').trim();
+        const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+        const parsed = JSON.parse(cleaned);
         if (parsed.transcription) transcription = parsed.transcription;
         if (parsed.detectedTone) detectedTone = parsed.detectedTone;
-        if (parsed.pitch) pitch = Number(parsed.pitch);
-        if (parsed.rate) rate = Number(parsed.rate);
+        if (parsed.pitch && !isNaN(Number(parsed.pitch))) pitch = Number(parsed.pitch);
+        if (parsed.rate && !isNaN(Number(parsed.rate))) rate = Number(parsed.rate);
       } catch (err) {
         console.warn('Acoustic Gemini extraction fallback:', err);
       }
