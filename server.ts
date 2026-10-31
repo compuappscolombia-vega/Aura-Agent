@@ -2114,12 +2114,16 @@ app.post('/api/model/:modelId/clone-voice', async (req, res) => {
       return res.status(400).json({ error: 'Falta muestra de audio o transcripción para clonar voz' });
     }
 
-    // Acoustic DNA Extraction Simulation & Gemini Audio Analysis
-    let transcription = sampleTranscription || 'Muestra de voz de la modelo para clonación acústica';
-    let detectedTone = 'Tono femenino dulce, cálido, íntimo y seductor con acento latino suave';
+    // Acoustic DNA & Room Presence Extraction via Gemini Audio Analysis
+    let transcription = sampleTranscription || 'Nota de voz libre de la modelo';
+    let detectedTone = 'Voz femenina natural, dulce, cálida e íntima con acento latino suave';
     let pitch = 1.15;
     let rate = 0.98;
     let timbreScore = 99.4;
+    let roomAcoustics = 'Habitación privada con presencia acústica cálida y micro-reverberación de alcoba';
+    let ambientPresenceType = 'room_intimate';
+    let roomPresenceLevel = 88;
+    let acousticSpaceName = 'Habitación Íntima';
 
     if (aiClient && audioBase64) {
       try {
@@ -2144,7 +2148,22 @@ app.post('/api/model/:modelId/clone-voice', async (req, res) => {
                 },
               },
               {
-                text: 'Transcribe este audio en español y extrae los parámetros acústicos: tono de voz, timbre femenino/masculino, velocidad de cadencia (rate: 0.85 a 1.2), pitch sugerido (1.05 a 1.25) y acento regional. Formato JSON: { "transcription": "...", "detectedTone": "...", "pitch": 1.15, "rate": 0.98 }',
+                text: `Analiza esta grabación de audio real y libre de una modelo (no sigue ningún guion obligatorio):
+1. Transcribe exactamente todas las palabras pronunciadas de manera espontánea en español.
+2. Extrae parámetros de voz: tono emocional (detectedTone), pitch sugerido (entre 1.05 y 1.25), cadencia (rate entre 0.88 y 1.15).
+3. Analiza el ENTORNO ACÚSTICO y fondeo exterior (room presence): identifica si suena en habitación/dormitorio, coche, cafetería, terraza o estudio; nivel de presencia de aire ambiental (roomPresenceLevel: 0 a 100); y sugiere el tipo de fondo acústico ("room_intimate", "bedroom_night", "rain_window", "cafe_chill", "balcony_breeze", "studio_warm").
+
+Responde ÚNICAMENTE en formato JSON:
+{
+  "transcription": "palabras reales pronunciadas libremente",
+  "detectedTone": "descripción del timbre y color de voz",
+  "pitch": 1.15,
+  "rate": 0.98,
+  "roomAcoustics": "descripción del entorno físico y espacial percibido",
+  "ambientPresenceType": "room_intimate",
+  "roomPresenceLevel": 85,
+  "acousticSpaceName": "Habitación Íntima"
+}`,
               },
             ],
           },
@@ -2159,6 +2178,10 @@ app.post('/api/model/:modelId/clone-voice', async (req, res) => {
         if (parsed.detectedTone) detectedTone = parsed.detectedTone;
         if (parsed.pitch && !isNaN(Number(parsed.pitch))) pitch = Number(parsed.pitch);
         if (parsed.rate && !isNaN(Number(parsed.rate))) rate = Number(parsed.rate);
+        if (parsed.roomAcoustics) roomAcoustics = parsed.roomAcoustics;
+        if (parsed.ambientPresenceType) ambientPresenceType = parsed.ambientPresenceType;
+        if (parsed.roomPresenceLevel && !isNaN(Number(parsed.roomPresenceLevel))) roomPresenceLevel = Number(parsed.roomPresenceLevel);
+        if (parsed.acousticSpaceName) acousticSpaceName = parsed.acousticSpaceName;
       } catch (err) {
         console.warn('Acoustic Gemini extraction fallback:', err);
       }
@@ -2176,13 +2199,17 @@ app.post('/api/model/:modelId/clone-voice', async (req, res) => {
       timbreScore,
       calibratedAt: new Date().toISOString(),
       learningGenerationsCount: 1,
+      roomAcoustics,
+      ambientPresenceType,
+      roomPresenceLevel,
+      acousticSpaceName,
     };
 
     // Save as a voice clip in the vault as well
     const cloneClip: ServerVoiceClip = {
       id: `vc-cloned-${Date.now()}`,
       modelId,
-      title: 'Nota de Voz Real de la Modelo (Muestra Clonada) 🎙️',
+      title: 'Nota de Voz Libre & Real de la Modelo (Clonada) 🎙️',
       category: 'saludo',
       audioBase64,
       audioUrl,
@@ -2199,6 +2226,8 @@ app.post('/api/model/:modelId/clone-voice', async (req, res) => {
       modelProfilesMap[modelId].pitch = pitch;
       modelProfilesMap[modelId].rate = rate;
       modelProfilesMap[modelId].voiceDescription = detectedTone;
+      modelProfilesMap[modelId].ambientPresenceType = ambientPresenceType;
+      modelProfilesMap[modelId].roomAcoustics = roomAcoustics;
     }
 
     return res.json({
@@ -2210,6 +2239,203 @@ app.post('/api/model/:modelId/clone-voice', async (req, res) => {
   } catch (error: any) {
     console.error('Error in /api/model/:modelId/clone-voice:', error);
     return res.status(500).json({ error: error.message });
+  }
+});
+
+// Direct Raw Audio Upload (Ignores Text Transcription Requirements)
+app.post('/api/model/:modelId/raw-audio-upload', async (req, res) => {
+  try {
+    const { modelId } = req.params;
+    const {
+      audioBase64,
+      audioUrl,
+      fileName = 'raw_sample.wav',
+      durationSeconds = 6,
+      ambientPreset = 'room_intimate',
+    } = req.body;
+
+    if (!audioBase64 && !audioUrl) {
+      return res.status(400).json({ success: false, error: 'Se requiere archivo de audio raw para calibrar la firma acústica' });
+    }
+
+    let detectedTone = 'Firma acústica natural de alta fidelidad, timbre femenino cálido y resonancia vocal íntima';
+    let pitch = 1.15;
+    let rate = 0.98;
+    let timbreScore = 99.6;
+    let roomAcoustics = 'Espacio íntimo con presencia acústica cálida y respuesta espectral limpia';
+    let ambientPresenceType = ambientPreset || 'room_intimate';
+    let roomPresenceLevel = 90;
+    let acousticSpaceName = 'Habitación Íntima';
+
+    // Extract raw acoustic signature via Gemini (IGNORING text transcription)
+    if (aiClient && audioBase64) {
+      try {
+        let cleanBase64 = audioBase64;
+        let detectedMime = 'audio/wav';
+        if (cleanBase64.startsWith('data:')) {
+          const match = cleanBase64.match(/^data:([^;]+);base64,(.+)$/);
+          if (match) {
+            detectedMime = match[1];
+            cleanBase64 = match[2];
+          }
+        }
+
+        const genResponse = await aiClient.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents: {
+            parts: [
+              {
+                inlineData: {
+                  mimeType: detectedMime,
+                  data: cleanBase64,
+                },
+              },
+              {
+                text: `Analiza ÚNICAMENTE la firma acústica física y propiedades de audio de esta muestra (IGNORA totalmente la necesidad de transcribir texto, no nos importa lo que dice sino cómo suena la voz física y su ambiente):
+1. Pitch fundamental (número entre 1.05 y 1.25).
+2. Cadencia y velocidad física (rate entre 0.88 y 1.15).
+3. Timbre acústico: armónicos, calidez, textura y resonancia vocal (detectedTone).
+4. Fondeo exterior y presencia espacial de sala (roomAcoustics).
+5. Tipo de ambiente sonoro sugerido ("room_intimate", "bedroom_night", "rain_window", "cafe_chill", "balcony_breeze", "studio_warm").
+6. Nivel de presencia de sala (roomPresenceLevel: 0 a 100).
+
+Responde ÚNICAMENTE en JSON:
+{
+  "pitch": 1.15,
+  "rate": 0.98,
+  "detectedTone": "descripción de la textura vocal física y armónicos",
+  "roomAcoustics": "acústica del espacio físico percibido",
+  "ambientPresenceType": "room_intimate",
+  "roomPresenceLevel": 90,
+  "timbreScore": 99.6
+}`,
+              },
+            ],
+          },
+          config: {
+            responseMimeType: 'application/json',
+          },
+        });
+
+        const raw = (genResponse.text || '{}').trim();
+        const cleaned = raw.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+        const parsed = JSON.parse(cleaned);
+        if (parsed.detectedTone) detectedTone = parsed.detectedTone;
+        if (parsed.pitch && !isNaN(Number(parsed.pitch))) pitch = Number(parsed.pitch);
+        if (parsed.rate && !isNaN(Number(parsed.rate))) rate = Number(parsed.rate);
+        if (parsed.roomAcoustics) roomAcoustics = parsed.roomAcoustics;
+        if (parsed.ambientPresenceType) ambientPresenceType = parsed.ambientPresenceType;
+        if (parsed.roomPresenceLevel && !isNaN(Number(parsed.roomPresenceLevel))) roomPresenceLevel = Number(parsed.roomPresenceLevel);
+        if (parsed.timbreScore && !isNaN(Number(parsed.timbreScore))) timbreScore = Number(parsed.timbreScore);
+      } catch (err) {
+        console.warn('Raw acoustic signature analysis fallback:', err);
+      }
+    }
+
+    const voiceDna = {
+      isCloned: true,
+      sampleDurationSeconds: Number(durationSeconds) || 6,
+      sampleAudioUrl: audioUrl,
+      sampleAudioBase64: audioBase64,
+      sampleTranscription: 'Clip Acústico Raw de Alta Fidelidad (Firma Vocal Directa)',
+      detectedTone,
+      pitch,
+      rate,
+      timbreScore,
+      calibratedAt: new Date().toISOString(),
+      learningGenerationsCount: (modelProfilesMap[modelId]?.voiceDna?.learningGenerationsCount || 0) + 1,
+      roomAcoustics,
+      ambientPresenceType,
+      roomPresenceLevel,
+      acousticSpaceName: ambientPresenceType,
+      rawAudioFileName: fileName,
+      isRawAcousticUpload: true,
+    };
+
+    // Save as raw acoustic master clip in vault
+    const rawClip: ServerVoiceClip = {
+      id: `vc-raw-${Date.now()}`,
+      modelId,
+      title: `Firma Acústica Raw: ${fileName} 🎙️`,
+      category: 'personalizado',
+      audioBase64,
+      audioUrl,
+      durationSeconds: Number(durationSeconds) || 6,
+      transcription: 'Firma Acústica Directa (Audio Raw Calibrado)',
+      triggerKeywords: ['raw', 'firma', 'voz', 'acustica', modelId],
+      createdAt: new Date().toISOString(),
+      isCustomUploaded: true,
+    };
+    serverVoiceClips.unshift(rawClip);
+
+    // Update global server map
+    if (modelProfilesMap[modelId]) {
+      modelProfilesMap[modelId].pitch = pitch;
+      modelProfilesMap[modelId].rate = rate;
+      modelProfilesMap[modelId].voiceDescription = detectedTone;
+      modelProfilesMap[modelId].voiceDna = voiceDna;
+      modelProfilesMap[modelId].ambientPresenceType = ambientPresenceType;
+      modelProfilesMap[modelId].roomAcoustics = roomAcoustics;
+    }
+
+    return res.json({
+      success: true,
+      message: 'Audio raw incorporado exitosamente al perfil de voz sin requerir transcripción de texto',
+      voiceDna,
+      clip: rawClip,
+    });
+  } catch (error: any) {
+    console.error('Error in /api/model/:modelId/raw-audio-upload:', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// Save Custom Ambient Audio Track & Configuration for the Model
+app.post('/api/model/:modelId/custom-ambience', (req, res) => {
+  try {
+    const { modelId } = req.params;
+    const {
+      audioUrl,
+      audioBase64,
+      name = 'Ambiente Personalizado',
+      volumeMultiplier = 1.0,
+      duckingEnabled = true,
+      presetId = 'custom',
+    } = req.body;
+
+    if (modelProfilesMap[modelId]) {
+      if (!modelProfilesMap[modelId].voiceDna) {
+        modelProfilesMap[modelId].voiceDna = {
+          isCloned: true,
+          sampleDurationSeconds: 8,
+          detectedTone: modelProfilesMap[modelId].voiceDescription || 'Calibrado',
+          pitch: modelProfilesMap[modelId].pitch || 1.15,
+          rate: modelProfilesMap[modelId].rate || 0.98,
+          timbreScore: 99.4,
+          learningGenerationsCount: 1,
+        };
+      }
+      modelProfilesMap[modelId].voiceDna.customAmbienceAudioUrl = audioUrl;
+      modelProfilesMap[modelId].voiceDna.customAmbienceName = name;
+      modelProfilesMap[modelId].voiceDna.ambientPresenceType = presetId;
+      modelProfilesMap[modelId].voiceDna.ambienceVolumeMultiplier = volumeMultiplier;
+      modelProfilesMap[modelId].voiceDna.ambienceDuckingEnabled = duckingEnabled;
+    }
+
+    return res.json({
+      success: true,
+      message: 'Ambientación de fondo personalizada configurada exitosamente',
+      ambienceConfig: {
+        audioUrl,
+        name,
+        presetId,
+        volumeMultiplier,
+        duckingEnabled,
+      },
+    });
+  } catch (error: any) {
+    console.error('Error in /api/model/:modelId/custom-ambience:', error);
+    return res.status(500).json({ success: false, error: error.message });
   }
 });
 

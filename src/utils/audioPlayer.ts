@@ -4,6 +4,8 @@
  * sample recordings in the vault, and cloned model voice clips.
  */
 
+import { ambientSoundscape, AmbiencePresetId } from './ambientSoundscape';
+
 export interface VoiceProfileConfig {
   name?: string;
   pitch?: number;
@@ -11,6 +13,8 @@ export interface VoiceProfileConfig {
   accent?: string;
   voiceName?: string;
   lang?: string;
+  ambiencePreset?: AmbiencePresetId;
+  enableAmbience?: boolean;
 }
 
 class VoiceSynthesisEngine {
@@ -22,6 +26,8 @@ class VoiceSynthesisEngine {
     accent: 'Latino dulce / Colombiano suave',
     voiceName: 'Kore',
     lang: 'es-CO',
+    ambiencePreset: 'room_intimate',
+    enableAmbience: true,
   };
 
   /**
@@ -55,6 +61,19 @@ class VoiceSynthesisEngine {
       ...overrideProfile,
     };
 
+    // 0. Trigger acoustic room tone & background presence (Anti-Digital Silence)
+    if (effectiveProfile.enableAmbience !== false) {
+      ambientSoundscape.play(effectiveProfile.ambiencePreset || 'room_intimate', 280);
+      ambientSoundscape.duck(220);
+    }
+
+    // Wrap onEnd callback to naturally decay room presence
+    const handlePlaybackFinished = () => {
+      ambientSoundscape.unduck(200);
+      ambientSoundscape.stop(520);
+      onEnd?.();
+    };
+
     // 1. Play real pre-recorded audio / cloned audio if available
     if (audioSource && audioSource.trim()) {
       try {
@@ -74,13 +93,13 @@ class VoiceSynthesisEngine {
 
         audio.onended = () => {
           onProgress?.(100);
-          onEnd?.();
+          handlePlaybackFinished();
           this.currentAudio = null;
         };
 
         audio.onerror = (e) => {
           console.warn('Real audio playback failed, falling back to unified synthesis:', e);
-          this.speakTextUnified(text, effectiveProfile, onProgress, onEnd);
+          this.speakTextUnified(text, effectiveProfile, onProgress, handlePlaybackFinished);
         };
 
         await audio.play();
@@ -91,7 +110,7 @@ class VoiceSynthesisEngine {
     }
 
     // 2. Fall back to unified high-realism synthesis with model's exact calibrated voice
-    await this.speakTextUnified(text, effectiveProfile, onProgress, onEnd);
+    await this.speakTextUnified(text, effectiveProfile, onProgress, handlePlaybackFinished);
   }
 
   /**
@@ -132,21 +151,64 @@ class VoiceSynthesisEngine {
     // Retrieve system voices
     const voices = window.speechSynthesis.getVoices();
     const spanishVoices = voices.filter((v) => v.lang.toLowerCase().startsWith('es'));
+    const targetLang = (profile.lang || 'es-CO').toLowerCase();
 
-    // Preference: sweet, feminine, natural Spanish voice
-    const chosenVoice =
-      spanishVoices.find(
+    // Match specifically for target accent and distinct model identity
+    let chosenVoice: SpeechSynthesisVoice | undefined;
+
+    if (targetLang.includes('es-es')) {
+      // European / Peninsular Spanish for Elena Russo
+      chosenVoice = spanishVoices.find(
         (v) =>
-          v.name.toLowerCase().includes('sabina') ||
-          v.name.toLowerCase().includes('monica') ||
-          v.name.toLowerCase().includes('paulina') ||
-          v.name.toLowerCase().includes('helena') ||
-          v.name.toLowerCase().includes('natural') ||
-          v.name.toLowerCase().includes('google español') ||
-          v.name.toLowerCase().includes('female')
-      ) ||
-      spanishVoices[0] ||
-      voices[0];
+          (v.lang.toLowerCase().includes('es-es') || v.lang.toLowerCase() === 'es_es') &&
+          (v.name.toLowerCase().includes('helena') ||
+            v.name.toLowerCase().includes('laura') ||
+            v.name.toLowerCase().includes('monica') ||
+            v.name.toLowerCase().includes('female'))
+      ) || spanishVoices.find((v) => v.lang.toLowerCase().includes('es-es'));
+    } else if (targetLang.includes('es-ar')) {
+      // Argentine Spanish for Mia Soler
+      chosenVoice = spanishVoices.find(
+        (v) =>
+          v.lang.toLowerCase().includes('es-ar') ||
+          v.lang.toLowerCase() === 'es_ar' ||
+          v.name.toLowerCase().includes('argentin')
+      ) || spanishVoices.find((v) => v.name.toLowerCase().includes('paulina'));
+    } else if (targetLang.includes('es-mx')) {
+      // Mexican Spanish for Camila Torres
+      chosenVoice = spanishVoices.find(
+        (v) =>
+          (v.lang.toLowerCase().includes('es-mx') || v.lang.toLowerCase() === 'es_mx') &&
+          (v.name.toLowerCase().includes('paulina') ||
+            v.name.toLowerCase().includes('hilda') ||
+            v.name.toLowerCase().includes('female'))
+      ) || spanishVoices.find((v) => v.lang.toLowerCase().includes('es-mx'));
+    } else {
+      // Colombian / Latin America (ANAMARIA @afire_sb & Valeria)
+      chosenVoice = spanishVoices.find(
+        (v) =>
+          (v.lang.toLowerCase().includes('es-co') || v.lang.toLowerCase().includes('es-419') || v.lang.toLowerCase().includes('es-us')) &&
+          (v.name.toLowerCase().includes('sabina') ||
+            v.name.toLowerCase().includes('soledad') ||
+            v.name.toLowerCase().includes('sofia') ||
+            v.name.toLowerCase().includes('female'))
+      ) || spanishVoices.find((v) => v.lang.toLowerCase().includes('es-co') || v.lang.toLowerCase().includes('es-419'));
+    }
+
+    if (!chosenVoice) {
+      chosenVoice =
+        spanishVoices.find(
+          (v) =>
+            v.name.toLowerCase().includes('sabina') ||
+            v.name.toLowerCase().includes('monica') ||
+            v.name.toLowerCase().includes('paulina') ||
+            v.name.toLowerCase().includes('helena') ||
+            v.name.toLowerCase().includes('natural') ||
+            v.name.toLowerCase().includes('female')
+        ) ||
+        spanishVoices[0] ||
+        voices[0];
+    }
 
     if (chosenVoice) {
       utterance.voice = chosenVoice;
@@ -191,6 +253,7 @@ class VoiceSynthesisEngine {
       window.speechSynthesis.cancel();
     }
     this.currentUtterance = null;
+    ambientSoundscape.stop(150);
   }
 }
 

@@ -106,6 +106,28 @@ export interface ModelMediaItem {
   createdAt: string;
 }
 
+export interface RawAudioSample {
+  id: string;
+  modelId: string;
+  name: string;
+  audioUrl: string;
+  audioBase64?: string;
+  durationSeconds: number;
+  fileSizeBytes?: number;
+  uploadedAt: string;
+  // Natural acoustic signatures extracted directly without text transcription
+  signatures: {
+    f0PitchHz: number; // e.g. 215 Hz
+    harmonicWarmth: number; // 0 - 100
+    spectralPurity: number; // 0 - 100
+    breathinessRatio: number; // 0 - 100
+    cadenceRate: number; // e.g. 0.98x
+    roomNoiseFloorDb: number; // e.g. -38 dB
+    roomReverbEstimate: string; // e.g. "Acústica de habitación seca / micro-reverberación de 0.4s"
+    recommendedAmbience?: string;
+  };
+}
+
 export interface ModelVoiceDNA {
   isCloned: boolean;
   sampleDurationSeconds: number;
@@ -118,6 +140,27 @@ export interface ModelVoiceDNA {
   timbreScore: number;
   calibratedAt?: string;
   learningGenerationsCount: number;
+  // Acoustic Room Presence & Environment (Anti-Digital Silence)
+  roomAcoustics?: string;
+  ambientPresenceType?:
+    | 'room_intimate'
+    | 'bedroom_night'
+    | 'rain_window'
+    | 'cafe_chill'
+    | 'balcony_breeze'
+    | 'studio_warm'
+    | 'car_interior'
+    | 'beach_waves'
+    | 'fireplace_warm'
+    | 'custom';
+  roomPresenceLevel?: number; // 0 - 100
+  acousticSpaceName?: string;
+  // Raw Audio Samples (Zero Transcription Required)
+  rawAcousticSamples?: RawAudioSample[];
+  customAmbienceAudioUrl?: string;
+  customAmbienceName?: string;
+  ambienceVolumeMultiplier?: number;
+  ambienceDuckingEnabled?: boolean;
 }
 
 export interface ModelProfile {
@@ -133,10 +176,13 @@ export interface ModelProfile {
   vipLink: string;
   vipPrice: string;
   vipDiscountCode: string;
+  isSystemDefault?: boolean; // True for system demo models (Valeria, Elena, etc.), False for Real Models (ANAMARIA @afire_sb, etc.)
+  creatorOwnerId?: string;
   voice: {
     name: string; // e.g. 'Kore' | 'Aoede' | 'Puck' | 'Charon' | 'Fenrir'
     pitch: number;
     rate: number;
+    lang?: string; // e.g. 'es-CO' | 'es-ES' | 'es-AR' | 'es-MX'
     accent: string;
     description: string;
   };
@@ -153,6 +199,7 @@ export interface ModelProfile {
   };
   voiceClips?: ModelVoiceClip[];
   mediaVault?: ModelMediaItem[];
+  rawAudioSamples?: RawAudioSample[];
   rules: {
     conversionThreshold: number; // default 75
     autoSendVoiceNotes: boolean;
@@ -240,6 +287,8 @@ export interface UserSession {
   role: 'creator' | 'admin' | 'agency_manager';
   connectedAt: string;
   xAccountConnected?: boolean;
+  associatedModelId?: string; // Links this real creator account to her isolated model profile
+  allowedModelIds?: string[];
 }
 
 export interface ExternalWebhookConfig {

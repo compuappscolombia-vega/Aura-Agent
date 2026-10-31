@@ -234,9 +234,13 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
                         : 'bg-slate-950/60 border-slate-800/80 hover:border-slate-700'
                     }`}
                   >
-                    {model.id === 'afire-sb' && (
+                    {!model.isSystemDefault ? (
                       <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 text-[9px] font-black flex items-center gap-1 z-10 shadow">
-                        <Sparkles className="w-2.5 h-2.5 text-amber-300" /> MODELO REAL OFICIAL
+                        <Sparkles className="w-2.5 h-2.5 text-amber-300" /> MODELO REAL INDEPENDIENTE
+                      </div>
+                    ) : (
+                      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-slate-800/80 text-slate-400 border border-slate-700/80 text-[9px] font-medium flex items-center gap-1 z-10 shadow">
+                        Plantilla del Sistema
                       </div>
                     )}
 

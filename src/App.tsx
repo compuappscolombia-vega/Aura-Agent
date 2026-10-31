@@ -1123,6 +1123,7 @@ export default function App() {
             onUpdateSkills={(newSkills) =>
               setModelProfile((prev) => ({ ...prev, skills: newSkills }))
             }
+            onUpdateModel={handleUpdateModel}
             onRunTestPrompt={(promptText) => {
               setActiveTab('live_ops');
               handleSendMessage(promptText);

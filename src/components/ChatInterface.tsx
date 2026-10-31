@@ -252,28 +252,31 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                         rate: modelProfile.voice.rate,
                         accent: modelProfile.voice.accent,
                         voiceName: modelProfile.voice.name,
+                        lang: modelProfile.voice.lang || 'es-CO',
+                        ambiencePreset: (modelProfile.voiceDna?.ambientPresenceType as any) || 'room_intimate',
+                        enableAmbience: true,
                       }}
                       isEncrypted={msg.isEncrypted}
                     />
                   </div>
                 ) : (
                   <div className="p-3.5">
-                    {/* Attached Photo: prioritize model's real media vault or mediaUrl */}
+                    {/* Attached Photo: STRICTLY isolated to the active model's media vault (Never shared) */}
                     {(() => {
                       const photoUrl =
                         msg.mediaUrl ||
                         (msg.photoCategory &&
                           (modelProfile.mediaVault?.find((p) => p.category === msg.photoCategory)?.url ||
-                            CASUAL_PHOTOS[msg.photoCategory]?.url));
+                            modelProfile.mediaVault?.[0]?.url));
                       const photoTitle =
                         (msg.photoCategory &&
                           modelProfile.mediaVault?.find((p) => p.category === msg.photoCategory)?.title) ||
-                        (msg.photoCategory && CASUAL_PHOTOS[msg.photoCategory]?.title) ||
-                        'Foto casual de la modelo';
+                        modelProfile.mediaVault?.[0]?.title ||
+                        `Foto exclusiva de ${modelProfile.name}`;
                       const watermark =
                         (msg.photoCategory &&
                           modelProfile.mediaVault?.find((p) => p.category === msg.photoCategory)?.watermark) ||
-                        `${modelProfile.handle} / AURA_VERIFIED`;
+                        `${modelProfile.handle} / EXCLUSIVE_OFFICIAL`;
 
                       if (!photoUrl) return null;
 

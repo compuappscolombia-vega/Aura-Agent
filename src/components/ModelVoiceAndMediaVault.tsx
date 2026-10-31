@@ -7,6 +7,11 @@ import {
 } from '../types';
 import { voiceEngine } from '../utils/audioPlayer';
 import {
+  ambientSoundscape,
+  AMBIENCE_PRESETS,
+  AmbiencePresetId,
+} from '../utils/ambientSoundscape';
+import {
   Volume2,
   Mic,
   Square,
@@ -38,6 +43,11 @@ import {
   Brain,
   Download,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Waves,
+  Wind,
+  Coffee,
 } from 'lucide-react';
 
 interface ModelVoiceAndMediaVaultProps {
@@ -71,6 +81,18 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
   const [isAnalyzingClone, setIsAnalyzingClone] = useState(false);
   const [voiceDna, setVoiceDna] = useState<ModelVoiceDNA | undefined>(activeModel.voiceDna);
   const [isTestingClonedVoice, setIsTestingClonedVoice] = useState(false);
+
+  // Acoustic Room Presence & Ambient Soundscape State (Anti-Digital Silence)
+  const [selectedAmbience, setSelectedAmbience] = useState<AmbiencePresetId>(
+    (activeModel.voiceDna?.ambientPresenceType as AmbiencePresetId) || 'room_intimate'
+  );
+  const [isTestingAmbience, setIsTestingAmbience] = useState(false);
+  const [ambienceVolume, setAmbienceVolume] = useState<number>(1.0);
+  const [isAmbienceEnabled, setIsAmbienceEnabled] = useState(true);
+
+  // Free Spontaneous Speech State (No forced script)
+  const [showScriptSuggestion, setShowScriptSuggestion] = useState(false);
+  const [freeSpeechNotes, setFreeSpeechNotes] = useState('');
 
   // New Photo Upload Form State
   const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
@@ -235,6 +257,27 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
     reader.readAsDataURL(file);
   };
 
+  const handleToggleTestAmbience = () => {
+    if (isTestingAmbience) {
+      ambientSoundscape.stop();
+      setIsTestingAmbience(false);
+    } else {
+      ambientSoundscape.play(selectedAmbience, 250);
+      setIsTestingAmbience(true);
+    }
+  };
+
+  const handleSelectAmbience = (presetId: AmbiencePresetId) => {
+    setSelectedAmbience(presetId);
+    ambientSoundscape.setPreset(presetId);
+    if (isTestingAmbience) {
+      ambientSoundscape.play(presetId, 200);
+    }
+    voiceEngine.setCalibratedVoiceProfile({
+      ambiencePreset: presetId,
+    });
+  };
+
   // Perform acoustic extraction and calibrate AURA voice
   const handleCalibrateAndCloneVoice = async () => {
     setIsAnalyzingClone(true);
@@ -247,26 +290,34 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
           audioBase64: cloneAudioBase64,
           audioUrl: cloneAudioUrl,
           durationSeconds: Math.max(5, cloneSeconds),
-          sampleTranscription: `Hola amor, soy ${activeModel.name}. Me alegra mucho saludarte por aquí en X, cuéntame qué estás haciendo hoy...`,
+          sampleTranscription: freeSpeechNotes.trim() || undefined,
+          ambientPreset: selectedAmbience,
         }),
       });
 
       const resData = await res.json();
-      const dna = resData.voiceDna || {
+      const dna: ModelVoiceDNA = resData.voiceDna || {
         isCloned: true,
         sampleDurationSeconds: Math.max(5, cloneSeconds),
         sampleAudioUrl: cloneAudioUrl,
         sampleAudioBase64: cloneAudioBase64,
-        sampleTranscription: `Hola amor, soy ${activeModel.name}. Me alegra mucho saludarte por aquí en X...`,
+        sampleTranscription: freeSpeechNotes.trim() || 'Nota de voz libre y espontánea de la modelo',
         detectedTone: `${activeModel.voice.description} (Calibrado con 1 muestra real)`,
         pitch: activeModel.voice.pitch || 1.15,
         rate: activeModel.voice.rate || 0.98,
         timbreScore: 99.4,
         calibratedAt: new Date().toISOString(),
         learningGenerationsCount: (activeModel.voiceDna?.learningGenerationsCount || 0) + 1,
+        roomAcoustics: 'Habitación íntima con presencia acústica cálida y micro-reverberación de alcoba',
+        ambientPresenceType: selectedAmbience,
+        roomPresenceLevel: 88,
+        acousticSpaceName: AMBIENCE_PRESETS[selectedAmbience]?.name || 'Habitación Íntima',
       };
 
       setVoiceDna(dna);
+      if (dna.ambientPresenceType) {
+        setSelectedAmbience(dna.ambientPresenceType as AmbiencePresetId);
+      }
 
       // Calibrate global engine
       voiceEngine.setCalibratedVoiceProfile({
@@ -274,6 +325,8 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
         rate: dna.rate,
         accent: activeModel.voice.accent,
         voiceName: activeModel.voice.name,
+        ambiencePreset: (dna.ambientPresenceType as AmbiencePresetId) || selectedAmbience,
+        enableAmbience: true,
       });
 
       // Update active model profile
@@ -302,13 +355,17 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
         sampleDurationSeconds: Math.max(5, cloneSeconds),
         sampleAudioUrl: cloneAudioUrl || undefined,
         sampleAudioBase64: cloneAudioBase64 || undefined,
-        sampleTranscription: `Hola amor, soy ${activeModel.name}. Me alegra saludarte...`,
+        sampleTranscription: freeSpeechNotes.trim() || 'Nota de voz libre y espontánea de la modelo',
         detectedTone: `${activeModel.voice.description} • Calibración Acústica AURA Activa`,
         pitch: activeModel.voice.pitch,
         rate: activeModel.voice.rate,
         timbreScore: 99.4,
         calibratedAt: new Date().toISOString(),
         learningGenerationsCount: (activeModel.voiceDna?.learningGenerationsCount || 0) + 1,
+        roomAcoustics: 'Habitación íntima con presencia acústica cálida',
+        ambientPresenceType: selectedAmbience,
+        roomPresenceLevel: 88,
+        acousticSpaceName: AMBIENCE_PRESETS[selectedAmbience]?.name || 'Habitación Íntima',
       };
 
       setVoiceDna(dna);
@@ -317,6 +374,8 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
         rate: dna.rate,
         accent: activeModel.voice.accent,
         voiceName: activeModel.voice.name,
+        ambiencePreset: selectedAmbience,
+        enableAmbience: true,
       });
 
       if (onUpdateModel) {
@@ -330,7 +389,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
     }
   };
 
-  // Test the cloned voice
+  // Test the cloned voice with realistic ambient room presence
   const handleTestClonedVoice = async () => {
     if (isTestingClonedVoice) {
       voiceEngine.stop();
@@ -339,7 +398,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
     }
 
     setIsTestingClonedVoice(true);
-    const testPhrase = `Hola cariño, soy ${activeModel.name}. Ya aprendí exactamente el tono, la cadencia y la calidez de mi voz real. Cada audio que envíe sonará 100% como yo 😉`;
+    const testPhrase = `Hola cariño, soy ${activeModel.name}. Ya aprendí exactamente el tono, la cadencia y la calidez de mi voz real con la acústica de mi habitación. Cada audio que envíe sonará 100% como yo 😉`;
 
     await voiceEngine.playVoiceNote(
       testPhrase,
@@ -351,6 +410,8 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
         rate: activeModel.voice.rate,
         accent: activeModel.voice.accent,
         voiceName: activeModel.voice.name,
+        ambiencePreset: selectedAmbience,
+        enableAmbience: isAmbienceEnabled,
       }
     );
   };
@@ -614,7 +675,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
       </div>
 
       {/* ========================================================
-          TAB 1: CLONAR VOZ (1 GRABACIÓN REAL)
+          TAB 1: CLONAR VOZ (MODO LIBRE & FONDEO ACÚSTICO)
           ======================================================== */}
       {activeTab === 'clone_voice' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -626,23 +687,52 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                   <Mic className="w-4 h-4 text-rose-400" />
                   Muestra de Voz Real de {activeModel.name}
                 </h3>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-rose-500/10 text-rose-300 border border-rose-500/30">
-                  1 Sola Grabación
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-bold">
+                  Modo Libre (Sin Guion)
                 </span>
               </div>
 
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Pídele a la modelo una <b>nota de voz de WhatsApp de 5 a 10 segundos</b> o grábala directamente aquí. AURA analizará su tono, timbre, respiraciones y acento para replicar exactamente su forma de hablar.
-              </p>
-
-              {/* Phrase Suggestion to Read */}
-              <div className="p-3.5 rounded-2xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-1">
-                <span className="text-[10px] font-bold text-rose-400 uppercase tracking-wider block">
-                  Frase sugerida para leer o decir:
-                </span>
-                <p className="italic text-slate-200">
-                  &quot;Hola amor, soy {activeModel.name}. Me pillas justo tomándome algo rico antes de salir. Cuéntame qué tal tu día y qué estás haciendo hoy 😉&quot;
+              {/* Free Spontaneous Speech Notice (Zero Clichés / No Forced Script) */}
+              <div className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-950/60 to-slate-950 border border-indigo-500/30 text-xs text-slate-300 space-y-2">
+                <div className="flex items-center gap-1.5 text-indigo-300 font-bold text-[11px]">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                  <span>Grabación 100% Libre y Espontánea</span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  La modelo <strong>NO está obligada a leer ningún guion ni texto predeterminado</strong>. Puede enviar cualquier nota de voz de WhatsApp o hablar libremente de 5 a 15 segundos sobre lo que quiera (un saludo cariñoso, qué hizo hoy, una risa o un pensamiento).
                 </p>
+                <p className="text-[10px] text-slate-400">
+                  AURA transcribirá automáticamente sus palabras reales con IA acústica y extraerá tanto su timbre y cadencia como el <strong>fondeo acústico del exterior</strong>.
+                </p>
+              </div>
+
+              {/* Optional Collapsible for Script Inspiration */}
+              <div className="border border-slate-800 rounded-2xl overflow-hidden bg-slate-950/60">
+                <button
+                  type="button"
+                  onClick={() => setShowScriptSuggestion(!showScriptSuggestion)}
+                  className="w-full p-2.5 px-3 flex items-center justify-between text-left text-xs font-semibold text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                >
+                  <span className="flex items-center gap-1.5 text-[11px]">
+                    <span>💡 ¿Quieres ideas de qué decir? (Opcional)</span>
+                  </span>
+                  {showScriptSuggestion ? (
+                    <ChevronUp className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  )}
+                </button>
+
+                {showScriptSuggestion && (
+                  <div className="p-3 pt-1 border-t border-slate-800 text-xs text-slate-300 space-y-2 animate-fadeIn">
+                    <p className="italic text-slate-300 text-[11px] bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                      &quot;Hola amor, soy {activeModel.name}. Me pillas justo tomándome algo rico antes de salir. Cuéntame qué tal tu día y qué estás haciendo hoy 😉&quot;
+                    </p>
+                    <p className="text-[10px] text-slate-400">
+                      O simplemente habla como si le mandaras un audio a alguien que te gusta.
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Recording Box */}
@@ -661,10 +751,10 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                     </div>
                     <div className="flex items-center gap-2 text-rose-400 font-mono font-bold text-sm">
                       <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-                      Grabando Muestra: {cloneSeconds}s
+                      Grabando Voz Libre: {cloneSeconds}s
                     </div>
                     <span className="text-[11px] text-slate-400">
-                      Toca el cuadrado rojo cuando termines de hablar...
+                      Habla con naturalidad y toca el cuadrado rojo al terminar...
                     </span>
                   </div>
                 ) : (
@@ -672,7 +762,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                     <button
                       onClick={handleStartCloneRecording}
                       className="w-20 h-20 rounded-full bg-gradient-to-tr from-rose-500 to-indigo-600 hover:from-rose-400 hover:to-indigo-500 text-white flex items-center justify-center shadow-xl shadow-rose-600/40 cursor-pointer transition-transform active:scale-95"
-                      title="Grabar muestra de voz de la modelo"
+                      title="Grabar muestra de voz libre de la modelo"
                     >
                       <Mic className="w-8 h-8" />
                     </button>
@@ -680,7 +770,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                       Presiona para Grabar con el Micrófono
                     </div>
                     <span className="text-[11px] text-slate-400">
-                      O sube un archivo de audio grabado con el celular:
+                      O sube cualquier nota de voz ya grabada en el celular:
                     </span>
                   </div>
                 )}
@@ -704,7 +794,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
 
               {/* Action: Calibrate Cloned Voice */}
               {(cloneAudioUrl || cloneSeconds > 0) && (
-                <div className="p-4 rounded-2xl bg-slate-950 border border-rose-500/40 flex flex-col gap-3">
+                <div className="p-4 rounded-2xl bg-slate-950 border border-rose-500/40 flex flex-col gap-3 animate-fadeIn">
                   <div className="flex items-center justify-between text-xs font-bold text-rose-300 border-b border-slate-800 pb-2">
                     <span className="flex items-center gap-1.5">
                       <FileAudio className="w-4 h-4 text-rose-400" />
@@ -713,8 +803,22 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                     <span className="text-[10px] text-emerald-400 font-mono">Lista ✓</span>
                   </div>
 
+                  {/* Optional Custom Note or What she said */}
+                  <div>
+                    <label className="text-[10px] uppercase font-bold text-slate-400 mb-1 block">
+                      Transcripción libre (Opcional - Gemini la detecta automáticamente si lo dejas vacío):
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Dejar vacío para transcripción automática con IA..."
+                      value={freeSpeechNotes}
+                      onChange={(e) => setFreeSpeechNotes(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+
                   <p className="text-xs text-slate-300">
-                    Presiona el botón para que AURA extraiga el ADN de voz y calibre la síntesis para que todas las respuestas suenen exactamente como {activeModel.name}.
+                    Presiona el botón para que AURA extraiga el ADN vocal y el sonido ambiental, permitiendo que todas las respuestas adopten su voz real y presencia de sala.
                   </p>
 
                   <button
@@ -725,12 +829,12 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                     {isAnalyzingClone ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Extrayendo ADN de Voz y Calibrando AURA...</span>
+                        <span>Extrayendo ADN de Voz y Acústica Ambiental...</span>
                       </>
                     ) : (
                       <>
                         <Sparkles className="w-4 h-4 text-amber-300" />
-                        <span>Calibrar y Adoptar Voz de {activeModel.name}</span>
+                        <span>Calibrar y Adoptar Voz Real de {activeModel.name}</span>
                       </>
                     )}
                   </button>
@@ -739,8 +843,88 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
             </div>
           </div>
 
-          {/* Right Column: Voice DNA & Interactive Calibration Report (7 cols) */}
+          {/* Right Column: Voice DNA & Acoustic Room Presence (7 cols) */}
           <div className="lg:col-span-7 flex flex-col gap-5">
+            {/* 1. Acoustic Room Presence & Soundscape Layer (Anti-Digital Silence) */}
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center gap-2">
+                    <Waves className="w-4 h-4 text-sky-400" />
+                    Fondeo Acústico & Presencia de Sala (Anti-Silencio Digital)
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Elimina el vacío digital irreal: reproduce un sutil fondo ambiental orgánico que sitúa a {activeModel.name} en un espacio físico real.
+                  </p>
+                </div>
+
+                <button
+                  onClick={handleToggleTestAmbience}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer ${
+                    isTestingAmbience
+                      ? 'bg-rose-600 text-white animate-pulse'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
+                  }`}
+                  title="Escuchar únicamente el sonido de fondo de la sala"
+                >
+                  {isTestingAmbience ? (
+                    <>
+                      <Pause className="w-3.5 h-3.5 fill-current" />
+                      <span>Parar Ambiente</span>
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-3.5 h-3.5 fill-current" />
+                      <span>Probar Ambiente Solo</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
+              {/* Ambience Presets Grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                {(Object.keys(AMBIENCE_PRESETS) as AmbiencePresetId[]).map((key) => {
+                  const preset = AMBIENCE_PRESETS[key];
+                  const isSelected = selectedAmbience === key;
+
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => handleSelectAmbience(key)}
+                      className={`p-3 rounded-2xl border text-left transition-all cursor-pointer flex flex-col gap-1 ${
+                        isSelected
+                          ? 'bg-gradient-to-br from-indigo-950/80 to-purple-950/40 border-rose-500 shadow-md ring-1 ring-rose-500/40'
+                          : 'bg-slate-950/70 border-slate-800/80 hover:border-slate-700 text-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-base">{preset.emoji}</span>
+                        {isSelected && (
+                          <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                        )}
+                      </div>
+                      <span className="text-xs font-bold text-white mt-1">{preset.name}</span>
+                      <p className="text-[10px] text-slate-400 line-clamp-2 leading-tight">
+                        {preset.description}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Volume & Natural Blending Indicator */}
+              <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs text-slate-300">
+                <span className="flex items-center gap-1.5 text-[11px] text-slate-300 font-semibold">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                  Fade In / Out Automático (Entrada suave 0.3s antes de la voz, salida natural 0.5s después)
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-950/40 px-2 py-0.5 rounded border border-emerald-800/40">
+                  Activo en Todas las Notas de Voz ✓
+                </span>
+              </div>
+            </div>
+
+            {/* 2. Voice DNA & Calibration Report */}
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl flex flex-col gap-5">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
@@ -756,6 +940,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                 <button
                   onClick={handleTestClonedVoice}
                   className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+                  title="Escuchar cómo habla AURA con la voz clonada y el fondo ambiental"
                 >
                   {isTestingClonedVoice ? (
                     <>
@@ -765,7 +950,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                   ) : (
                     <>
                       <Play className="w-3.5 h-3.5 fill-current" />
-                      <span>Escuchar Voz Clonada</span>
+                      <span>Escuchar Voz + Fondeo</span>
                     </>
                   )}
                 </button>
@@ -794,6 +979,13 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                   {voiceDna?.detectedTone ||
                     'Voz femenina dulce, íntima, con acento latino suave y cadencia conversacional natural.'}
                 </p>
+
+                {voiceDna?.roomAcoustics && (
+                  <div className="pt-2 border-t border-slate-800 text-[11px] text-sky-300 flex items-center gap-1.5">
+                    <Waves className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                    <span>Entorno Detectado: <b>{voiceDna.roomAcoustics}</b></span>
+                  </div>
+                )}
               </div>
 
               {/* Metric Breakdown Cards */}
@@ -815,11 +1007,11 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                 </div>
 
                 <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-center">
-                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Acento</div>
-                  <div className="text-xs font-bold text-rose-300 mt-1 truncate">
-                    {activeModel.voice.accent.split('/')[0].trim()}
+                  <div className="text-[10px] text-slate-400 uppercase font-semibold">Fondeo de Sala</div>
+                  <div className="text-xs font-bold text-sky-300 mt-1 truncate">
+                    {AMBIENCE_PRESETS[selectedAmbience]?.name}
                   </div>
-                  <div className="text-[10px] text-slate-400 mt-0.5">Regional Cautivador</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">Acústica Real</div>
                 </div>
 
                 <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 text-center">
@@ -838,7 +1030,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                   Garantía de Consistencia Acústica Total
                 </div>
                 <p className="leading-relaxed text-slate-300">
-                  AuraAgent garantiza que <strong>los audios que envía en el chat y las muestras de la biblioteca suenan exactamente iguales</strong>, con la misma calidez, tono y pausas que la modelo real grabó.
+                  AuraAgent garantiza que <strong>los audios que envía en el chat y las muestras de la biblioteca suenan exactamente iguales</strong>, con la misma calidez, tono, pausas y fondo de ambiente orgánico que la modelo real grabó.
                 </p>
               </div>
             </div>
@@ -1099,8 +1291,8 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                   <Volume2 className="w-4 h-4 text-indigo-400" />
                   Biblioteca de Audios de {activeModel.name} ({voiceClips.length})
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Reproduce cualquier clip con el motor de audio unificado para comprobar que suena exactamente igual que en el chat.
+                <p className="text-xs text-slate-300 mt-0.5">
+                  Garantía de coherencia total: Todos los audios de muestra se reproducen con el motor hiperrealista unificado y fondeo de sala (<b>{AMBIENCE_PRESETS[selectedAmbience]?.name}</b>), sonando 100% idénticos a los del chat.
                 </p>
               </div>
 

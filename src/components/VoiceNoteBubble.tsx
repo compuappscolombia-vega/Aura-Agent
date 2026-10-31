@@ -15,6 +15,9 @@ interface VoiceNoteBubbleProps {
     rate?: number;
     accent?: string;
     voiceName?: string;
+    lang?: string;
+    ambiencePreset?: string;
+    enableAmbience?: boolean;
   };
   isEncrypted?: boolean;
 }
@@ -86,9 +89,9 @@ export const VoiceNoteBubble: React.FC<VoiceNoteBubbleProps> = ({
             <Volume2 className="w-3.5 h-3.5 text-rose-400" />
             <span>Nota de voz de {modelName}</span>
           </div>
-          <span className="flex items-center gap-1 text-[10px] text-indigo-400/80">
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            TTS Hiperrealista
+          <span className="flex items-center gap-1 text-[10px] text-emerald-300 font-mono">
+            <Sparkles className="w-3 h-3 text-amber-300" />
+            Voz Real + Fondeo Acústico
           </span>
         </div>
       )}

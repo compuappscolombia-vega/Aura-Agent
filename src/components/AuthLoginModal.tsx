@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserSession } from '../types';
+import { UserSession, ModelProfile } from '../types';
 import {
   X as CloseIcon,
   Twitter,
@@ -10,16 +10,24 @@ import {
   LogOut,
   User,
   ArrowRight,
-  ExternalLink,
   KeyRound,
+  UserPlus,
+  Crown,
+  Heart,
+  Globe,
+  Camera,
+  Layers,
 } from 'lucide-react';
+import { generateSessionFingerprint } from '../utils/cryptoSim';
 
 interface AuthLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentSession: UserSession | null;
-  onLogin: (session: UserSession) => void;
+  onLogin: (session: UserSession, associatedModel?: ModelProfile) => void;
   onLogout: () => void;
+  realModels?: ModelProfile[];
+  onRegisterRealModel?: (newModel: ModelProfile) => void;
 }
 
 export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
@@ -28,80 +36,203 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
   currentSession,
   onLogin,
   onLogout,
+  realModels = [],
+  onRegisterRealModel,
 }) => {
-  const [authMethod, setAuthMethod] = useState<'x' | 'google'>('x');
-  const [xHandle, setXHandle] = useState('@valeriag_official');
-  const [xName, setXName] = useState('Valeria Gómez (Creator)');
-  const [googleEmail, setGoogleEmail] = useState('gato-284@hotmail.com');
-  const [googleName, setGoogleName] = useState('Administrador Aura');
+  const [authRole, setAuthRole] = useState<'real_model' | 'admin'>('real_model');
+  const [selectedRealModelId, setSelectedRealModelId] = useState<string>(
+    realModels[0]?.id || 'afire-sb'
+  );
+  const [isRegisteringNew, setIsRegisteringNew] = useState(false);
+
+  // New Real Model Registration Fields
+  const [newModelName, setNewModelName] = useState('');
+  const [newModelHandle, setNewModelHandle] = useState('@');
+  const [newModelBio, setNewModelBio] = useState('Creadora de contenido +18 • Modelo Oficial');
+  const [newModelVipLink, setNewModelVipLink] = useState('https://onlyfans.com/');
+  const [newModelVipPrice, setNewModelVipPrice] = useState('$19.99/mes');
+  const [newModelAvatarUrl, setNewModelAvatarUrl] = useState(
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80'
+  );
+
+  // Admin Login Fields
+  const [adminEmail, setAdminEmail] = useState('compuappscolombia@gmail.com');
+  const [adminName, setAdminName] = useState('Administrador General Aura');
+
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [authSuccessNotice, setAuthSuccessNotice] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
-  const handleExecuteLogin = async (provider: 'x' | 'google') => {
+  const handleLoginAsRealModel = async (model: ModelProfile) => {
     setIsAuthenticating(true);
     setAuthSuccessNotice(null);
 
-    try {
-      const payload =
-        provider === 'x'
-          ? {
-              provider: 'x',
-              name: xName,
-              handle: xHandle.startsWith('@') ? xHandle : `@${xHandle}`,
-              avatar:
-                'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
-              role: 'creator',
-              xAccountConnected: true,
-            }
-          : {
-              provider: 'google',
-              name: googleName,
-              email: googleEmail,
-              avatar:
-                'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80',
-              role: 'admin',
-              xAccountConnected: false,
-            };
+    const sessionData: UserSession = {
+      id: `usr-real-${model.id}-${Date.now()}`,
+      name: model.name,
+      handle: model.handle,
+      avatar: model.avatarUrl,
+      provider: 'x',
+      role: 'creator',
+      associatedModelId: model.id,
+      allowedModelIds: [model.id],
+      connectedAt: new Date().toISOString(),
+      xAccountConnected: true,
+    };
 
-      const res = await fetch('/api/auth/login', {
+    try {
+      await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(sessionData),
       });
+    } catch (e) {
+      console.warn('Auth API fallback:', e);
+    }
 
-      const data = await res.json();
-      if (data.success && data.session) {
-        onLogin(data.session);
-        setAuthSuccessNotice(`¡Bienvenido! Sesión verificada con éxito vía ${provider === 'x' ? 'X (Twitter)' : 'Google'}.`);
-        setTimeout(() => {
-          setIsAuthenticating(false);
-          onClose();
-        }, 1100);
-      } else {
-        setIsAuthenticating(false);
-      }
-    } catch {
-      // Fallback local session if offline
-      const mockSession: UserSession = {
-        id: `sess-${Date.now()}`,
-        name: provider === 'x' ? xName : googleName,
-        handle: provider === 'x' ? xHandle : undefined,
-        email: provider === 'google' ? googleEmail : undefined,
-        avatar:
-          provider === 'x'
-            ? 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80'
-            : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80',
-        provider,
-        role: provider === 'x' ? 'creator' : 'admin',
-        connectedAt: new Date().toISOString(),
-        xAccountConnected: provider === 'x',
-      };
-      onLogin(mockSession);
+    onLogin(sessionData, model);
+    setAuthSuccessNotice(
+      `¡Bienvenida ${model.name}! Has iniciado sesión en tu perfil exclusivo e independiente. Aura está sincronizada con tus fotos, voz y cuenta ${model.handle}.`
+    );
+    setTimeout(() => {
       setIsAuthenticating(false);
       onClose();
+    }, 1100);
+  };
+
+  const handleCreateAndLoginNewRealModel = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newModelName.trim() || !newModelHandle.trim()) return;
+
+    const cleanHandle = newModelHandle.startsWith('@')
+      ? newModelHandle.trim()
+      : `@${newModelHandle.trim()}`;
+    const cleanId = cleanHandle.replace('@', '').toLowerCase();
+
+    const createdModel: ModelProfile = {
+      id: cleanId,
+      name: newModelName.trim(),
+      handle: cleanHandle,
+      age: 24,
+      location: 'Medellín / Latinoamérica',
+      avatarUrl: newModelAvatarUrl,
+      archetype: `Modelo Oficial • ${cleanHandle}`,
+      tagline: `Creadora de contenido exclusiva • ${cleanHandle}`,
+      bio: newModelBio.trim(),
+      vipLink: newModelVipLink.trim(),
+      vipPrice: newModelVipPrice.trim(),
+      vipDiscountCode: `${cleanId.toUpperCase()}_VIP`,
+      isSystemDefault: false, // Perfil de Modelo Real independiente
+      voice: {
+        name: 'Kore',
+        pitch: 1.15,
+        rate: 0.98,
+        lang: 'es-CO',
+        accent: 'Latino dulce, natural, cercano y sensual',
+        description: `Voz natural y personalizada para ${newModelName.trim()} (${cleanHandle})`,
+      },
+      voiceDna: {
+        isCloned: true,
+        sampleDurationSeconds: 8,
+        detectedTone: `Voz auténtica de ${newModelName.trim()}`,
+        pitch: 1.15,
+        rate: 0.98,
+        timbreScore: 99.0,
+        calibratedAt: new Date().toISOString(),
+        learningGenerationsCount: 1,
+        roomAcoustics: 'Presencia acústica íntima de habitación privada',
+        ambientPresenceType: 'room_intimate',
+        roomPresenceLevel: 85,
+        acousticSpaceName: 'Habitación Íntima',
+      },
+      voiceClips: [
+        {
+          id: `${cleanId}-vc-1`,
+          modelId: cleanId,
+          title: `Saludo Oficial de ${newModelName.trim()}`,
+          category: 'saludo',
+          durationSeconds: 7,
+          transcription: `Hola amor, soy ${newModelName.trim()}, qué lindo leerte por aquí. Me pillas justo tomándome un momento para saludarte, ¿cómo estás?`,
+          triggerKeywords: ['hola', 'buenas', 'saludos', cleanId],
+          createdAt: new Date().toISOString().split('T')[0],
+        },
+      ],
+      mediaVault: [
+        {
+          id: `${cleanId}-med-1`,
+          modelId: cleanId,
+          title: `Foto de Bienvenida de ${newModelName.trim()}`,
+          category: 'cozy',
+          url: newModelAvatarUrl,
+          caption: `Lista para consentirte por aquí ✨`,
+          isExclusive: false,
+          watermark: `${cleanHandle} / EXCLUSIVE_OFFICIAL`,
+          createdAt: new Date().toISOString().split('T')[0],
+        },
+      ],
+      rules: {
+        conversionThreshold: 75,
+        autoSendVoiceNotes: true,
+        autoSendCasualPhotos: true,
+        requireReciprocityForVip: true,
+        adaptiveToneMatching: true,
+        activeMemoryRetention: true,
+      },
+      skills: {
+        semanticAccuracy: 96,
+        naturalnessLevel: 98,
+        emotionalEmpathy: 95,
+        salesClosingAssertiveness: 'equilibrada',
+        antiClichéFilter: true,
+        storyContextAwareness: true,
+      },
+      security: {
+        e2eEncryption: true,
+        autoDestructTimer: 0,
+        stealthMode: false,
+        fingerprintHash: generateSessionFingerprint(),
+      },
+    };
+
+    onRegisterRealModel?.(createdModel);
+    handleLoginAsRealModel(createdModel);
+  };
+
+  const handleLoginAsAdmin = async () => {
+    setIsAuthenticating(true);
+    setAuthSuccessNotice(null);
+
+    const adminSession: UserSession = {
+      id: `usr-admin-${Date.now()}`,
+      name: adminName,
+      email: adminEmail,
+      avatar:
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80',
+      provider: 'google',
+      role: 'admin',
+      connectedAt: new Date().toISOString(),
+      xAccountConnected: true,
+    };
+
+    try {
+      await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(adminSession),
+      });
+    } catch (e) {
+      console.warn('Admin login API fallback:', e);
     }
+
+    onLogin(adminSession);
+    setAuthSuccessNotice(
+      '¡Sesión iniciada como Administrador! Tienes acceso a todas las modelos del sistema y creadoras reales.'
+    );
+    setTimeout(() => {
+      setIsAuthenticating(false);
+      onClose();
+    }, 1100);
   };
 
   const handleExecuteLogout = async () => {
@@ -115,23 +246,23 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40">
+        <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/60">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
               <KeyRound className="w-5 h-5" />
             </div>
             <div>
               <h3 className="text-base font-bold text-white flex items-center gap-2">
-                Panel de Inicio de Sesión
+                Panel de Inicio de Sesión & Aislamiento de Perfiles
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
                   Aura Security
                 </span>
               </h3>
               <p className="text-xs text-slate-400">
-                Acceso autorizado para creadoras de contenido y administradores
+                Cada modelo opera con perfil 100% independiente (fotos, clonación de voz y cuenta de X)
               </p>
             </div>
           </div>
@@ -145,32 +276,34 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
 
         {/* Success Notice Banner */}
         {authSuccessNotice && (
-          <div className="mx-6 mt-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+          <div className="mx-6 mt-4 p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2 animate-fade-in">
             <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400" />
             <span>{authSuccessNotice}</span>
           </div>
         )}
 
         {/* Content Body */}
-        <div className="p-6 flex flex-col gap-5">
+        <div className="p-6 flex flex-col gap-5 overflow-y-auto">
           {/* Active Session Display if logged in */}
-          {currentSession ? (
+          {currentSession && (
             <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-slate-400">Sesión Actual Activa</span>
                 <span
                   className={`text-[10px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 ${
-                    currentSession.provider === 'x'
-                      ? 'bg-sky-500/10 text-sky-400 border border-sky-500/30'
-                      : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                    currentSession.role === 'admin'
+                      ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30'
+                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
                   }`}
                 >
-                  {currentSession.provider === 'x' ? (
+                  {currentSession.role === 'admin' ? (
                     <>
-                      <Twitter className="w-3 h-3 text-sky-400" /> X Conectado
+                      <Crown className="w-3 h-3 text-amber-400" /> Modo Administrador General
                     </>
                   ) : (
-                    <>Google Cuenta</>
+                    <>
+                      <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Modelo Real Aislada
+                    </>
                   )}
                 </span>
               </div>
@@ -190,7 +323,9 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                     {currentSession.handle || currentSession.email}
                   </div>
                   <div className="text-[10px] text-slate-400 mt-0.5">
-                    Rol: {currentSession.role === 'creator' ? 'Creadora Verificada' : 'Administrador del Sistema'}
+                    {currentSession.role === 'admin'
+                      ? 'Supervisión de todo el catálogo (modelos del sistema + creadoras reales)'
+                      : `Perfil aislado 100% exclusivo: Aura solo opera con las propiedades de ${currentSession.name}`}
                   </div>
                 </div>
               </div>
@@ -212,193 +347,293 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                 </button>
               </div>
             </div>
-          ) : null}
+          )}
 
-          {/* Provider Selection Tabs */}
+          {/* Role Switching Selector */}
           <div className="flex flex-col gap-3">
             <span className="text-xs font-bold text-slate-300">
-              {currentSession ? 'O cambia de cuenta / proveedor:' : 'Selecciona el método de autenticación:'}
+              {currentSession ? 'O cambia el perfil de acceso:' : 'Selecciona cómo deseas ingresar:'}
             </span>
 
             <div className="grid grid-cols-2 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
               <button
-                onClick={() => setAuthMethod('x')}
+                onClick={() => setAuthRole('real_model')}
                 className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                  authMethod === 'x'
-                    ? 'bg-sky-600 text-white shadow-md shadow-sky-600/20'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-              >
-                <Twitter className="w-4 h-4 text-sky-300" />
-                <span>Cuenta de X (Twitter)</span>
-              </button>
-
-              <button
-                onClick={() => setAuthMethod('google')}
-                className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                  authMethod === 'google'
+                  authRole === 'real_model'
                     ? 'bg-rose-600 text-white shadow-md shadow-rose-600/20'
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-[10px] font-black text-rose-600">
-                  G
-                </div>
-                <span>Cuenta de Google</span>
+                <Heart className="w-4 h-4 text-rose-300" />
+                <span>Perfil de Modelo Real</span>
+              </button>
+
+              <button
+                onClick={() => setAuthRole('admin')}
+                className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                  authRole === 'admin'
+                    ? 'bg-amber-600 text-white shadow-md shadow-amber-600/20'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Crown className="w-4 h-4 text-amber-300" />
+                <span>Perfil Administrador</span>
               </button>
             </div>
           </div>
 
-          {/* Tab 1: X (Twitter) */}
-          {authMethod === 'x' && (
+          {/* Tab 1: Real Model Access */}
+          {authRole === 'real_model' && (
             <div className="flex flex-col gap-4 bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4">
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
-                <Twitter className="w-4 h-4 text-sky-400" />
-                <span>Conexión de cuenta oficial para recepción y envío de DMs</span>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-start justify-between gap-3">
                 <div>
-                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">
-                    Handle de X:
-                  </label>
-                  <input
-                    type="text"
-                    value={xHandle}
-                    onChange={(e) => setXHandle(e.target.value)}
-                    placeholder="@valeriag_official"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500 font-mono"
-                  />
+                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-rose-400" />
+                    Acceso para Creadoras / Modelos Reales
+                  </h4>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Las modelos del sistema (plantillas de prueba) quedan ocultas. Solo verás y usarás tu
+                    propio perfil con tus fotos, audios y credenciales de X.
+                  </p>
                 </div>
-                <div>
-                  <label className="text-[11px] font-semibold text-slate-400 block mb-1">
-                    Nombre de la Creadora:
-                  </label>
-                  <input
-                    type="text"
-                    value={xName}
-                    onChange={(e) => setXName(e.target.value)}
-                    placeholder="Valeria Gómez"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-sky-500"
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsRegisteringNew(!isRegisteringNew)}
+                  className="px-2.5 py-1 text-[11px] rounded-lg bg-slate-800 hover:bg-slate-700 text-indigo-300 border border-indigo-500/30 flex items-center gap-1 shrink-0 cursor-pointer font-medium"
+                >
+                  {isRegisteringNew ? (
+                    '← Volver a lista'
+                  ) : (
+                    <>
+                      <UserPlus className="w-3.5 h-3.5" /> + Registrar Nueva
+                    </>
+                  )}
+                </button>
               </div>
 
-              {/* Quick Preset Buttons */}
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[10px] text-slate-500 font-medium">Modelos registradas:</span>
-                {[
-                  { handle: '@valeriag_official', name: 'Valeria Gómez' },
-                  { handle: '@elena_russo_vip', name: 'Elena Russo' },
-                  { handle: '@miasoler_fit', name: 'Mia Soler' },
-                  { handle: '@camila_exclusive', name: 'Camila Torres' },
-                ].map((item) => (
-                  <button
-                    key={item.handle}
-                    onClick={() => {
-                      setXHandle(item.handle);
-                      setXName(item.name);
-                    }}
-                    className="text-[10px] px-2 py-0.5 rounded-md bg-slate-800 hover:bg-sky-600/20 text-slate-300 hover:text-sky-300 border border-slate-700 transition-colors cursor-pointer"
-                  >
-                    {item.handle}
-                  </button>
-                ))}
-              </div>
-
-              <button
-                disabled={isAuthenticating}
-                onClick={() => handleExecuteLogin('x')}
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-600/20 transition-all cursor-pointer disabled:opacity-50"
-              >
-                {isAuthenticating ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Autenticando con X OAuth 2.0...
+              {!isRegisteringNew ? (
+                <div className="flex flex-col gap-3">
+                  <span className="text-[11px] font-semibold text-slate-300">
+                    Modelos Reales Disponibles en el Sistema:
                   </span>
-                ) : (
-                  <>
-                    <Twitter className="w-4 h-4 fill-white" />
-                    Iniciar Sesión con X (Twitter)
-                  </>
-                )}
-              </button>
+
+                  {realModels.length > 0 ? (
+                    realModels.map((rm) => (
+                      <div
+                        key={rm.id}
+                        onClick={() => handleLoginAsRealModel(rm)}
+                        className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center justify-between ${
+                          selectedRealModelId === rm.id
+                            ? 'bg-gradient-to-r from-rose-950/40 via-purple-950/30 to-slate-900 border-rose-500/50 shadow-md ring-1 ring-rose-500/30'
+                            : 'bg-slate-900 hover:bg-slate-850 border-slate-800 text-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={rm.avatarUrl}
+                            alt={rm.name}
+                            className="w-11 h-11 rounded-full object-cover border-2 border-rose-500/40"
+                          />
+                          <div>
+                            <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                              {rm.name}
+                              <span className="text-[10px] text-sky-400 font-mono font-normal">
+                                {rm.handle}
+                              </span>
+                              <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                                Oficial X
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-400 line-clamp-1">{rm.tagline}</p>
+                            <div className="flex items-center gap-3 mt-1 text-[10px] text-slate-500">
+                              <span>🎙️ {rm.voice.description.split('(')[0]}</span>
+                              <span>•</span>
+                              <span>📸 {rm.mediaVault?.length || 5} fotos exclusivas</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white text-xs font-bold shadow-md cursor-pointer flex items-center gap-1"
+                        >
+                          Entrar
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center text-xs text-slate-400">
+                      No hay modelos reales registradas aún. Haz clic en "+ Registrar Nueva".
+                    </div>
+                  )}
+
+                  <div className="p-2.5 rounded-xl bg-indigo-950/30 border border-indigo-800/40 text-[11px] text-indigo-300 flex items-center gap-2">
+                    <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>
+                      Garantía de Aislamiento: Aura solo adoptará la voz, fotos y enlaces de la modelo
+                      que selecciones. Cero mezcla con plantillas.
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                /* Form to Register a New Real Model */
+                <form onSubmit={handleCreateAndLoginNewRealModel} className="flex flex-col gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                        Nombre de la Modelo Real:
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newModelName}
+                        onChange={(e) => setNewModelName(e.target.value)}
+                        placeholder="Ej: Sofia Gómez"
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                        Handle en X (Twitter):
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={newModelHandle}
+                        onChange={(e) => setNewModelHandle(e.target.value)}
+                        placeholder="@sofi_real"
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                        Enlace OnlyFans / VIP:
+                      </label>
+                      <input
+                        type="url"
+                        value={newModelVipLink}
+                        onChange={(e) => setNewModelVipLink(e.target.value)}
+                        placeholder="https://onlyfans.com/..."
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                        Precio Mensual VIP:
+                      </label>
+                      <input
+                        type="text"
+                        value={newModelVipPrice}
+                        onChange={(e) => setNewModelVipPrice(e.target.value)}
+                        placeholder="$19.99/mes"
+                        className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                      URL de Avatar o Foto de Perfil:
+                    </label>
+                    <input
+                      type="url"
+                      value={newModelAvatarUrl}
+                      onChange={(e) => setNewModelAvatarUrl(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[11px] font-semibold text-slate-400 block mb-1">
+                      Biografía y Arquetipo:
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={newModelBio}
+                      onChange={(e) => setNewModelBio(e.target.value)}
+                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:from-rose-500 hover:to-indigo-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-rose-600/20 cursor-pointer"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Registrar Perfil & Entrar Directo
+                  </button>
+                </form>
+              )}
             </div>
           )}
 
-          {/* Tab 2: Google */}
-          {authMethod === 'google' && (
+          {/* Tab 2: Admin Access */}
+          {authRole === 'admin' && (
             <div className="flex flex-col gap-4 bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4">
-              <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
-                <div className="w-4 h-4 rounded-full bg-white flex items-center justify-center text-[10px] font-black text-rose-600 shrink-0">
-                  G
-                </div>
-                <span>Acceso administrativo para gestión de modelos, suscripciones y CRM</span>
+              <div className="flex items-center gap-2 text-xs font-medium text-amber-300">
+                <Crown className="w-4 h-4 text-amber-400" />
+                <span>Acceso Administrativo y Auditoría Global de Agencia</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-[11px] font-semibold text-slate-400 block mb-1">
-                    Correo de Google:
+                    Correo del Administrador:
                   </label>
                   <input
                     type="email"
-                    value={googleEmail}
-                    onChange={(e) => setGoogleEmail(e.target.value)}
-                    placeholder="gato-284@hotmail.com"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500 font-mono"
+                    value={adminEmail}
+                    onChange={(e) => setAdminEmail(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
                   />
                 </div>
                 <div>
                   <label className="text-[11px] font-semibold text-slate-400 block mb-1">
-                    Nombre o Alias de Administrador:
+                    Nombre de Agencia / Administrador:
                   </label>
                   <input
                     type="text"
-                    value={googleName}
-                    onChange={(e) => setGoogleName(e.target.value)}
-                    placeholder="Administrador Principal"
-                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-rose-500"
+                    value={adminName}
+                    onChange={(e) => setAdminName(e.target.value)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
 
-              <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-[11px] text-slate-400 flex items-center gap-2">
-                <Shield className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Permisos: Acceso al panel de control, gestión de modelos, webhooks externos y auditoría.</span>
+              <div className="p-3 rounded-xl bg-amber-950/20 border border-amber-800/40 text-[11px] text-amber-200/90 flex flex-col gap-1.5">
+                <div className="flex items-center gap-1.5 font-bold text-amber-300">
+                  <Layers className="w-4 h-4 text-amber-400" />
+                  <span>Permisos de Administrador:</span>
+                </div>
+                <p>
+                  • Visualización de las modelos del sistema (Valeria, Elena, Mia, Camila).
+                </p>
+                <p>
+                  • Visualización y gestión de todas las creadoras y modelos reales registradas.
+                </p>
+                <p>
+                  • Acceso al CRM consolidado, estadísticas y configuración de webhooks en X.
+                </p>
               </div>
 
               <button
                 disabled={isAuthenticating}
-                onClick={() => handleExecuteLogin('google')}
-                className="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-bold text-xs flex items-center justify-center gap-2.5 shadow-lg shadow-white/10 transition-all cursor-pointer disabled:opacity-50"
+                onClick={handleLoginAsAdmin}
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 hover:from-amber-500 hover:to-amber-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-600/20 cursor-pointer disabled:opacity-50"
               >
                 {isAuthenticating ? (
                   <span className="flex items-center gap-2">
-                    <span className="w-3.5 h-3.5 border-2 border-slate-900/30 border-t-slate-900 rounded-full animate-spin" />
-                    Conectando con Google Identity...
+                    <span className="w-3.5 h-3.5 border-2 border-slate-950/30 border-t-slate-950 rounded-full animate-spin" />
+                    Iniciando Sesión de Administrador...
                   </span>
                 ) : (
                   <>
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
-                      <path
-                        fill="#4285F4"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="#34A853"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="#FBBC05"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                      />
-                      <path
-                        fill="#EA4335"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                      />
-                    </svg>
-                    Iniciar Sesión con Google
+                    <Crown className="w-4 h-4 fill-slate-950" />
+                    Iniciar Sesión como Administrador del Sistema
                   </>
                 )}
               </button>
@@ -410,9 +645,9 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
         <div className="px-6 py-3.5 border-t border-slate-800 bg-slate-950/60 flex items-center justify-between text-[11px] text-slate-400">
           <div className="flex items-center gap-1.5">
             <Lock className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Encriptación de credenciales AES-256</span>
+            <span>Aislamiento de Entorno Activo • Encriptación TLS 1.3</span>
           </div>
-          <span className="text-slate-500 font-mono text-[10px]">v2.5.0-prod</span>
+          <span className="text-slate-500 font-mono text-[10px]">Aura v2.6.0-prod</span>
         </div>
       </div>
     </div>
