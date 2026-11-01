@@ -35,7 +35,6 @@ import {
   Lock,
   Volume2,
   Sliders,
-  Twitter,
   Image,
   Brain,
   UserCheck,
@@ -51,7 +50,10 @@ import {
   ChevronDown,
   LogOut,
   User,
+  Camera,
+  Upload,
 } from 'lucide-react';
+import { XLogo } from './components/icons/XLogo';
 
 const INITIAL_MODEL_PROFILE: ModelProfile = DEFAULT_MODELS[0];
 
@@ -247,6 +249,31 @@ export default function App() {
   const toolsRef = React.useRef<HTMLDivElement>(null);
   const profileRef = React.useRef<HTMLDivElement>(null);
   const navMenuRef = React.useRef<HTMLDivElement>(null);
+  const adminAvatarInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Admin Profile Photo Upload Handler - Restricted exclusively to admin role
+  const handleAdminAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentUserSession || currentUserSession.role !== 'admin') return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert('La imagen de perfil no debe superar los 5MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const base64Url = event.target?.result as string;
+      if (!base64Url) return;
+      const updatedSession: UserSession = {
+        ...currentUserSession,
+        avatar: base64Url,
+      };
+      setCurrentUserSession(updatedSession);
+      localStorage.setItem('aura_current_session', JSON.stringify(updatedSession));
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Close dropdowns when clicking outside
   useEffect(() => {
@@ -916,7 +943,7 @@ export default function App() {
             title="Seleccionar módulo o función activa"
           >
             {activeTab === 'live_ops' && <Radio className="w-3.5 h-3.5 text-emerald-400" />}
-            {activeTab === 'twitter_x' && <Twitter className="w-3.5 h-3.5 text-sky-400" />}
+            {activeTab === 'twitter_x' && <XLogo className="w-3.5 h-3.5 text-sky-400" />}
             {activeTab === 'training' && <GraduationCap className="w-3.5 h-3.5 text-amber-300" />}
             {activeTab === 'crm' && <LayoutDashboard className="w-3.5 h-3.5 text-purple-400" />}
             {activeTab === 'vault' && <Volume2 className="w-3.5 h-3.5 text-rose-400" />}
@@ -974,7 +1001,7 @@ export default function App() {
                 }`}
               >
                 <div className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
-                  <Twitter className="w-3.5 h-3.5 text-sky-400" />
+                  <XLogo className="w-3.5 h-3.5 text-sky-400" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-white flex items-center justify-between">
@@ -1208,13 +1235,24 @@ export default function App() {
             </button>
 
             {isProfileMenuOpen && (
-              <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 animate-fade-in flex flex-col gap-1.5">
+              <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 animate-fade-in flex flex-col gap-1.5">
                 <div className="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800/80 flex items-center gap-2.5">
-                  <img
-                    src={currentUserSession.avatar}
-                    alt={currentUserSession.name}
-                    className="w-10 h-10 rounded-xl object-cover shrink-0"
-                  />
+                  <div className="relative group shrink-0">
+                    <img
+                      src={currentUserSession.avatar}
+                      alt={currentUserSession.name}
+                      className="w-11 h-11 rounded-xl object-cover ring-1 ring-slate-700"
+                    />
+                    {currentUserSession.role === 'admin' && (
+                      <button
+                        onClick={() => adminAvatarInputRef.current?.click()}
+                        className="absolute inset-0 bg-slate-950/70 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer text-white"
+                        title="Cambiar foto de perfil"
+                      >
+                        <Camera className="w-4 h-4 text-rose-400" />
+                      </button>
+                    )}
+                  </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-xs font-bold text-white truncate">{currentUserSession.name}</div>
                     <div className="text-[10px] text-sky-400 font-mono truncate">
@@ -1225,6 +1263,30 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+
+                {/* Subir foto de perfil: STRICTLY EXCLUSIVE TO ADMINISTRATOR */}
+                {currentUserSession?.role === 'admin' && (
+                  <>
+                    <input
+                      type="file"
+                      ref={adminAvatarInputRef}
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAdminAvatarUpload}
+                    />
+                    <button
+                      onClick={() => adminAvatarInputRef.current?.click()}
+                      className="w-full px-3 py-2 text-left text-xs font-semibold text-rose-300 hover:text-white bg-rose-950/30 hover:bg-rose-900/50 border border-rose-500/30 rounded-xl flex items-center justify-between transition-colors cursor-pointer"
+                      title="Subir foto de perfil (solo administrador)"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Camera className="w-3.5 h-3.5 text-rose-400" />
+                        <span>Subir Foto de Perfil</span>
+                      </div>
+                      <Upload className="w-3 h-3 text-rose-400/80" />
+                    </button>
+                  </>
+                )}
 
                 <button
                   onClick={() => {

@@ -7,7 +7,6 @@ import {
   UserSession,
 } from '../types';
 import {
-  Twitter,
   Radio,
   CheckCircle2,
   AlertTriangle,
@@ -49,6 +48,7 @@ import {
 } from 'lucide-react';
 import { ModelVoiceAndMediaVault } from './ModelVoiceAndMediaVault';
 import { VoiceNoteBubble } from './VoiceNoteBubble';
+import { XLogo } from './icons/XLogo';
 
 interface TwitterIntegrationHubProps {
   activeModel: ModelProfile;
@@ -894,7 +894,7 @@ print("Estado emocional:", data['reply']['detectedMood'])`;
           <div className="flex items-start sm:items-center gap-4">
             <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-500 via-blue-600 to-indigo-600 p-0.5 shrink-0 shadow-lg shadow-sky-500/20">
               <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                <Twitter className="w-7 h-7 text-sky-400" />
+                <XLogo className="w-7 h-7 text-sky-400" />
               </div>
             </div>
 
@@ -997,7 +997,7 @@ print("Estado emocional:", data['reply']['detectedMood'])`;
                     <div>
                       <div className="text-[10px] text-slate-400 font-semibold flex items-center gap-1">
                         {currentSession.provider === 'x' ? (
-                          <Twitter className="w-2.5 h-2.5 text-sky-400" />
+                          <XLogo className="w-2.5 h-2.5 text-sky-400" />
                         ) : (
                           <span className="text-[9px] font-black text-rose-400">G</span>
                         )}
@@ -1014,7 +1014,7 @@ print("Estado emocional:", data['reply']['detectedMood'])`;
                     onClick={onOpenAuthModal}
                     className="bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs px-3 py-2.5 rounded-2xl flex items-center gap-2 border border-slate-700 cursor-pointer transition-all"
                   >
-                    <Twitter className="w-3.5 h-3.5 text-sky-400" />
+                    <XLogo className="w-3.5 h-3.5 text-sky-400" />
                     <span>Iniciar Sesión X</span>
                   </button>
                 )}
@@ -3084,7 +3084,7 @@ print("Estado emocional:", data['reply']['detectedMood'])`;
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col gap-3 min-h-[380px]">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">
                 <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Twitter className="w-4 h-4 text-sky-400" />
+                  <XLogo className="w-4 h-4 text-sky-400" />
                   Bandeja de DMs de {activeModel.name}
                 </span>
                 <span className="text-[10px] font-mono text-emerald-400">

@@ -16,11 +16,11 @@ import {
   MessageSquare,
   Clock,
   Save,
-  Twitter,
   Image,
   Mic,
   AlertCircle,
 } from 'lucide-react';
+import { XLogo } from './icons/XLogo';
 
 interface CRMSubscriptionsProps {
   modelProfile: ModelProfile;
@@ -161,8 +161,8 @@ export const CRMSubscriptions: React.FC<CRMSubscriptionsProps> = ({
 
             <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4">
               <div className="flex items-center justify-between text-slate-400 text-xs mb-1">
-                <span>Integración X (Twitter)</span>
-                <Twitter className="w-4 h-4 text-sky-400" />
+                <span>Integración X</span>
+                <XLogo className="w-4 h-4 text-sky-400" />
               </div>
               <div className="text-2xl font-black text-white">Activa</div>
               <span className="text-[11px] text-sky-400 mt-1 block font-mono">

@@ -177,35 +177,53 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
               <div className="p-4 rounded-xl bg-gradient-to-r from-rose-950/30 to-purple-950/30 border border-rose-500/20">
                 <h4 className="text-base font-bold text-white mb-2 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-rose-400" />
-                  Definición de AuraAgent
+                  Definición de AuraAgent v2.5
                 </h4>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  <strong>AuraAgent</strong> no es un chatbot tradicional de soporte al cliente. Es un <strong>sistema agéntico autónomo de interacción íntima, seducción psicológica y conversión automatizada</strong> concebido específicamente para el mercado de creadoras de contenido exclusivo y agencias de gestión de talentos (OnlyFans / Fanvue).
+                  <strong>AuraAgent</strong> no es un bot genérico ni un asistente corporativo. Es un <strong>sistema agéntico autónomo de interacción íntima, seducción psicológica y conversión automatizada</strong> concebido para modelos webcam reales (ej. perfil oficial de <strong>ANAMARIA❣️ @afire_sb</strong>) y agencias de gestión de talentos VIP (OnlyFans / Fanvue).
                 </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
                   <div className="text-white font-bold text-xs mb-1.5 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-rose-400" /> Cero Clichés de Bot
+                    <span className="w-2 h-2 rounded-full bg-rose-400" /> Cero Clichés de Bot & Fluidez
                   </div>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Tiene terminantemente prohibido saludar con frases como: <em>"¡Hola! ¿Cómo estás? ¿En qué te ayudo hoy?"</em>. El agente responde con anécdotas, picardía y alta autoestima como una mujer real.
+                    Tiene terminantemente prohibido saludar como bot de soporte. Mantiene la memoria de contexto activo en conversaciones multi-turno y replica la naturalidad, picardía y alta autoestima de una creadora real.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
                   <div className="text-white font-bold text-xs mb-1.5 flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-indigo-400" /> Notas de Voz y Bóveda Casual
+                    <span className="w-2 h-2 rounded-full bg-indigo-400" /> Clonación de Voz & Bóveda Casual
                   </div>
                   <p className="text-xs text-slate-400 leading-relaxed">
-                    Sintetiza audios íntimos con risitas y modulación cálida, y envía fotografías casuales de bóveda (café matutino, descanso en el gimnasio, relax en sofá) protegidas con cifrado y marcas de agua.
+                    Sintetiza audios hiperrealistas modulados con risitas y respiración orgánica (Gemini TTS), respaldados por fotos de bóveda casual protegidas con marcas de agua.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                  <div className="text-white font-bold text-xs mb-1.5 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-sky-400" /> Aislamiento Seguro de Roles
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    El perfil de modelo webcam real opera en un entorno privado sin acceso a herramientas administrativas ni selectores de otras creadoras. La administración comercial y la subida de foto de perfil pertenecen exclusivamente al Administrador General.
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
+                  <div className="text-white font-bold text-xs mb-1.5 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" /> Menú de Módulos Unificado
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Barra superior organizada mediante un menú desplegable de módulos tipo Herramientas, responsive, con el logo oficial de 𝕏 y acceso rápido a instaladores de Windows y app móvil Android.
                   </p>
                 </div>
               </div>
 
               <div className="p-3.5 rounded-xl bg-indigo-950/30 border border-indigo-500/30 text-xs text-indigo-200">
-                <strong>💡 Principio de Oro:</strong> La venta no se presiona; se suscita. El seguidor siente que se está ganando la atención y complicidad de la creadora.
+                <strong>💡 Principio de Oro:</strong> La venta no se presiona; se suscita. El seguidor siente que se está ganando la atención y complicidad de la modelo tras construir confianza y afinidad.
               </div>
             </div>
           )}
@@ -213,14 +231,14 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
           {activeSection === 'why' && (
             <div className="space-y-4">
               <div className="p-4 rounded-xl bg-slate-950 border border-slate-800">
-                <h4 className="text-sm font-bold text-white mb-2">El Problema de la Industria</h4>
+                <h4 className="text-sm font-bold text-white mb-2">El Problema de la Venta Precipitada</h4>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  El 80% de los ingresos de OnlyFans ocurre por DMs privados. Sin embargo, las modelos sufren <strong>burnout</strong> por contestar cientos de mensajes diarios y los chatters humanos tradicionales cometen errores o suenan robóticos, destruyendo la ilusión de intimidad.
+                  En OnlyFans el 80% de los ingresos ocurre por DMs privados. Sin embargo, los bots genéricos cometen el grave error de <strong>ofrecer el enlace VIP en los primeros mensajes</strong>, provocando rechazo inmediato. AuraAgent implementa un ritmo conversacional orgánico donde dos personas se conocen primero antes de cualquier pitch.
                 </p>
               </div>
 
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 pt-2">
-                El Embudo Psicológico en 3 Fases:
+                El Embudo Psicológico de Pacing Orgánico:
               </h4>
 
               <div className="space-y-3">
@@ -229,25 +247,25 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
                     Fase 1: Gancho y Espejo (Trust &lt; 45%) — Simetría de Estatus
                   </div>
                   <p className="text-xs text-slate-400">
-                    Responde al contexto específico del fan (una historia de café o gym). Bromea y reta al usuario con humor. Cero mención a OnlyFans.
+                    Responde con chispa y picardía al contexto específico del fan (story de café o gym). Bromea y reta al usuario con humor. Cero mención a OnlyFans ni enlaces de pago.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950 border-l-4 border-l-indigo-500 border border-slate-800">
                   <div className="text-xs font-bold text-white mb-1">
-                    Fase 2: Micro-Intimidad (Trust 45% - 74%) — Construcción de Apego
+                    Fase 2: Micro-Intimidad (Trust 45% - 74%) — Apego & Bóveda Casual
                   </div>
                   <p className="text-xs text-slate-400">
-                    Comparte fotos casuales y audios de su vida cotidiana. Siembra intriga sobre su contenido sin censura que no puede subir a redes públicas.
+                    Comparte anécdotas de su rutina diaria, envía notas de voz y fotografías casuales de bóveda. Siembra curiosidad sobre contenido íntimo exclusivo no apto para redes públicas.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950 border-l-4 border-l-emerald-500 border border-slate-800">
                   <div className="text-xs font-bold text-white mb-1">
-                    Fase 3: Cierre Asertivo VIP (Trust &ge; 75%) — Monetización
+                    Fase 3: Cierre Asertivo VIP (Trust &ge; 75% y &ge; 6 Interacciones)
                   </div>
                   <p className="text-xs text-slate-400">
-                    Explica que en Twitter/X la censuran y le restringen privacidad. Invita al fan a su OnlyFans VIP con enlace directo y descuento exclusivo.
+                    Habiendo intercambiado fotos/audios y alcanzado alta afinidad, explica con naturalidad que en 𝕏 la censuran y la limitan. Invita al fan a su OnlyFans con enlace directo y beneficio exclusivo.
                   </p>
                 </div>
               </div>
@@ -258,44 +276,44 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                 <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="font-bold text-white mb-1 text-xs">1. Operaciones en Vivo</div>
+                  <div className="font-bold text-white mb-1 text-xs">1. Operaciones en Vivo Multi-Turno</div>
                   <p className="text-slate-400">
-                    Bandeja de DMs con puntos de entrada en historias de X, envío de fotos de bóveda y notas de voz íntimas.
+                    Bandeja de DMs con memoria de conversación contextual continua, puntos de entrada y fotos/audios casuales.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="font-bold text-white mb-1 text-xs">2. Medidor de Confianza (Trust Meter)</div>
+                  <div className="font-bold text-white mb-1 text-xs">2. Medidor de Confianza Anti-Prematuro</div>
                   <p className="text-slate-400">
-                    Cálculo en vivo de Confianza (0-100%), Reciprocidad, Fluidez y umbral para autorizar el cierre VIP.
+                    Cálculo en vivo de Confianza (0-100%), reciprocidad y umbral estricto que bloquea ventas antes de tiempo.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
                   <div className="font-bold text-white mb-1 text-xs">3. Detección Emocional Neural</div>
                   <p className="text-slate-400">
-                    Detecta 6 estados anímicos (🥺 Triste, 🧊 Cortante, 😏 Coqueto, 🧐 Serio, 😤 Molesto, 😄 Contento) y adapta la respuesta al instante.
+                    Detecta 6 estados anímicos (🥺 Triste, 🧊 Cortante, 😏 Coqueto, 🧐 Serio, 😤 Molesto, 😄 Contento) y modula la empatía.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="font-bold text-white mb-1 text-xs">4. Integración X (Twitter) & Webhooks</div>
+                  <div className="font-bold text-white mb-1 text-xs">4. Integración Oficial con 𝕏 (Twitter)</div>
                   <p className="text-slate-400">
-                    Account Activity API de Twitter con desafío CRC HMAC-SHA256 y endpoint REST abierto para n8n/Make/Zapier.
+                    Account Activity API de 𝕏 con desafío CRC HMAC-SHA256, firma criptográfica y endpoint REST para webhooks externos.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="font-bold text-white mb-1 text-xs">5. Laboratorio de Entrenamiento</div>
+                  <div className="font-bold text-white mb-1 text-xs">5. Laboratorio de Voz & A/B Testing</div>
                   <p className="text-slate-400">
-                    Configuración de reglas comerciales, precio VIP, enlace de OnlyFans y tono de personalidad.
+                    Comparación lado a lado de modelos de voz, calibración de timbre, respiración orgánica y reverberación de sala.
                   </p>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800">
-                  <div className="font-bold text-white mb-1 text-xs">6. Panel CRM & Pipeline de Suscriptores</div>
+                  <div className="font-bold text-white mb-1 text-xs">6. Panel CRM & Descargas Win64/APK</div>
                   <p className="text-slate-400">
-                    Gestión de leads clasificados por etapas de venta y métricas de ingresos mensuales recurrentes (MRR).
+                    Pipeline de suscriptores, MRR proyectado e instaladores para computador Windows y móvil Android (WebAPK/PWA).
                   </p>
                 </div>
               </div>
@@ -307,32 +325,32 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
               <div className="flex gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800">
                 <span className="w-6 h-6 rounded-full bg-rose-600/30 text-rose-300 font-bold text-xs flex items-center justify-center shrink-0">1</span>
                 <div>
-                  <div className="text-xs font-bold text-white">Seleccionar la Modelo</div>
-                  <p className="text-xs text-slate-400">Escoge la creadora activa en el botón de modelos en la barra superior (ej: Valeria Gómez, Elena Russo).</p>
+                  <div className="text-xs font-bold text-white">Seleccionar la Creadora o Modelo</div>
+                  <p className="text-xs text-slate-400">En el menú de creadoras (disponible solo en sesión admin), selecciona a la modelo activa (ej. ANAMARIA❣️ @afire_sb).</p>
                 </div>
               </div>
 
               <div className="flex gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800">
                 <span className="w-6 h-6 rounded-full bg-rose-600/30 text-rose-300 font-bold text-xs flex items-center justify-center shrink-0">2</span>
                 <div>
-                  <div className="text-xs font-bold text-white">Fijar Enlace OnlyFans y Umbral</div>
-                  <p className="text-xs text-slate-400">En la pestaña <em>Entrenar Habilidades</em>, ingresa el enlace de suscripción de la modelo y el umbral de cierre (75%).</p>
+                  <div className="text-xs font-bold text-white">Entrenar Voz y Calibrar Reglas en Training Lab</div>
+                  <p className="text-xs text-slate-400">Compara los modelos de voz mediante A/B Testing, afina la respiración y sala, y fija el umbral de cierre (recomendado &ge; 75%).</p>
                 </div>
               </div>
 
               <div className="flex gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800">
                 <span className="w-6 h-6 rounded-full bg-rose-600/30 text-rose-300 font-bold text-xs flex items-center justify-center shrink-0">3</span>
                 <div>
-                  <div className="text-xs font-bold text-white">Probar Diálogo en Vivo</div>
-                  <p className="text-xs text-slate-400">Interactúa en <em>Operaciones en Vivo</em> enviando mensajes, notas de voz o usando los botones de emoción rápida.</p>
+                  <div className="text-xs font-bold text-white">Probar Diálogo en Operaciones en Vivo</div>
+                  <p className="text-xs text-slate-400">Chatea con Aura para comprobar la continuidad conversacional, notas de voz hiperrealistas y adaptación emocional sin respuestas desfasadas.</p>
                 </div>
               </div>
 
               <div className="flex gap-3 p-3 rounded-xl bg-slate-950 border border-slate-800">
                 <span className="w-6 h-6 rounded-full bg-rose-600/30 text-rose-300 font-bold text-xs flex items-center justify-center shrink-0">4</span>
                 <div>
-                  <div className="text-xs font-bold text-white">Compartir con la Modelo</div>
-                  <p className="text-xs text-slate-400">Haz clic en el botón verde <strong>Compartir con la Modelo</strong> para enviarle el link por WhatsApp o escanear el QR.</p>
+                  <div className="text-xs font-bold text-white">Personalizar Avatar Admin e Instalar App</div>
+                  <p className="text-xs text-slate-400">Sube tu foto de perfil desde el menú de Administrador y descarga el instalador Windows 64-bit o la app PWA en tu celular.</p>
                 </div>
               </div>
             </div>
@@ -347,14 +365,14 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
                   <div className="p-2 bg-slate-900 text-[11px] font-bold text-slate-300">
-                    1. Operaciones en Vivo (Chat & DMs)
+                    1. Operaciones en Vivo (Chat Multi-Turno & 𝕏 DMs)
                   </div>
                   <img src="/manual_assets/01_live_ops_chat.png" alt="Chat" className="w-full h-auto object-cover" />
                 </div>
 
                 <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
                   <div className="p-2 bg-slate-900 text-[11px] font-bold text-slate-300">
-                    2. Medidor de Confianza & Gatillo VIP
+                    2. Medidor de Confianza Anti-Prematuro & Gatillo VIP
                   </div>
                   <img src="/manual_assets/02_trust_meter.png" alt="Trust" className="w-full h-auto object-cover" />
                 </div>
@@ -368,14 +386,14 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
 
                 <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
                   <div className="p-2 bg-slate-900 text-[11px] font-bold text-slate-300">
-                    4. Hub de Integración X (Twitter) & Webhooks
+                    4. Hub de Integración Oficial con 𝕏 & Webhooks
                   </div>
                   <img src="/manual_assets/04_twitter_hub.png" alt="Twitter Hub" className="w-full h-auto object-cover" />
                 </div>
 
                 <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950">
                   <div className="p-2 bg-slate-900 text-[11px] font-bold text-slate-300">
-                    5. Laboratorio de Entrenamiento (Training Lab)
+                    5. Laboratorio de Entrenamiento (Voz Hiperrealista & A/B)
                   </div>
                   <img src="/manual_assets/05_training_lab.png" alt="Training Lab" className="w-full h-auto object-cover" />
                 </div>
@@ -389,7 +407,7 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
 
                 <div className="rounded-xl overflow-hidden border border-slate-800 bg-slate-950 md:col-span-2">
                   <div className="p-2 bg-slate-900 text-[11px] font-bold text-slate-300">
-                    7. Catálogo Multimodelo de la Agencia
+                    7. Catálogo Multimodelo & Gestión de Perfiles
                   </div>
                   <img src="/manual_assets/07_model_catalog.png" alt="Models Catalog" className="w-full h-auto object-cover" />
                 </div>

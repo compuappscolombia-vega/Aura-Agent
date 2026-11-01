@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { UserSession, ModelProfile } from '../types';
 import {
   X as CloseIcon,
-  Twitter,
   Shield,
   CheckCircle2,
   Lock,
