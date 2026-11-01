@@ -448,7 +448,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
       caption: newPhotoCaption.trim() || CAPTION_PRESETS[newPhotoCategory]?.caption || newPhotoTitle.trim(),
       isExclusive: newPhotoExclusive,
       unlockPrice: newPhotoExclusive ? newPhotoUnlockPrice : undefined,
-      watermark: `${activeModel.handle} / AURA_VERIFIED`,
+      watermark: activeModel.handle,
       createdAt: new Date().toISOString(),
     };
 
@@ -1136,9 +1136,9 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                       <Trash2 className="w-3.5 h-3.5" />
                     </button>
 
-                    {/* Watermark overlay */}
-                    <div className="absolute bottom-1 right-1.5 text-[9px] font-mono text-white/60 bg-black/60 px-1.5 py-0.5 rounded">
-                      {photo.watermark || `${activeModel.handle} / AURA`}
+                    {/* Watermark overlay - solo usuario */}
+                    <div className="absolute bottom-1 right-1.5 text-[9px] font-mono text-white/70 bg-black/60 px-1.5 py-0.5 rounded">
+                      {photo.watermark ? photo.watermark.split(' ')[0] : activeModel.handle}
                     </div>
                   </div>
 
@@ -1180,7 +1180,7 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
                   <div className="aspect-video w-full rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 relative">
                     <img src={newPhotoUrl} alt="Preview" className="w-full h-full object-cover" />
                     <span className="absolute bottom-1 right-2 text-[9px] font-mono bg-black/70 px-1.5 py-0.5 rounded text-white/80">
-                      {activeModel.handle} / AURA_VERIFIED
+                      {activeModel.handle}
                     </span>
                   </div>
                 )}

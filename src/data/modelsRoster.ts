@@ -118,7 +118,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=85',
         caption: 'Tomándome un café bien frío antes de salir ☕ ¿Tú ya tomaste café?',
         isExclusive: false,
-        watermark: '@afire_sb / OFFICIAL_AURA',
+        watermark: '@afire_sb',
         createdAt: '2026-10-29',
       },
       {
@@ -129,7 +129,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=800&auto=format&fit=crop&q=85',
         caption: 'Muerta pero feliz después de pierna hoy 💪 ¿Hiciste ejercicio?',
         isExclusive: false,
-        watermark: '@afire_sb / OFFICIAL_AURA',
+        watermark: '@afire_sb',
         createdAt: '2026-10-29',
       },
       {
@@ -140,7 +140,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=800&auto=format&fit=crop&q=85',
         caption: 'Tarde fría y yo aquí en bata suave viendo pelis... me hace falta compañía 🤍',
         isExclusive: false,
-        watermark: '@afire_sb / OFFICIAL_AURA',
+        watermark: '@afire_sb',
         createdAt: '2026-10-29',
       },
       {
@@ -151,7 +151,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&auto=format&fit=crop&q=85',
         caption: 'Caminando por la orilla al atardecer, mi momento favorito del día 🌅',
         isExclusive: false,
-        watermark: '@afire_sb / OFFICIAL_AURA',
+        watermark: '@afire_sb',
         createdAt: '2026-10-29',
       },
       {
@@ -163,7 +163,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         caption: 'Vista previa de mi sesión íntima en seda. Desbloquea el set completo en mi OnlyFans VIP de @afire_sb 🔥',
         isExclusive: true,
         unlockPrice: '$19.99',
-        watermark: 'VIP_ONLY_@AFIRE_SB',
+        watermark: '@afire_sb',
         createdAt: '2026-10-29',
       },
     ],
@@ -290,7 +290,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: valeriaImg,
         caption: 'Tomándome un matcha latte bien frío antes de salir ☕ ¿Tú ya tomaste café?',
         isExclusive: false,
-        watermark: '@valeriag_official / AURA_VERIFIED',
+        watermark: '@valeriag_official',
         createdAt: '2026-10-28',
       },
       {
@@ -301,7 +301,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: gymImg,
         caption: 'Muerta pero feliz después de pierna hoy 💪 ¿Hiciste ejercicio?',
         isExclusive: false,
-        watermark: '@valeriag_official / AURA_VERIFIED',
+        watermark: '@valeriag_official',
         createdAt: '2026-10-28',
       },
       {
@@ -312,7 +312,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: cozyImg,
         caption: 'Tarde fría y yo aquí en mantita viendo pelis... me hace falta compañía 🤍',
         isExclusive: false,
-        watermark: '@valeriag_official / AURA_VERIFIED',
+        watermark: '@valeriag_official',
         createdAt: '2026-10-28',
       },
       {
@@ -323,7 +323,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: beachImg,
         caption: 'Caminando por la orilla al atardecer, mi momento favorito del día 🌅',
         isExclusive: false,
-        watermark: '@valeriag_official / AURA_VERIFIED',
+        watermark: '@valeriag_official',
         createdAt: '2026-10-28',
       },
       {
@@ -335,7 +335,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         caption: 'Vista previa de mi sesión íntima en seda. Desbloquea el set completo en mi OnlyFans VIP 🔥',
         isExclusive: true,
         unlockPrice: '$19.99',
-        watermark: 'VIP_ONLY_VALERIA_#992',
+        watermark: '@valeriag_official',
         createdAt: '2026-10-28',
       },
     ],
@@ -462,7 +462,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=800&auto=format&fit=crop&q=85',
         caption: 'Un espresso doble frente al Duomo antes del desfile ☕ ¿Te gusta el café fuerte?',
         isExclusive: false,
-        watermark: '@elena_russo_vip / LUXE_EDITION',
+        watermark: '@elena_russo_vip',
         createdAt: '2026-10-29',
       },
       {
@@ -473,7 +473,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&auto=format&fit=crop&q=85',
         caption: 'Clase de reformer terminada 💪 La disciplina en la postura lo es todo.',
         isExclusive: false,
-        watermark: '@elena_russo_vip / LUXE_EDITION',
+        watermark: '@elena_russo_vip',
         createdAt: '2026-10-29',
       },
       {
@@ -484,7 +484,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=800&auto=format&fit=crop&q=85',
         caption: 'Noche de calma, copa de tinto y pensamientos selectos 🍷 Me falta alguien con quien brindar.',
         isExclusive: false,
-        watermark: '@elena_russo_vip / LUXE_EDITION',
+        watermark: '@elena_russo_vip',
         createdAt: '2026-10-29',
       },
       {
@@ -495,7 +495,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1519046904884-53103b34b206?w=800&auto=format&fit=crop&q=85',
         caption: 'Navegando al atardecer por calas cristalinas 🌅 El mar me renueva.',
         isExclusive: false,
-        watermark: '@elena_russo_vip / LUXE_EDITION',
+        watermark: '@elena_russo_vip',
         createdAt: '2026-10-29',
       },
       {
@@ -507,7 +507,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         caption: 'Fragmento de la sesión privada en encaje negro. La serie completa en mi espacio VIP 🔥',
         isExclusive: true,
         unlockPrice: '$24.99',
-        watermark: 'ELENA_VIP_EXCLUSIVE',
+        watermark: '@elena_russo_vip',
         createdAt: '2026-10-29',
       },
     ],
@@ -634,7 +634,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=800&auto=format&fit=crop&q=85',
         caption: 'Flat white doble en Palermo con mis auriculares puestos ☕ ¿Qué plan tenés hoy?',
         isExclusive: false,
-        watermark: '@mia_soler_live / WILD_ENERGY',
+        watermark: '@mia_soler_live',
         createdAt: '2026-10-30',
       },
       {
@@ -645,7 +645,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1550345332-09e3ac987658?w=800&auto=format&fit=crop&q=85',
         caption: 'Descargando energía en el saco de box 🥊 Cero filtros hoy.',
         isExclusive: false,
-        watermark: '@mia_soler_live / WILD_ENERGY',
+        watermark: '@mia_soler_live',
         createdAt: '2026-10-30',
       },
       {
@@ -656,7 +656,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=800&auto=format&fit=crop&q=85',
         caption: 'Tirada en el piso escuchando vinilos... vení a hacerme compañía 🎧',
         isExclusive: false,
-        watermark: '@mia_soler_live / WILD_ENERGY',
+        watermark: '@mia_soler_live',
         createdAt: '2026-10-30',
       },
       {
@@ -667,7 +667,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1506953823976-52e1fdc0149a?w=800&auto=format&fit=crop&q=85',
         caption: 'Golden hour en la arena antes de que arranque la música 🌅',
         isExclusive: false,
-        watermark: '@mia_soler_live / WILD_ENERGY',
+        watermark: '@mia_soler_live',
         createdAt: '2026-10-30',
       },
       {
@@ -679,7 +679,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         caption: 'Mi lado más descarado y prohibido. Desbloqueá el set sin censura en mi VIP ⚡',
         isExclusive: true,
         unlockPrice: '$14.99',
-        watermark: 'MIA_RAW_VIP',
+        watermark: '@mia_soler_live',
         createdAt: '2026-10-30',
       },
     ],
@@ -806,7 +806,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1512290900672-1f55b9a89600?w=800&auto=format&fit=crop&q=85',
         caption: 'Recuperando con un smoothie de frutos rojos en Polanco 🍓 ¿Ya hiciste desayuno?',
         isExclusive: false,
-        watermark: '@camila_fit_real / FIT_EXCLUSIVE',
+        watermark: '@camila_fit_real',
         createdAt: '2026-10-30',
       },
       {
@@ -817,7 +817,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800&auto=format&fit=crop&q=85',
         caption: 'Enfocada en cada repetición 💪 ¿Entrenamos juntos la próxima?',
         isExclusive: false,
-        watermark: '@camila_fit_real / FIT_EXCLUSIVE',
+        watermark: '@camila_fit_real',
         createdAt: '2026-10-30',
       },
       {
@@ -828,7 +828,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=800&auto=format&fit=crop&q=85',
         caption: 'Día de descanso en pijama y pantuflas... me hace falta consentirme ✨',
         isExclusive: false,
-        watermark: '@camila_fit_real / FIT_EXCLUSIVE',
+        watermark: '@camila_fit_real',
         createdAt: '2026-10-30',
       },
       {
@@ -839,7 +839,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         url: 'https://images.unsplash.com/photo-1510414842594-a61c69b5ae57?w=800&auto=format&fit=crop&q=85',
         caption: 'Cinco kilómetros a la orilla del mar caribeño al amanecer 🌊',
         isExclusive: false,
-        watermark: '@camila_fit_real / FIT_EXCLUSIVE',
+        watermark: '@camila_fit_real',
         createdAt: '2026-10-30',
       },
       {
@@ -851,7 +851,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
         caption: 'Mi silueta más atrevida fuera del gimnasio. Set exclusivo en mi VIP 🤍',
         isExclusive: true,
         unlockPrice: '$18.50',
-        watermark: 'CAMILA_FIT_VIP',
+        watermark: '@camila_fit_real',
         createdAt: '2026-10-30',
       },
     ],

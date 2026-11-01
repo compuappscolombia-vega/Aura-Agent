@@ -23,6 +23,7 @@ import { AuthLoginModal } from './components/AuthLoginModal';
 import { ShareLiveWithModelModal } from './components/ShareLiveWithModelModal';
 import { ManualViewerModal } from './components/ManualViewerModal';
 import { InstallersModal } from './components/InstallersModal';
+import { ModelVoiceAndMediaVault } from './components/ModelVoiceAndMediaVault';
 import { DEFAULT_MODELS } from './data/modelsRoster';
 import {
   Sparkles,
@@ -45,6 +46,8 @@ import {
   FileText,
   X,
   Download,
+  UserPlus,
+  Crown,
 } from 'lucide-react';
 
 const INITIAL_MODEL_PROFILE: ModelProfile = DEFAULT_MODELS[0];
@@ -177,8 +180,57 @@ const INITIAL_USER_MEMORY: UserMemory = {
 };
 
 export default function App() {
-  const [models, setModels] = useState<ModelProfile[]>(DEFAULT_MODELS);
-  const [modelProfile, setModelProfile] = useState<ModelProfile>(DEFAULT_MODELS[0]);
+  const [models, setModels] = useState<ModelProfile[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('aura_models');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const ids = new Set(parsed.map((p: any) => p.id));
+            const merged = [...parsed];
+            for (const dm of DEFAULT_MODELS) {
+              if (!ids.has(dm.id)) merged.push(dm);
+            }
+            return merged;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not load models from storage:', e);
+      }
+    }
+    return DEFAULT_MODELS;
+  });
+
+  // Creator / Admin Auth Session State
+  const [currentUserSession, setCurrentUserSession] = useState<UserSession | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('aura_current_session');
+        if (stored) return JSON.parse(stored);
+      } catch (e) {
+        console.warn('Could not load session from storage:', e);
+      }
+    }
+    return {
+      id: 'usr-sess-prod-afire',
+      name: 'Ana María',
+      email: 'gato-284@hotmail.com',
+      handle: '@afire_sb',
+      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
+      provider: 'x',
+      role: 'creator',
+      associatedModelId: 'afire-sb',
+      allowedModelIds: ['afire-sb'],
+      connectedAt: new Date().toISOString(),
+      xAccountConnected: true,
+    };
+  });
+
+  const [modelProfile, setModelProfile] = useState<ModelProfile>(() => {
+    const defaultM = DEFAULT_MODELS[0];
+    return defaultM;
+  });
   const [isModelCatalogOpen, setIsModelCatalogOpen] = useState(false);
   const [metrics, setMetrics] = useState<ConfidenceMetrics>(INITIAL_METRICS);
   const [activeScenarioId, setActiveScenarioId] = useState<string>('story-cafe');
@@ -186,26 +238,13 @@ export default function App() {
   const [activeUsername, setActiveUsername] = useState<string>('@carlos_m92');
   const [userMemory, setUserMemory] = useState<UserMemory>(INITIAL_USER_MEMORY);
   const [isModelTyping, setIsModelTyping] = useState(false);
-  const [activeTab, setActiveTab] = useState<'live_ops' | 'twitter_x' | 'training' | 'crm'>('live_ops');
+  const [activeTab, setActiveTab] = useState<'live_ops' | 'twitter_x' | 'training' | 'crm' | 'vault'>('live_ops');
   const [inspectorTab, setInspectorTab] = useState<'memory' | 'confidence' | 'brain'>('memory');
   const [platformSkin, setPlatformSkin] = useState<'X (Twitter)' | 'Web'>('X (Twitter)');
   const [leads, setLeads] = useState<LeadItem[]>([]);
   const [lastReasoning, setLastReasoning] = useState<string>(
     'Aura activa: interpretación profunda de contexto, adaptación al estado anímico y orientación estratégica a cierre VIP.'
   );
-
-  // Creator / Admin Auth Session State (Connected to @afire_sb)
-  const [currentUserSession, setCurrentUserSession] = useState<UserSession | null>({
-    id: 'usr-sess-prod-afire',
-    name: 'Ana María',
-    email: 'gato-284@hotmail.com',
-    handle: '@afire_sb',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
-    provider: 'x',
-    role: 'creator',
-    connectedAt: new Date().toISOString(),
-    xAccountConnected: true,
-  });
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -302,14 +341,66 @@ export default function App() {
   };
 
   const handleAddModel = (newM: ModelProfile) => {
-    setModels((prev) => [newM, ...prev]);
+    setModels((prev) => {
+      const updated = [newM, ...prev.filter((m) => m.id !== newM.id)];
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('aura_models', JSON.stringify(updated));
+        } catch (e) {}
+      }
+      return updated;
+    });
+
+    // Also persist to backend
+    fetch('/api/models', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newM),
+    }).catch((err) => console.warn('Could not sync model to backend:', err));
+  };
+
+  const handleSetUserSession = (sess: UserSession | null, associatedModel?: ModelProfile) => {
+    setCurrentUserSession(sess);
+    if (typeof window !== 'undefined') {
+      try {
+        if (sess) {
+          localStorage.setItem('aura_current_session', JSON.stringify(sess));
+        } else {
+          localStorage.removeItem('aura_current_session');
+        }
+      } catch (e) {}
+    }
+
+    if (associatedModel) {
+      setModelProfile(associatedModel);
+    } else if (sess?.role === 'creator') {
+      const matched =
+        models.find((m) => m.id === sess.associatedModelId || m.handle === sess.handle) ||
+        models.find((m) => !m.isSystemDefault);
+      if (matched) {
+        setModelProfile(matched);
+      }
+    }
   };
 
   const handleUpdateModel = (updated: ModelProfile) => {
-    setModels((prev) => prev.map((m) => (m.id === updated.id ? updated : m)));
+    setModels((prev) => {
+      const updatedList = prev.map((m) => (m.id === updated.id ? updated : m));
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('aura_models', JSON.stringify(updatedList));
+        } catch (e) {}
+      }
+      return updatedList;
+    });
     if (modelProfile.id === updated.id) {
       setModelProfile(updated);
     }
+    fetch('/api/models', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updated),
+    }).catch((err) => console.warn('Could not update model on backend:', err));
   };
 
   // Fetch initial leads from server
@@ -752,13 +843,32 @@ export default function App() {
                 <span className="text-[10px] text-sky-400 font-mono font-normal">
                   {modelProfile.handle}
                 </span>
+                {!modelProfile.isSystemDefault ? (
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/30">
+                    Real
+                  </span>
+                ) : (
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
+                    Prueba
+                  </span>
+                )}
               </div>
               <div className="text-[10px] text-indigo-400 font-medium">
-                {modelProfile.archetype} • {models.length} modelos
+                {currentUserSession?.role === 'admin'
+                  ? `👑 Modo Admin • ${models.filter((m) => m.isSystemDefault).length} prueba + ${models.filter((m) => !m.isSystemDefault).length} reales`
+                  : `🔒 Perfil Exclusivo Independiente • 1 activa`}
               </div>
             </div>
-            <span className="text-[10px] font-bold px-2 py-1 rounded-lg bg-indigo-600/30 text-indigo-300 border border-indigo-500/40 group-hover:bg-indigo-600 group-hover:text-white transition-all ml-1">
-              Modelos ({models.length})
+            <span
+              className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition-all ml-1 ${
+                currentUserSession?.role === 'admin'
+                  ? 'bg-amber-600/30 text-amber-300 border-amber-500/40 group-hover:bg-amber-600 group-hover:text-slate-950'
+                  : 'bg-rose-600/30 text-rose-300 border-rose-500/40 group-hover:bg-rose-600 group-hover:text-white'
+              }`}
+            >
+              {currentUserSession?.role === 'admin'
+                ? `Supervisar (${models.length})`
+                : 'Mi Perfil'}
             </span>
           </button>
         </div>
@@ -837,18 +947,22 @@ export default function App() {
               <LayoutDashboard className="w-3.5 h-3.5" />
               <span>Panel & CRM</span>
             </button>
-          </div>
 
-          {/* Voz y Fotos de Mi Modelo Shortcut */}
-          <button
-            onClick={() => setActiveTab('twitter_x')}
-            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/20 to-purple-600/20 hover:from-rose-500/30 hover:to-purple-600/30 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-            title="Administrar las notas de voz, grabaciones y fotos de la modelo para X DMs"
-          >
-            <Volume2 className="w-3.5 h-3.5 text-rose-400" />
-            <span className="hidden lg:inline">Voz & Bóveda de Mi Modelo</span>
-            <span className="lg:hidden">Voz & Fotos</span>
-          </button>
+            {/* Voz & Bóveda de Mi Modelo - Visualizado dentro y después de Panel & CRM */}
+            <button
+              onClick={() => setActiveTab('vault')}
+              className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                activeTab === 'vault'
+                  ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-600/30'
+                  : 'text-rose-300 hover:text-white hover:bg-rose-500/10'
+              }`}
+              title="Voz real calibrada y bóveda fotográfica de la modelo"
+            >
+              <Volume2 className="w-3.5 h-3.5 text-rose-400" />
+              <span className="hidden sm:inline">Voz & Bóveda de Mi Modelo</span>
+              <span className="sm:hidden">Voz & Bóveda</span>
+            </button>
+          </div>
 
           {/* Compartir con la Modelo Button */}
           <button
@@ -889,6 +1003,16 @@ export default function App() {
             title="Restablecer diálogo de prueba"
           >
             <RotateCcw className="w-4 h-4" />
+          </button>
+
+          {/* Botón de Registro de Modelo Real / Administrador */}
+          <button
+            onClick={() => setIsAuthModalOpen(true)}
+            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-indigo-600 hover:opacity-95 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-rose-600/20 cursor-pointer"
+            title="Registrar nuevo perfil de modelo real o administrador"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Registrar Perfil</span>
           </button>
 
           {/* User Auth Login Button (X or Google) */}
@@ -1129,7 +1253,7 @@ export default function App() {
               handleSendMessage(promptText);
             }}
           />
-        ) : (
+        ) : activeTab === 'crm' ? (
           /* CRM & Subscription Dashboard */
           <CRMSubscriptions
             modelProfile={modelProfile}
@@ -1139,6 +1263,17 @@ export default function App() {
               setActiveTab('live_ops');
               handleSelectUser(lead.username);
             }}
+          />
+        ) : (
+          /* Model Voice DNA & Media Vault Hub */
+          <ModelVoiceAndMediaVault
+            activeModel={modelProfile}
+            onUpdateModel={handleUpdateModel}
+            onTestWebhook={(sampleText) => {
+              setActiveTab('live_ops');
+              handleSendMessage(sampleText);
+            }}
+            onOpenInstallers={() => setIsInstallersModalOpen(true)}
           />
         )}
       </main>
@@ -1152,15 +1287,21 @@ export default function App() {
         onSelectModel={handleSelectModel}
         onAddModel={handleAddModel}
         onUpdateModel={handleUpdateModel}
+        currentUserRole={currentUserSession?.role || 'creator'}
+        onOpenRegistration={() => setIsAuthModalOpen(true)}
       />
 
-      {/* Login with X or Google Modal */}
+      {/* Registration & Login Modal for Real Models and Admin */}
       <AuthLoginModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         currentSession={currentUserSession}
-        onLogin={(sess) => setCurrentUserSession(sess)}
-        onLogout={() => setCurrentUserSession(null)}
+        onLogin={handleSetUserSession}
+        onLogout={() => handleSetUserSession(null)}
+        realModels={models.filter((m) => !m.isSystemDefault)}
+        onRegisterRealModel={(newModel) => {
+          handleAddModel(newModel);
+        }}
       />
 
       {/* Share Live with Model Modal */}
@@ -1200,13 +1341,13 @@ export default function App() {
         </button>
 
         <button
-          onClick={() => setActiveTab('twitter_x')}
+          onClick={() => setActiveTab('vault')}
           className={`flex flex-col items-center gap-1 text-[10px] font-bold py-1 px-2 rounded-xl transition-colors cursor-pointer ${
-            activeTab === 'twitter_x' ? 'text-rose-400 bg-rose-500/10' : 'text-slate-400 hover:text-white'
+            activeTab === 'vault' ? 'text-rose-400 bg-rose-500/10' : 'text-slate-400 hover:text-white'
           }`}
         >
           <Volume2 className="w-4 h-4" />
-          <span>Voz & Fotos</span>
+          <span>Voz & Bóveda</span>
         </button>
 
         <button

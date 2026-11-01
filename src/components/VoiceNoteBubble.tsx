@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Play, Pause, Volume2, Sparkles } from 'lucide-react';
-import { voiceEngine } from '../utils/audioPlayer';
+import { voiceEngine, VoiceProfileConfig } from '../utils/audioPlayer';
 
 interface VoiceNoteBubbleProps {
   text: string;
@@ -10,15 +10,7 @@ interface VoiceNoteBubbleProps {
   sender: 'user' | 'model';
   modelName?: string;
   voiceStyle?: string;
-  voiceProfile?: {
-    pitch?: number;
-    rate?: number;
-    accent?: string;
-    voiceName?: string;
-    lang?: string;
-    ambiencePreset?: string;
-    enableAmbience?: boolean;
-  };
+  voiceProfile?: Partial<VoiceProfileConfig>;
   isEncrypted?: boolean;
 }
 

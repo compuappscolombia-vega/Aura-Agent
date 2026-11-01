@@ -1045,9 +1045,9 @@ app.get('/api/app-info', (req, res) => {
   const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : 'http';
   res.json({
     success: true,
-    appletId: '1e3a24c0-ec0e-46c6-82fa-bda4cd030bf2',
-    devUrl: 'https://ais-dev-kkrofx6pydlonw3h5chh4c-227172514263.us-east1.run.app',
-    sharedUrl: 'https://ais-pre-kkrofx6pydlonw3h5chh4c-227172514263.us-east1.run.app',
+    appletId: '73e2cf79-2eb3-40ae-bdae-591a555cc930',
+    devUrl: 'https://ais-dev-l23folbkuazsaflsuunohm-877815111677.us-east1.run.app',
+    sharedUrl: 'https://ais-pre-l23folbkuazsaflsuunohm-877815111677.us-east1.run.app',
     currentOrigin: `${protocol}://${host}`,
   });
 });
@@ -1645,8 +1645,145 @@ app.get('/api/auth/session', (req, res) => {
   res.json({ success: true, session: currentSession });
 });
 
+// Registration endpoint for Real Models and Admin accounts
+app.post('/api/auth/register', (req, res) => {
+  const {
+    role = 'creator',
+    name,
+    handle,
+    email,
+    age = 24,
+    location = 'Medellín / Colombia',
+    avatarUrl,
+    bio = 'Creadora de contenido +18 • Modelo Oficial',
+    vipLink = 'https://onlyfans.com/',
+    vipPrice = '$19.99/mes',
+    vipDiscountCode,
+    accent = 'Latino dulce, sensual, cercano y pícaro',
+    voiceName = 'Kore',
+    provider = 'x',
+  } = req.body;
+
+  if (role === 'admin') {
+    const adminSession: any = {
+      id: `usr-admin-${Date.now()}`,
+      name: name?.trim() || 'Administrador General Aura',
+      email: email?.trim() || 'compuappscolombia@gmail.com',
+      avatar:
+        avatarUrl ||
+        'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80',
+      provider: provider === 'google' ? 'google' : 'x',
+      role: 'admin',
+      connectedAt: new Date().toISOString(),
+      xAccountConnected: true,
+    };
+    currentSession = adminSession;
+    return res.json({
+      success: true,
+      session: adminSession,
+      message: 'Perfil de Administrador registrado exitosamente. Acceso completo para visualizar modelos de prueba y modelos reales.',
+    });
+  }
+
+  // Real Model Registration
+  const rawHandle = handle ? String(handle).trim() : '@nueva_modelo';
+  const cleanHandle = rawHandle.startsWith('@') ? rawHandle : `@${rawHandle}`;
+  const cleanId = cleanHandle.replace('@', '').toLowerCase().replace(/[^a-z0-9_-]/g, '') || `model-${Date.now()}`;
+  const cleanName = name ? String(name).trim() : 'Modelo Real';
+  const cleanVipDiscount = vipDiscountCode || `${cleanId.toUpperCase()}_VIP`;
+  const defaultAvatar =
+    avatarUrl ||
+    'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80';
+
+  const newModelProfile = {
+    id: cleanId,
+    name: cleanName,
+    handle: cleanHandle,
+    username: cleanId,
+    age: Number(age) || 24,
+    location: location || 'Medellín, Colombia',
+    avatarUrl: defaultAvatar,
+    bannerUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80',
+    archetype: `Modelo Oficial • ${cleanHandle}`,
+    tagline: `Creadora de contenido exclusiva • ${cleanHandle}`,
+    bio: bio || 'Creadora de contenido oficial +18 en OnlyFans',
+    vipLink: vipLink || `https://onlyfans.com/${cleanId}`,
+    vipPrice: vipPrice || '$19.99/mes',
+    discountCode: cleanVipDiscount,
+    conversionThreshold: 75,
+    accent: accent || 'Latino dulce, sensual, cercano y pícaro',
+    pitch: 1.15,
+    rate: 0.98,
+    voiceName: voiceName || 'Kore',
+    voiceDescription: `Voz auténtica y personalizada para ${cleanName} (${cleanHandle})`,
+    isRealModel: true,
+    isSystemDefault: false,
+    xProfileMetrics: {
+      followers: 120,
+      following: 85,
+      tweets: 42,
+      isVerified: true,
+      lastSyncedAt: new Date().toISOString(),
+      liveFromX: true,
+    },
+  };
+
+  // Register in memory store
+  modelProfilesMap[cleanId] = newModelProfile;
+
+  // Seed default welcome voice note in the model's independent vault
+  const welcomeVoiceClip: ServerVoiceClip = {
+    id: `${cleanId}-vc-1`,
+    modelId: cleanId,
+    title: `Saludo Oficial de ${cleanName} ☕`,
+    category: 'saludo',
+    durationSeconds: 7,
+    transcription: `Hola amor, soy ${cleanName}, qué lindo saludarte por aquí. Me pillas justo tomándome algo antes de salir, ¿tú qué estás haciendo hoy?`,
+    triggerKeywords: ['hola', 'buenas', 'saludos', cleanId, 'audio', 'voz'],
+    createdAt: new Date().toISOString().split('T')[0],
+  };
+  serverVoiceClips.unshift(welcomeVoiceClip);
+
+  // Seed welcome photo in the model's independent vault
+  const welcomePhoto: ServerMediaItem = {
+    id: `${cleanId}-med-1`,
+    modelId: cleanId,
+    title: `Foto de Bienvenida de ${cleanName}`,
+    category: 'cafe',
+    url: defaultAvatar,
+    caption: `Tomándome un café pensando en ti ☕`,
+    isExclusive: false,
+    watermark: `${cleanHandle} / AURA_VERIFIED`,
+    createdAt: new Date().toISOString().split('T')[0],
+  };
+  serverMediaItems.unshift(welcomePhoto);
+
+  const modelSession: any = {
+    id: `usr-real-${cleanId}-${Date.now()}`,
+    name: cleanName,
+    handle: cleanHandle,
+    avatar: defaultAvatar,
+    provider: 'x',
+    role: 'creator',
+    associatedModelId: cleanId,
+    allowedModelIds: [cleanId],
+    connectedAt: new Date().toISOString(),
+    xAccountConnected: true,
+  };
+
+  currentSession = modelSession;
+
+  res.json({
+    success: true,
+    session: modelSession,
+    model: newModelProfile,
+    message: `¡Perfil de Modelo Real ${cleanName} (${cleanHandle}) registrado exitosamente! Entorno aislado y 100% independiente.`,
+  });
+});
+
 app.post('/api/auth/login', (req, res) => {
-  const { provider, name, email, handle, avatar, role } = req.body;
+  const { provider, name, email, handle, avatar, role, associatedModelId, allowedModelIds } = req.body;
+  const isCreator = (role || 'creator') === 'creator';
   currentSession = {
     id: `usr-sess-${Date.now()}`,
     name: name || (provider === 'x' ? '@afire_sb' : 'Afire SB'),
@@ -1659,6 +1796,8 @@ app.post('/api/auth/login', (req, res) => {
         : 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80'),
     provider: provider === 'google' ? 'google' : 'x',
     role: role || 'creator',
+    associatedModelId: associatedModelId || (isCreator ? 'afire-sb' : undefined),
+    allowedModelIds: allowedModelIds || (isCreator && associatedModelId ? [associatedModelId] : undefined),
     connectedAt: new Date().toISOString(),
     xAccountConnected: provider === 'x' || Boolean(req.body.xAccountConnected),
   };
@@ -1668,6 +1807,54 @@ app.post('/api/auth/login', (req, res) => {
 app.post('/api/auth/logout', (req, res) => {
   currentSession = null;
   res.json({ success: true, message: 'Sesión cerrada correctamente' });
+});
+
+// Endpoint to list models (with role filtering: admin sees all including test models; creator sees only her own)
+app.get('/api/models', (req, res) => {
+  const role = (req.query.role as string) || currentSession?.role || 'creator';
+  const modelId = (req.query.modelId as string) || currentSession?.associatedModelId;
+
+  const allModelsList = Object.values(modelProfilesMap);
+
+  if (role === 'admin') {
+    return res.json({
+      success: true,
+      role: 'admin',
+      models: allModelsList,
+      totalCount: allModelsList.length,
+      testModelsCount: allModelsList.filter((m: any) => m.isSystemDefault).length,
+      realModelsCount: allModelsList.filter((m: any) => !m.isSystemDefault).length,
+    });
+  }
+
+  // Creator role: only return her own model profile
+  const filtered = modelId
+    ? allModelsList.filter((m: any) => m.id === modelId)
+    : allModelsList.filter((m: any) => !m.isSystemDefault);
+
+  return res.json({
+    success: true,
+    role: 'creator',
+    models: filtered.length > 0 ? filtered : [modelProfilesMap['afire-sb']],
+    totalCount: filtered.length,
+    isIsolated: true,
+  });
+});
+
+// Endpoint to register/save a model profile directly
+app.post('/api/models', (req, res) => {
+  const modelData = req.body;
+  if (!modelData || !modelData.id) {
+    return res.status(400).json({ error: 'Faltan datos de la modelo o id' });
+  }
+
+  modelProfilesMap[modelData.id] = {
+    ...modelProfilesMap[modelData.id],
+    ...modelData,
+    isRealModel: modelData.isSystemDefault ? false : true,
+  };
+
+  res.json({ success: true, model: modelProfilesMap[modelData.id] });
 });
 
 // 7. External Connection API & Webhooks System
@@ -2044,6 +2231,8 @@ const modelProfilesMap: Record<string, any> = {
     rate: 0.98,
     voiceName: 'Kore',
     voiceDescription: 'Tono cercano, cálido, femenino, íntimo y sutilmente pícaro',
+    isRealModel: false,
+    isSystemDefault: true,
   },
   'elena-russo': {
     id: 'elena-russo',
@@ -2058,6 +2247,8 @@ const modelProfilesMap: Record<string, any> = {
     rate: 0.94,
     voiceName: 'Aoede',
     voiceDescription: 'Voz sensual, pausada, elegante, segura, madura y misteriosa',
+    isRealModel: false,
+    isSystemDefault: true,
   },
   'mia-soler': {
     id: 'mia-soler',
@@ -2072,6 +2263,8 @@ const modelProfilesMap: Record<string, any> = {
     rate: 1.05,
     voiceName: 'Puck',
     voiceDescription: 'Voz alegre, picante, rápida, risueña, enérgica y espontánea',
+    isRealModel: false,
+    isSystemDefault: true,
   },
   'camila-torres': {
     id: 'camila-torres',
@@ -2086,6 +2279,8 @@ const modelProfilesMap: Record<string, any> = {
     rate: 1.0,
     voiceName: 'Kore',
     voiceDescription: 'Voz dulce, motivadora, pícara, atlética y muy natural',
+    isRealModel: false,
+    isSystemDefault: true,
   },
 };
 

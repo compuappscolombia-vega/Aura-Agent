@@ -152,6 +152,7 @@ export interface ModelVoiceDNA {
     | 'car_interior'
     | 'beach_waves'
     | 'fireplace_warm'
+    | 'gym_fitness'
     | 'custom';
   roomPresenceLevel?: number; // 0 - 100
   acousticSpaceName?: string;

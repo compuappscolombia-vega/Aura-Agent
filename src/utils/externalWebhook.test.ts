@@ -83,3 +83,59 @@ test('auth session endpoints allow login with X and Google', async () => {
   assert.equal(gData.session.provider, 'google');
   assert.equal(gData.session.email, 'gato-284@hotmail.com');
 });
+
+test('registration system handles real model registration and admin registration with isolation', async () => {
+  // 1. Register a real model
+  const regModelRes = await fetch('http://localhost:3000/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      role: 'creator',
+      name: 'Valentina Real',
+      handle: '@valen_real',
+      age: 23,
+      location: 'Medellín, Colombia',
+      bio: 'Creadora independiente oficial +18',
+      vipLink: 'https://onlyfans.com/valen_real',
+      vipPrice: '$19.99/mes',
+      accent: 'Latino dulce (Paisa)',
+    }),
+  });
+  assert.equal(regModelRes.status, 200);
+  const regModelData = await regModelRes.json();
+  assert.equal(regModelData.success, true);
+  assert.equal(regModelData.session.role, 'creator');
+  assert.equal(regModelData.session.handle, '@valen_real');
+  assert.equal(regModelData.model.isRealModel, true);
+  assert.equal(regModelData.model.isSystemDefault, false);
+
+  // 2. Query models as creator: should only receive isolated profile
+  const creatorModelsRes = await fetch('http://localhost:3000/api/models?role=creator&modelId=valen_real');
+  const creatorModelsData = await creatorModelsRes.json();
+  assert.equal(creatorModelsData.success, true);
+  assert.equal(creatorModelsData.role, 'creator');
+  assert.equal(creatorModelsData.models.length, 1);
+  assert.equal(creatorModelsData.models[0].id, 'valen_real');
+
+  // 3. Register / login as Administrator: should view both test models and real models
+  const adminRegRes = await fetch('http://localhost:3000/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      role: 'admin',
+      name: 'Admin Global Agencia',
+      email: 'admin@auraagency.com',
+    }),
+  });
+  const adminRegData = await adminRegRes.json();
+  assert.equal(adminRegData.success, true);
+  assert.equal(adminRegData.session.role, 'admin');
+
+  // 4. Query models as admin: should see all models (test models + real models)
+  const adminModelsRes = await fetch('http://localhost:3000/api/models?role=admin');
+  const adminModelsData = await adminModelsRes.json();
+  assert.equal(adminModelsData.success, true);
+  assert.equal(adminModelsData.role, 'admin');
+  assert.ok(adminModelsData.testModelsCount >= 4, 'Admin must see at least 4 test models');
+  assert.ok(adminModelsData.realModelsCount >= 2, 'Admin must see registered real models');
+});

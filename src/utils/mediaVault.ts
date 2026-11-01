@@ -22,7 +22,7 @@ export const CASUAL_PHOTOS: Record<string, VaultPhoto> = {
     url: cafeImg,
     isExclusive: false,
     caption: 'Tomándome un matcha latte bien frío antes de salir ☕ ¿Tú ya tomaste café?',
-    watermark: 'AURA_SECURE_VALERIA_#992',
+    watermark: '@valeriag_official',
   },
   gym: {
     id: 'photo-gym',
@@ -31,7 +31,7 @@ export const CASUAL_PHOTOS: Record<string, VaultPhoto> = {
     url: gymImg,
     isExclusive: false,
     caption: 'Muerta pero feliz después de pierna hoy 💪 ¿Hiciste ejercicio?',
-    watermark: 'AURA_SECURE_VALERIA_#992',
+    watermark: '@valeriag_official',
   },
   cozy: {
     id: 'photo-cozy',
@@ -40,7 +40,7 @@ export const CASUAL_PHOTOS: Record<string, VaultPhoto> = {
     url: cozyImg,
     isExclusive: false,
     caption: 'Tarde fría y yo aquí en mantita viendo pelis... me hace falta compañía 🤍',
-    watermark: 'AURA_SECURE_VALERIA_#992',
+    watermark: '@valeriag_official',
   },
   beach: {
     id: 'photo-beach',
@@ -49,7 +49,7 @@ export const CASUAL_PHOTOS: Record<string, VaultPhoto> = {
     url: beachImg,
     isExclusive: false,
     caption: 'Caminando por la orilla al atardecer, mi momento favorito del día 🌅',
-    watermark: 'AURA_SECURE_VALERIA_#992',
+    watermark: '@valeriag_official',
   },
 };
 

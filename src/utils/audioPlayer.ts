@@ -15,6 +15,41 @@ export interface VoiceProfileConfig {
   lang?: string;
   ambiencePreset?: AmbiencePresetId;
   enableAmbience?: boolean;
+  isRealVoiceCloned?: boolean;
+  sampleAudioUrl?: string | null;
+  sampleAudioBase64?: string | null;
+}
+
+/**
+ * Contextual Ambience Resolver:
+ * Eliminates digital silence in voice notes by mapping message context
+ * (gym / weights, rain, morning coffee, beach / ocean, car driving, outdoor terrace / street)
+ * to real organic soundscapes with auto-ducking.
+ */
+export function detectContextAmbience(text: string, defaultPreset?: AmbiencePresetId): AmbiencePresetId {
+  const lower = (text || '').toLowerCase();
+  if (/gym|gimnasio|pesas|entren|mancuerna|ejercicio|cardio|sentadilla|fitness|sudando/.test(lower)) {
+    return 'gym_fitness';
+  }
+  if (/lluvia|tormenta|lloviendo|gota|fr[ií]o|nublado|chubasco|rel[aá]mpago/.test(lower)) {
+    return 'rain_window';
+  }
+  if (/caf[eé]|matcha|cafeter[ií]a|latte|capuchino|desayun|taza/.test(lower)) {
+    return 'cafe_chill';
+  }
+  if (/playa|mar|arena|atardecer|olas|costa|brisa marina|orilla/.test(lower)) {
+    return 'beach_waves';
+  }
+  if (/coche|carro|auto|conduciendo|manejando|tr[aá]fico|viaje|autopista/.test(lower)) {
+    return 'car_interior';
+  }
+  if (/afuera|calle|parque|terraza|balc[oó]n|brisa|aire libre|caminando|ciudad/.test(lower)) {
+    return 'balcony_breeze';
+  }
+  if (/noche|cama|dormir|acostad|sueño|s[aá]banas|pijama|descans/.test(lower)) {
+    return 'bedroom_night';
+  }
+  return defaultPreset || 'room_intimate';
 }
 
 class VoiceSynthesisEngine {
@@ -61,11 +96,11 @@ class VoiceSynthesisEngine {
       ...overrideProfile,
     };
 
-    // 0. Trigger acoustic room tone & background presence (Anti-Digital Silence)
-    if (effectiveProfile.enableAmbience !== false) {
-      ambientSoundscape.play(effectiveProfile.ambiencePreset || 'room_intimate', 280);
-      ambientSoundscape.duck(220);
-    }
+    // 0. Trigger acoustic room tone & background presence (Anti-Digital Silence Guarantee)
+    // Never allow sterile zero silence: contextually match background (gym, rain, cafe, beach, exterior, room)
+    const contextAmbience = detectContextAmbience(text, effectiveProfile.ambiencePreset);
+    ambientSoundscape.play(contextAmbience, 280);
+    ambientSoundscape.duck(220);
 
     // Wrap onEnd callback to naturally decay room presence
     const handlePlaybackFinished = () => {

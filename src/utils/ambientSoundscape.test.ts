@@ -13,6 +13,7 @@ test('ambient soundscape presets have valid acoustic parameters', () => {
     'car_interior',
     'beach_waves',
     'fireplace_warm',
+    'gym_fitness',
     'custom',
   ];
 

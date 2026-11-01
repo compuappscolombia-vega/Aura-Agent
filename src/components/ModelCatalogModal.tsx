@@ -30,6 +30,8 @@ interface ModelCatalogModalProps {
   onSelectModel: (model: ModelProfile) => void;
   onAddModel: (newModel: ModelProfile) => void;
   onUpdateModel: (updatedModel: ModelProfile) => void;
+  currentUserRole?: 'creator' | 'admin' | 'agency_manager';
+  onOpenRegistration?: () => void;
 }
 
 export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
@@ -40,9 +42,12 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
   onSelectModel,
   onAddModel,
   onUpdateModel,
+  currentUserRole = 'admin',
+  onOpenRegistration,
 }) => {
   const [view, setView] = useState<'catalog' | 'create' | 'edit'>('catalog');
   const [editingModel, setEditingModel] = useState<ModelProfile | null>(null);
+  const [catalogFilter, setCatalogFilter] = useState<'all' | 'test' | 'real'>('all');
 
   // New model form state
   const [newModel, setNewModel] = useState<Partial<ModelProfile>>({
@@ -222,10 +227,110 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
         {/* Body */}
         <div className="p-5 sm:p-6 overflow-y-auto">
           {view === 'catalog' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {models.map((model) => {
-                const isActive = activeModel.id === model.id;
-                return (
+            <div className="flex flex-col gap-4">
+              {/* Role Context Notification Banner */}
+              {currentUserRole === 'admin' ? (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-950/30 via-slate-900 to-indigo-950/30 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
+                      <Crown className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        Modo Administrador Activo
+                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 font-mono">
+                          Supervisión Total
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300">
+                        Visualizando los <strong>modelos de prueba del sistema</strong> (Valeria, Elena, Mia, Camila) y todas las <strong>modelos reales</strong> registradas.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Filter Tabs for Admin */}
+                  <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setCatalogFilter('all')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        catalogFilter === 'all'
+                          ? 'bg-indigo-600 text-white'
+                          : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      Todos ({models.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCatalogFilter('test')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        catalogFilter === 'test'
+                          ? 'bg-amber-600 text-white'
+                          : 'text-slate-400 hover:text-amber-300'
+                      }`}
+                    >
+                      🧪 Prueba ({models.filter((m) => m.isSystemDefault).length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCatalogFilter('real')}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        catalogFilter === 'real'
+                          ? 'bg-rose-600 text-white'
+                          : 'text-slate-400 hover:text-rose-300'
+                      }`}
+                    >
+                      ⭐ Reales ({models.filter((m) => !m.isSystemDefault).length})
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-rose-950/30 via-slate-900 to-indigo-950/30 border border-rose-500/30 flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="p-2 rounded-xl bg-rose-500/10 text-rose-400 border border-rose-500/20 shrink-0">
+                      <Heart className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                        Perfil Exclusivo de Modelo Real
+                        <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 font-mono">
+                          100% Independiente
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-300">
+                        Tu espacio opera aislado con tus fotos, voz y enlaces privados. Los modelos de prueba del sistema están desactivados para tu cuenta.
+                      </p>
+                    </div>
+                  </div>
+
+                  {onOpenRegistration && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenRegistration();
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/40 text-xs font-bold shrink-0 transition-all cursor-pointer"
+                    >
+                      + Registrar Otra
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Grid of Displayed Models */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(currentUserRole === 'admin'
+                  ? catalogFilter === 'test'
+                    ? models.filter((m) => m.isSystemDefault)
+                    : catalogFilter === 'real'
+                    ? models.filter((m) => !m.isSystemDefault)
+                    : models
+                  : models.filter((m) => !m.isSystemDefault || m.id === activeModel.id)
+                ).map((model) => {
+                  const isActive = activeModel.id === model.id;
+                  return (
                   <div
                     key={model.id}
                     className={`rounded-2xl border p-4 transition-all flex flex-col justify-between relative overflow-hidden ${
@@ -338,6 +443,7 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
 

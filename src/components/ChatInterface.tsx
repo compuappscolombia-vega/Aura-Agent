@@ -273,10 +273,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                           modelProfile.mediaVault?.find((p) => p.category === msg.photoCategory)?.title) ||
                         modelProfile.mediaVault?.[0]?.title ||
                         `Foto exclusiva de ${modelProfile.name}`;
-                      const watermark =
+                      const rawWatermark =
                         (msg.photoCategory &&
                           modelProfile.mediaVault?.find((p) => p.category === msg.photoCategory)?.watermark) ||
-                        `${modelProfile.handle} / EXCLUSIVE_OFFICIAL`;
+                        modelProfile.handle;
+                      const cleanWatermark = rawWatermark
+                        ? (rawWatermark.includes(' ') ? rawWatermark.split(' ')[0] : rawWatermark)
+                        : modelProfile.handle;
 
                       if (!photoUrl) return null;
 
@@ -296,10 +299,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
                           >
                             <Maximize2 className="w-3.5 h-3.5" />
                           </button>
-                          {/* Watermark Tag */}
-                          <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[9px] text-white/80 font-mono tracking-wider">
-                            🔒 {watermark}
-                          </div>
+                          {/* Watermark Tag - Only shows the username/handle */}
+                          {cleanWatermark && (
+                            <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 backdrop-blur-sm text-[9px] text-white/80 font-mono tracking-wider">
+                              {cleanWatermark}
+                            </div>
+                          )}
                         </div>
                       );
                     })()}

@@ -23,6 +23,7 @@ export type AmbiencePresetId =
   | 'car_interior'
   | 'beach_waves'
   | 'fireplace_warm'
+  | 'gym_fitness'
   | 'custom';
 
 export interface AmbiencePreset {
@@ -126,6 +127,16 @@ export const AMBIENCE_PRESETS: Record<AmbiencePresetId, AmbiencePreset> = {
     noiseType: 'brown',
     defaultVolume: 0.12,
     reverbDecaySeconds: 0.9,
+  },
+  gym_fitness: {
+    id: 'gym_fitness',
+    name: 'Gimnasio & Pesas Fitness',
+    emoji: '🏋️‍♀️',
+    description: 'Sonido ambiente de gimnasio, máquinas, pesas y energía de entrenamiento',
+    filterFreq: 380,
+    noiseType: 'brown',
+    defaultVolume: 0.15,
+    reverbDecaySeconds: 1.1,
   },
   custom: {
     id: 'custom',

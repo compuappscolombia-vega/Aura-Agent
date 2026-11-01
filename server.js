@@ -934,9 +934,9 @@ app.get("/api/app-info", (req, res) => {
   const protocol = req.protocol === "https" || req.get("x-forwarded-proto") === "https" ? "https" : "http";
   res.json({
     success: true,
-    appletId: "1e3a24c0-ec0e-46c6-82fa-bda4cd030bf2",
-    devUrl: "https://ais-dev-kkrofx6pydlonw3h5chh4c-227172514263.us-east1.run.app",
-    sharedUrl: "https://ais-pre-kkrofx6pydlonw3h5chh4c-227172514263.us-east1.run.app",
+    appletId: "73e2cf79-2eb3-40ae-bdae-591a555cc930",
+    devUrl: "https://ais-dev-l23folbkuazsaflsuunohm-877815111677.us-east1.run.app",
+    sharedUrl: "https://ais-pre-l23folbkuazsaflsuunohm-877815111677.us-east1.run.app",
     currentOrigin: `${protocol}://${host}`
   });
 });
@@ -1421,8 +1421,126 @@ var currentSession = {
 app.get("/api/auth/session", (req, res) => {
   res.json({ success: true, session: currentSession });
 });
+app.post("/api/auth/register", (req, res) => {
+  const {
+    role = "creator",
+    name,
+    handle,
+    email,
+    age = 24,
+    location = "Medell\xEDn / Colombia",
+    avatarUrl,
+    bio = "Creadora de contenido +18 \u2022 Modelo Oficial",
+    vipLink = "https://onlyfans.com/",
+    vipPrice = "$19.99/mes",
+    vipDiscountCode,
+    accent = "Latino dulce, sensual, cercano y p\xEDcaro",
+    voiceName = "Kore",
+    provider = "x"
+  } = req.body;
+  if (role === "admin") {
+    const adminSession = {
+      id: `usr-admin-${Date.now()}`,
+      name: name?.trim() || "Administrador General Aura",
+      email: email?.trim() || "compuappscolombia@gmail.com",
+      avatar: avatarUrl || "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80",
+      provider: provider === "google" ? "google" : "x",
+      role: "admin",
+      connectedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      xAccountConnected: true
+    };
+    currentSession = adminSession;
+    return res.json({
+      success: true,
+      session: adminSession,
+      message: "Perfil de Administrador registrado exitosamente. Acceso completo para visualizar modelos de prueba y modelos reales."
+    });
+  }
+  const rawHandle = handle ? String(handle).trim() : "@nueva_modelo";
+  const cleanHandle = rawHandle.startsWith("@") ? rawHandle : `@${rawHandle}`;
+  const cleanId = cleanHandle.replace("@", "").toLowerCase().replace(/[^a-z0-9_-]/g, "") || `model-${Date.now()}`;
+  const cleanName = name ? String(name).trim() : "Modelo Real";
+  const cleanVipDiscount = vipDiscountCode || `${cleanId.toUpperCase()}_VIP`;
+  const defaultAvatar = avatarUrl || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80";
+  const newModelProfile = {
+    id: cleanId,
+    name: cleanName,
+    handle: cleanHandle,
+    username: cleanId,
+    age: Number(age) || 24,
+    location: location || "Medell\xEDn, Colombia",
+    avatarUrl: defaultAvatar,
+    bannerUrl: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80",
+    archetype: `Modelo Oficial \u2022 ${cleanHandle}`,
+    tagline: `Creadora de contenido exclusiva \u2022 ${cleanHandle}`,
+    bio: bio || "Creadora de contenido oficial +18 en OnlyFans",
+    vipLink: vipLink || `https://onlyfans.com/${cleanId}`,
+    vipPrice: vipPrice || "$19.99/mes",
+    discountCode: cleanVipDiscount,
+    conversionThreshold: 75,
+    accent: accent || "Latino dulce, sensual, cercano y p\xEDcaro",
+    pitch: 1.15,
+    rate: 0.98,
+    voiceName: voiceName || "Kore",
+    voiceDescription: `Voz aut\xE9ntica y personalizada para ${cleanName} (${cleanHandle})`,
+    isRealModel: true,
+    isSystemDefault: false,
+    xProfileMetrics: {
+      followers: 120,
+      following: 85,
+      tweets: 42,
+      isVerified: true,
+      lastSyncedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      liveFromX: true
+    }
+  };
+  modelProfilesMap[cleanId] = newModelProfile;
+  const welcomeVoiceClip = {
+    id: `${cleanId}-vc-1`,
+    modelId: cleanId,
+    title: `Saludo Oficial de ${cleanName} \u2615`,
+    category: "saludo",
+    durationSeconds: 7,
+    transcription: `Hola amor, soy ${cleanName}, qu\xE9 lindo saludarte por aqu\xED. Me pillas justo tom\xE1ndome algo antes de salir, \xBFt\xFA qu\xE9 est\xE1s haciendo hoy?`,
+    triggerKeywords: ["hola", "buenas", "saludos", cleanId, "audio", "voz"],
+    createdAt: (/* @__PURE__ */ new Date()).toISOString().split("T")[0]
+  };
+  serverVoiceClips.unshift(welcomeVoiceClip);
+  const welcomePhoto = {
+    id: `${cleanId}-med-1`,
+    modelId: cleanId,
+    title: `Foto de Bienvenida de ${cleanName}`,
+    category: "cafe",
+    url: defaultAvatar,
+    caption: `Tom\xE1ndome un caf\xE9 pensando en ti \u2615`,
+    isExclusive: false,
+    watermark: `${cleanHandle} / AURA_VERIFIED`,
+    createdAt: (/* @__PURE__ */ new Date()).toISOString().split("T")[0]
+  };
+  serverMediaItems.unshift(welcomePhoto);
+  const modelSession = {
+    id: `usr-real-${cleanId}-${Date.now()}`,
+    name: cleanName,
+    handle: cleanHandle,
+    avatar: defaultAvatar,
+    provider: "x",
+    role: "creator",
+    associatedModelId: cleanId,
+    allowedModelIds: [cleanId],
+    connectedAt: (/* @__PURE__ */ new Date()).toISOString(),
+    xAccountConnected: true
+  };
+  currentSession = modelSession;
+  res.json({
+    success: true,
+    session: modelSession,
+    model: newModelProfile,
+    message: `\xA1Perfil de Modelo Real ${cleanName} (${cleanHandle}) registrado exitosamente! Entorno aislado y 100% independiente.`
+  });
+});
 app.post("/api/auth/login", (req, res) => {
-  const { provider, name, email, handle, avatar, role } = req.body;
+  const { provider, name, email, handle, avatar, role, associatedModelId, allowedModelIds } = req.body;
+  const isCreator = (role || "creator") === "creator";
   currentSession = {
     id: `usr-sess-${Date.now()}`,
     name: name || (provider === "x" ? "@afire_sb" : "Afire SB"),
@@ -1431,6 +1549,8 @@ app.post("/api/auth/login", (req, res) => {
     avatar: avatar || (provider === "x" ? "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80" : "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80"),
     provider: provider === "google" ? "google" : "x",
     role: role || "creator",
+    associatedModelId: associatedModelId || (isCreator ? "afire-sb" : void 0),
+    allowedModelIds: allowedModelIds || (isCreator && associatedModelId ? [associatedModelId] : void 0),
     connectedAt: (/* @__PURE__ */ new Date()).toISOString(),
     xAccountConnected: provider === "x" || Boolean(req.body.xAccountConnected)
   };
@@ -1439,6 +1559,41 @@ app.post("/api/auth/login", (req, res) => {
 app.post("/api/auth/logout", (req, res) => {
   currentSession = null;
   res.json({ success: true, message: "Sesi\xF3n cerrada correctamente" });
+});
+app.get("/api/models", (req, res) => {
+  const role = req.query.role || currentSession?.role || "creator";
+  const modelId = req.query.modelId || currentSession?.associatedModelId;
+  const allModelsList = Object.values(modelProfilesMap);
+  if (role === "admin") {
+    return res.json({
+      success: true,
+      role: "admin",
+      models: allModelsList,
+      totalCount: allModelsList.length,
+      testModelsCount: allModelsList.filter((m) => m.isSystemDefault).length,
+      realModelsCount: allModelsList.filter((m) => !m.isSystemDefault).length
+    });
+  }
+  const filtered = modelId ? allModelsList.filter((m) => m.id === modelId) : allModelsList.filter((m) => !m.isSystemDefault);
+  return res.json({
+    success: true,
+    role: "creator",
+    models: filtered.length > 0 ? filtered : [modelProfilesMap["afire-sb"]],
+    totalCount: filtered.length,
+    isIsolated: true
+  });
+});
+app.post("/api/models", (req, res) => {
+  const modelData = req.body;
+  if (!modelData || !modelData.id) {
+    return res.status(400).json({ error: "Faltan datos de la modelo o id" });
+  }
+  modelProfilesMap[modelData.id] = {
+    ...modelProfilesMap[modelData.id],
+    ...modelData,
+    isRealModel: modelData.isSystemDefault ? false : true
+  };
+  res.json({ success: true, model: modelProfilesMap[modelData.id] });
 });
 var externalWebhookConfig = {
   inboundUrl: "/api/webhooks/external/dm-inbound",
@@ -1755,7 +1910,9 @@ var modelProfilesMap = {
     pitch: 1.15,
     rate: 0.98,
     voiceName: "Kore",
-    voiceDescription: "Tono cercano, c\xE1lido, femenino, \xEDntimo y sutilmente p\xEDcaro"
+    voiceDescription: "Tono cercano, c\xE1lido, femenino, \xEDntimo y sutilmente p\xEDcaro",
+    isRealModel: false,
+    isSystemDefault: true
   },
   "elena-russo": {
     id: "elena-russo",
@@ -1769,7 +1926,9 @@ var modelProfilesMap = {
     pitch: 1.05,
     rate: 0.94,
     voiceName: "Aoede",
-    voiceDescription: "Voz sensual, pausada, elegante, segura, madura y misteriosa"
+    voiceDescription: "Voz sensual, pausada, elegante, segura, madura y misteriosa",
+    isRealModel: false,
+    isSystemDefault: true
   },
   "mia-soler": {
     id: "mia-soler",
@@ -1783,7 +1942,9 @@ var modelProfilesMap = {
     pitch: 1.2,
     rate: 1.05,
     voiceName: "Puck",
-    voiceDescription: "Voz alegre, picante, r\xE1pida, risue\xF1a, en\xE9rgica y espont\xE1nea"
+    voiceDescription: "Voz alegre, picante, r\xE1pida, risue\xF1a, en\xE9rgica y espont\xE1nea",
+    isRealModel: false,
+    isSystemDefault: true
   },
   "camila-torres": {
     id: "camila-torres",
@@ -1797,7 +1958,9 @@ var modelProfilesMap = {
     pitch: 1.1,
     rate: 1,
     voiceName: "Kore",
-    voiceDescription: "Voz dulce, motivadora, p\xEDcara, atl\xE9tica y muy natural"
+    voiceDescription: "Voz dulce, motivadora, p\xEDcara, atl\xE9tica y muy natural",
+    isRealModel: false,
+    isSystemDefault: true
   }
 };
 app.get("/api/model/:modelId/vault", (req, res) => {

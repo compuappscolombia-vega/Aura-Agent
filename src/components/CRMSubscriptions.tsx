@@ -515,7 +515,7 @@ export const CRMSubscriptions: React.FC<CRMSubscriptionsProps> = ({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[9px] text-white/90 font-mono">
-                      {photo.watermark}
+                      {photo.watermark ? photo.watermark.split(' ')[0] : modelProfile.handle}
                     </div>
                   </div>
                   <div className="p-3">
