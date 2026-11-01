@@ -68,3 +68,35 @@ test('calculates trust score progression towards VIP threshold', () => {
   assert.equal(vipReadyState.isVipReady, true);
   assert.equal(vipReadyState.stage, 'vip_ready');
 });
+
+test('strictly forbids premature VIP pitch at message 2 or without exchanged media', () => {
+  // Scenario: Turn 2 where user asks for photos or private stuff
+  const earlyMessage2State = calculateTrustMetrics({
+    currentTrust: 32,
+    messageText: '¿Me mandas una foto o link privado?',
+    mood: 'coqueto',
+    isReciprocal: true,
+    vipThreshold: 75,
+    interactionCount: 2, // Only message 2
+    hasExchangedMedia: false, // No photos/audios shared yet
+  });
+
+  // Must not be vip ready under any condition at message 2!
+  assert.equal(earlyMessage2State.isVipReady, false);
+  assert.notEqual(earlyMessage2State.stage, 'vip_ready');
+
+  // Scenario: 7th message with photos/audios exchanged and high trust
+  const earnedVipState = calculateTrustMetrics({
+    currentTrust: 74,
+    messageText: 'Me encantó el audio que me mandaste amor, quiero ver más de ti',
+    mood: 'coqueto',
+    isReciprocal: true,
+    vipThreshold: 75,
+    interactionCount: 7, // 7 turns
+    hasExchangedMedia: true, // Photo/audio exchanged
+  });
+
+  assert.equal(earnedVipState.isVipReady, true);
+  assert.equal(earnedVipState.stage, 'vip_ready');
+});
+

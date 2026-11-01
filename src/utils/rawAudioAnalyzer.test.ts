@@ -44,3 +44,10 @@ test('creates valid RawAudioSample with clean acoustic parameters', () => {
   assert.ok(sample.signatures.f0PitchHz > 0);
   assert.ok(sample.signatures.recommendedAmbience);
 });
+
+test('validates fine acoustic ranges for hyper-realistic A/B testing', () => {
+  const result = extractRawAcousticSignatures('benchmark_studio_intimate.wav', 8, 280000);
+  assert.ok(result.spectralPurity >= 80 && result.spectralPurity <= 100);
+  assert.ok(result.breathinessRatio >= 10 && result.breathinessRatio <= 60);
+  assert.ok(result.harmonicWarmth >= 70 && result.harmonicWarmth <= 100);
+});

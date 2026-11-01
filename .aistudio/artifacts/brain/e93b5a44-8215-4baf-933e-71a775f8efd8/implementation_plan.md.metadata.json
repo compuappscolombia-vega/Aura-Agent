@@ -1,0 +1,6 @@
+{
+  "summary":  "Plan de implementación para reorganizar la barra superior en un diseño responsivo, limpio y ordenado con pestañas principales y menú desplegable de herramientas, además del bloqueo de acceso en pantalla completa al cerrar sesión para garantizar que el sistema requiera autenticación previa.",
+  "updatedAt":  "2026-11-01T05:44:29.160813347Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

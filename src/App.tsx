@@ -48,6 +48,9 @@ import {
   Download,
   UserPlus,
   Crown,
+  ChevronDown,
+  LogOut,
+  User,
 } from 'lucide-react';
 
 const INITIAL_MODEL_PROFILE: ModelProfile = DEFAULT_MODELS[0];
@@ -67,7 +70,7 @@ const INBOUND_SCENARIOS: InboundScenario[] = [
     name: 'Story: Café Matcha ☕',
     icon: '☕',
     description: 'El seguidor reacciona a su historia matutina en el café',
-    initialTrust: 32,
+    initialTrust: 24,
     initialMessages: [
       {
         id: 'scen-user-1',
@@ -92,7 +95,7 @@ const INBOUND_SCENARIOS: InboundScenario[] = [
     name: 'Story: Rutina Gym 💪',
     icon: '💪',
     description: 'El seguidor halaga su disciplina tras ver su foto de entrenamiento',
-    initialTrust: 44,
+    initialTrust: 28,
     initialMessages: [
       {
         id: 'scen-user-2',
@@ -117,7 +120,7 @@ const INBOUND_SCENARIOS: InboundScenario[] = [
     name: 'DM Espontáneo en X 💬',
     icon: '💬',
     description: 'El seguidor desliza en DMs buscando llamar su atención',
-    initialTrust: 25,
+    initialTrust: 20,
     initialMessages: [
       {
         id: 'scen-user-3',
@@ -140,14 +143,14 @@ const INBOUND_SCENARIOS: InboundScenario[] = [
     name: 'Chat Limpio (Tú Escribes Primero) ✨',
     icon: '✨',
     description: 'Bandeja limpia: escribe tu propio mensaje y verifica cómo responde Aura',
-    initialTrust: 20,
+    initialTrust: 18,
     initialMessages: [],
   },
 ];
 
 const INITIAL_METRICS: ConfidenceMetrics = {
-  trustScore: 35,
-  reciprocity: 45,
+  trustScore: 24,
+  reciprocity: 35,
   responseFluency: 60,
   positiveSentiment: 55,
   stage: 'cold',
@@ -202,7 +205,7 @@ export default function App() {
     return DEFAULT_MODELS;
   });
 
-  // Creator / Admin Auth Session State
+  // Creator / Admin Auth Session State - Returns null if not logged in
   const [currentUserSession, setCurrentUserSession] = useState<UserSession | null>(() => {
     if (typeof window !== 'undefined') {
       try {
@@ -212,19 +215,7 @@ export default function App() {
         console.warn('Could not load session from storage:', e);
       }
     }
-    return {
-      id: 'usr-sess-prod-afire',
-      name: 'Ana María',
-      email: 'gato-284@hotmail.com',
-      handle: '@afire_sb',
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
-      provider: 'x',
-      role: 'creator',
-      associatedModelId: 'afire-sb',
-      allowedModelIds: ['afire-sb'],
-      connectedAt: new Date().toISOString(),
-      xAccountConnected: true,
-    };
+    return null;
   });
 
   const [modelProfile, setModelProfile] = useState<ModelProfile>(() => {
@@ -250,6 +241,29 @@ export default function App() {
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [isInstallersModalOpen, setIsInstallersModalOpen] = useState(false);
   const [isModelValidationMode, setIsModelValidationMode] = useState(false);
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
+  const toolsRef = React.useRef<HTMLDivElement>(null);
+  const profileRef = React.useRef<HTMLDivElement>(null);
+  const navMenuRef = React.useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navMenuRef.current && !navMenuRef.current.contains(e.target as Node)) {
+        setIsNavMenuOpen(false);
+      }
+      if (toolsRef.current && !toolsRef.current.contains(e.target as Node)) {
+        setIsToolsOpen(false);
+      }
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Parse URL query parameters to support live model preview (?model=... & ?view=model)
   useEffect(() => {
@@ -369,6 +383,13 @@ export default function App() {
           localStorage.removeItem('aura_current_session');
         }
       } catch (e) {}
+    }
+
+    if (!sess) {
+      fetch('/api/auth/logout', { method: 'POST' }).catch((err) =>
+        console.warn('Could not sync logout to backend:', err)
+      );
+      return;
     }
 
     if (associatedModel) {
@@ -541,17 +562,28 @@ export default function App() {
         );
       }
 
-      // Update confidence metrics
+      // Update confidence metrics with organic conversational requirements
+      const userMessageCount = updatedMessages.filter((m) => m.sender === 'user').length;
+      const hasExchangedMedia =
+        updatedMessages.some(
+          (m) => m.mediaType === 'image' || m.mediaType === 'audio' || m.photoCategory || m.audioBase64
+        ) || Boolean(agentData.sendPhoto) || Boolean(agentData.sendVoice);
+
       const newTrustScore = agentData.trustScore ?? metrics.trustScore;
       const newReciprocity = agentData.reciprocityScore ?? Math.min(100, metrics.reciprocity + 12);
-      const isVipReady = newTrustScore >= modelProfile.rules.conversionThreshold;
+
+      // Strict rule: VIP is ready ONLY after 6+ user messages, exchanging photos/audio, and earned high trust
+      const isVipReady =
+        newTrustScore >= modelProfile.rules.conversionThreshold &&
+        userMessageCount >= 6 &&
+        hasExchangedMedia;
 
       const newMetrics: ConfidenceMetrics = {
         trustScore: newTrustScore,
         reciprocity: newReciprocity,
         responseFluency: Math.min(95, metrics.responseFluency + 8),
         positiveSentiment: Math.min(96, metrics.positiveSentiment + 10),
-        stage: agentData.stage || (isVipReady ? 'vip_ready' : 'rapport'),
+        stage: isVipReady ? 'vip_ready' : newTrustScore >= 55 ? 'warm' : newTrustScore >= 35 ? 'rapport' : 'cold',
         threshold: modelProfile.rules.conversionThreshold,
         isVipReady,
         reasoning: agentData.reasoning || 'Aura interpretó la intención del usuario y ajustó su estrategia.',
@@ -572,6 +604,14 @@ export default function App() {
             body: JSON.stringify({
               text: agentData.voiceScript || agentData.replyText,
               voiceName: modelProfile.voice.name,
+              modelName: modelProfile.name,
+              accent: modelProfile.voiceDna?.accentDialect || modelProfile.voice.accent,
+              pitch: modelProfile.voiceDna?.pitch ?? modelProfile.voice.pitch,
+              rate: modelProfile.voiceDna?.rate ?? modelProfile.voice.rate,
+              timbreScore: modelProfile.voiceDna?.timbreScore ?? 99.4,
+              breathiness: modelProfile.voiceDna?.breathiness ?? 34,
+              roomAcoustics: modelProfile.voiceDna?.roomAcoustics,
+              voiceDna: modelProfile.voiceDna,
               stylePrompt: modelProfile.voice.description,
             }),
           });
@@ -643,7 +683,7 @@ export default function App() {
         photoCaption,
         confidenceSnapshot: newMetrics,
         userMoodSnapshot: agentData.detectedMood,
-        pitchVip: Boolean(agentData.pitchVip || isVipReady),
+        pitchVip: Boolean(agentData.pitchVip && isVipReady),
         vipLink: modelProfile.vipLink,
         vipPrice: modelProfile.vipPrice,
         isEncrypted: true,
@@ -797,258 +837,421 @@ export default function App() {
     }));
   };
 
+  if (!currentUserSession) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center justify-center p-3 sm:p-6 font-sans selection:bg-rose-500 selection:text-white">
+        <AuthLoginModal
+          isOpen={true}
+          canClose={false}
+          onClose={() => {}}
+          currentSession={null}
+          onLogin={handleSetUserSession}
+          onLogout={() => handleSetUserSession(null)}
+          realModels={models.filter((m) => !m.isSystemDefault)}
+          onRegisterRealModel={handleAddModel}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-rose-500 selection:text-white">
-      {/* Top Navbar */}
-      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur-md sticky top-0 z-40 px-4 lg:px-8 py-3 flex items-center justify-between">
-        {/* Logo and Brand */}
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 via-purple-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="font-extrabold text-base tracking-tight text-white">
+      {/* Top Navbar: Clean, Responsive 3-Zone Architecture */}
+      <header className="border-b border-slate-800 bg-slate-900/95 backdrop-blur-md sticky top-0 z-40 px-3 sm:px-6 py-2.5 flex items-center justify-between gap-2 sm:gap-4">
+        {/* Left Zone: Brand & Active Model Selector */}
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-600 to-indigo-600 flex items-center justify-center shadow-md shadow-rose-500/20 shrink-0">
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <div className="hidden sm:block leading-tight">
+              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white block">
                 AuraAgent
-              </h1>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                AGENTE EN VIVO 100% OPERATIVO
+              </span>
+              <span className="text-[10px] text-slate-400">
+                Ventas & Conversión
               </span>
             </div>
-            <p className="text-xs text-slate-400 hidden sm:block">
-              Gestor agentico autónomo para modelos reales • Conversión, voz sintética y monetización recurrente
-            </p>
           </div>
+
+          {/* Active Model Selector Pill - ONLY rendered for Administrator profile */}
+          {currentUserSession?.role === 'admin' && (
+            <>
+              <div className="h-5 w-px bg-slate-800 hidden sm:block" />
+              <button
+                onClick={() => setIsModelCatalogOpen(true)}
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 transition-all cursor-pointer text-left shadow-sm group"
+                title="Supervisar catálogo de modelos (Vista Administrador)"
+              >
+                <div className="relative shrink-0">
+                  <img
+                    src={modelProfile.avatarUrl}
+                    alt={modelProfile.name}
+                    className="w-6 h-6 rounded-lg object-cover border border-slate-700 group-hover:border-indigo-400 transition-colors"
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-slate-950" />
+                </div>
+                <div className="hidden md:block leading-tight pr-1">
+                  <div className="text-xs font-bold text-white flex items-center gap-1">
+                    <span className="truncate max-w-[100px]">{modelProfile.name}</span>
+                    <span className="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                      Supervisión
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-sky-400 font-mono">
+                    {modelProfile.handle}
+                  </span>
+                </div>
+                <ChevronDown className="w-3 h-3 text-slate-400 group-hover:text-white transition-colors" />
+              </button>
+            </>
+          )}
         </div>
 
-        {/* Active Model Selector Pill */}
-        <div className="flex items-center gap-2 bg-slate-950 border border-slate-800 p-1.5 rounded-2xl">
+        {/* Center Zone: Dropdown of System Modules matching Herramientas style (Image 2) */}
+        <div className="relative" ref={navMenuRef}>
           <button
-            onClick={() => setIsModelCatalogOpen(true)}
-            className="flex items-center gap-2.5 px-2 py-1 rounded-xl hover:bg-slate-900 transition-all cursor-pointer group text-left"
-            title="Cambiar o crear perfil de modelo real"
+            onClick={() => setIsNavMenuOpen(!isNavMenuOpen)}
+            className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+            title="Seleccionar módulo o función activa"
           >
-            <div className="relative">
-              <img
-                src={modelProfile.avatarUrl}
-                alt={modelProfile.name}
-                className="w-8 h-8 rounded-xl object-cover border border-slate-700 group-hover:border-indigo-500 transition-colors"
-              />
-              <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-emerald-500 border border-slate-950" />
-            </div>
-            <div className="hidden sm:block">
-              <div className="text-xs font-bold text-white flex items-center gap-1.5 leading-tight">
-                {modelProfile.name}
-                <span className="text-[10px] text-sky-400 font-mono font-normal">
-                  {modelProfile.handle}
-                </span>
-                {!modelProfile.isSystemDefault ? (
-                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-rose-500/10 text-rose-300 border border-rose-500/30">
-                    Real
-                  </span>
-                ) : (
-                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">
-                    Prueba
-                  </span>
-                )}
-              </div>
-              <div className="text-[10px] text-indigo-400 font-medium">
-                {currentUserSession?.role === 'admin'
-                  ? `👑 Modo Admin • ${models.filter((m) => m.isSystemDefault).length} prueba + ${models.filter((m) => !m.isSystemDefault).length} reales`
-                  : `🔒 Perfil Exclusivo Independiente • 1 activa`}
-              </div>
-            </div>
-            <span
-              className={`text-[10px] font-bold px-2 py-1 rounded-lg border transition-all ml-1 ${
-                currentUserSession?.role === 'admin'
-                  ? 'bg-amber-600/30 text-amber-300 border-amber-500/40 group-hover:bg-amber-600 group-hover:text-slate-950'
-                  : 'bg-rose-600/30 text-rose-300 border-rose-500/40 group-hover:bg-rose-600 group-hover:text-white'
-              }`}
-            >
-              {currentUserSession?.role === 'admin'
-                ? `Supervisar (${models.length})`
-                : 'Mi Perfil'}
+            {activeTab === 'live_ops' && <Radio className="w-3.5 h-3.5 text-emerald-400" />}
+            {activeTab === 'twitter_x' && <Twitter className="w-3.5 h-3.5 text-sky-400" />}
+            {activeTab === 'training' && <GraduationCap className="w-3.5 h-3.5 text-amber-300" />}
+            {activeTab === 'crm' && <LayoutDashboard className="w-3.5 h-3.5 text-purple-400" />}
+            {activeTab === 'vault' && <Volume2 className="w-3.5 h-3.5 text-rose-400" />}
+
+            <span className="font-semibold text-white">
+              {activeTab === 'live_ops' && 'Operaciones en Vivo'}
+              {activeTab === 'twitter_x' && 'Integración X'}
+              {activeTab === 'training' && 'Entrenar Aura'}
+              {activeTab === 'crm' && 'Panel & CRM'}
+              {activeTab === 'vault' && 'Voz & Bóveda'}
             </span>
+            <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isNavMenuOpen ? 'rotate-180' : ''}`} />
           </button>
+
+          {isNavMenuOpen && (
+            <div className="absolute left-1/2 -translate-x-1/2 sm:left-0 sm:translate-x-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 animate-fade-in flex flex-col gap-1">
+              <div className="px-2.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                Módulos del Sistema
+              </div>
+
+              {/* 1. Operaciones en Vivo */}
+              <button
+                onClick={() => {
+                  setActiveTab('live_ops');
+                  setIsNavMenuOpen(false);
+                }}
+                className={`w-full px-2.5 py-2 text-left text-xs rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer ${
+                  activeTab === 'live_ops'
+                    ? 'bg-indigo-600/20 text-white font-semibold border border-indigo-500/30'
+                    : 'text-slate-200 hover:bg-slate-800 border border-transparent'
+                }`}
+              >
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                  <Radio className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-white flex items-center justify-between">
+                    <span>Operaciones en Vivo</span>
+                    {activeTab === 'live_ops' && <span className="w-2 h-2 rounded-full bg-emerald-400" />}
+                  </div>
+                  <div className="text-[10px] text-slate-400 truncate">Chat autónomo y medidor de confianza</div>
+                </div>
+              </button>
+
+              {/* 2. Integración X */}
+              <button
+                onClick={() => {
+                  setActiveTab('twitter_x');
+                  setIsNavMenuOpen(false);
+                }}
+                className={`w-full px-2.5 py-2 text-left text-xs rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer ${
+                  activeTab === 'twitter_x'
+                    ? 'bg-sky-600/20 text-white font-semibold border border-sky-500/30'
+                    : 'text-slate-200 hover:bg-slate-800 border border-transparent'
+                }`}
+              >
+                <div className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center shrink-0">
+                  <Twitter className="w-3.5 h-3.5 text-sky-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-white flex items-center justify-between">
+                    <span>Integración X</span>
+                    {activeTab === 'twitter_x' && <span className="w-2 h-2 rounded-full bg-sky-400" />}
+                  </div>
+                  <div className="text-[10px] text-slate-400 truncate">Sincronización en tiempo real de DMs</div>
+                </div>
+              </button>
+
+              {/* 3. Entrenar Aura (solo Administrador) */}
+              {currentUserSession?.role === 'admin' && (
+                <button
+                  onClick={() => {
+                    setActiveTab('training');
+                    setIsNavMenuOpen(false);
+                  }}
+                  className={`w-full px-2.5 py-2 text-left text-xs rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer ${
+                    activeTab === 'training'
+                      ? 'bg-amber-600/20 text-white font-semibold border border-amber-500/30'
+                      : 'text-slate-200 hover:bg-slate-800 border border-transparent'
+                  }`}
+                >
+                  <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                    <GraduationCap className="w-3.5 h-3.5 text-amber-300" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-white flex items-center justify-between">
+                      <span>Entrenar Aura</span>
+                      {activeTab === 'training' && <span className="w-2 h-2 rounded-full bg-amber-400" />}
+                    </div>
+                    <div className="text-[10px] text-slate-400 truncate">Lab de voz hiperrealista y A/B testing</div>
+                  </div>
+                </button>
+              )}
+
+              {/* 4. Panel & CRM */}
+              <button
+                onClick={() => {
+                  setActiveTab('crm');
+                  setIsNavMenuOpen(false);
+                }}
+                className={`w-full px-2.5 py-2 text-left text-xs rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer ${
+                  activeTab === 'crm'
+                    ? 'bg-purple-600/20 text-white font-semibold border border-purple-500/30'
+                    : 'text-slate-200 hover:bg-slate-800 border border-transparent'
+                }`}
+              >
+                <div className="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+                  <LayoutDashboard className="w-3.5 h-3.5 text-purple-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-white flex items-center justify-between">
+                    <span>Panel & CRM</span>
+                    {activeTab === 'crm' && <span className="w-2 h-2 rounded-full bg-purple-400" />}
+                  </div>
+                  <div className="text-[10px] text-slate-400 truncate">Leads, embudo de ventas y suscriptores</div>
+                </div>
+              </button>
+
+              {/* 5. Voz & Bóveda */}
+              <button
+                onClick={() => {
+                  setActiveTab('vault');
+                  setIsNavMenuOpen(false);
+                }}
+                className={`w-full px-2.5 py-2 text-left text-xs rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer ${
+                  activeTab === 'vault'
+                    ? 'bg-rose-600/20 text-white font-semibold border border-rose-500/30'
+                    : 'text-slate-200 hover:bg-slate-800 border border-transparent'
+                }`}
+              >
+                <div className="w-7 h-7 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center shrink-0">
+                  <Volume2 className="w-3.5 h-3.5 text-rose-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold text-white flex items-center justify-between">
+                    <span>Voz & Bóveda</span>
+                    {activeTab === 'vault' && <span className="w-2 h-2 rounded-full bg-rose-400" />}
+                  </div>
+                  <div className="text-[10px] text-slate-400 truncate">Clon de voz, audios y fotos exclusivas</div>
+                </div>
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* User Switcher Pill Bar */}
-        <div className="hidden 2xl:flex items-center gap-1.5 bg-slate-950 border border-slate-800 p-1 rounded-xl">
-          <span className="text-[10px] text-slate-400 font-semibold px-2 flex items-center gap-1">
-            <Users className="w-3 h-3 text-indigo-400" /> Fan:
-          </span>
-          {['@carlos_m92', '@david_tech', '@alex_madrid', '@roberto_val'].map((u) => (
+        {/* Right Zone: Tools Dropdown + User Profile Menu */}
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Herramientas Dropdown Menu */}
+          <div className="relative" ref={toolsRef}>
             <button
-              key={u}
-              onClick={() => handleSelectUser(u)}
-              className={`px-2 py-0.5 rounded-lg text-xs font-medium transition-colors cursor-pointer ${
-                activeUsername === u
-                  ? 'bg-indigo-600 text-white font-semibold shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
+              onClick={() => setIsToolsOpen(!isToolsOpen)}
+              className="px-2.5 sm:px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 text-slate-200 text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer shadow-sm"
+              title="Herramientas del sistema, manual y descargas"
             >
-              {u.split('_')[0]}
-            </button>
-          ))}
-        </div>
-
-        {/* Navigation & Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Mode Switcher */}
-          <div className="flex bg-slate-800/90 border border-slate-700/70 p-1 rounded-xl">
-            <button
-              onClick={() => setActiveTab('live_ops')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === 'live_ops'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Radio className="w-3.5 h-3.5 text-emerald-400" />
-              <span className="hidden sm:inline">Operaciones en Vivo</span>
-              <span className="sm:hidden">Chat</span>
+              <Sliders className="w-3.5 h-3.5 text-indigo-400" />
+              <span className="hidden md:inline">Herramientas</span>
+              <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isToolsOpen ? 'rotate-180' : ''}`} />
             </button>
 
-            <button
-              onClick={() => setActiveTab('twitter_x')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === 'twitter_x'
-                  ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30 font-bold'
-                  : 'text-slate-400 hover:text-sky-300'
-              }`}
-            >
-              <Twitter className="w-3.5 h-3.5 text-sky-400" />
-              <span>Integración X (Twitter)</span>
-              <span className="w-2 h-2 rounded-full bg-sky-400 animate-pulse hidden md:inline-block" />
-            </button>
+            {isToolsOpen && (
+              <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 animate-fade-in flex flex-col gap-1">
+                <div className="px-2.5 py-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  Acciones & Herramientas
+                </div>
 
-            <button
-              onClick={() => setActiveTab('training')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === 'training'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <GraduationCap className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden md:inline">Entrenar Habilidades</span>
-              <span className="md:hidden">Lab</span>
-            </button>
+                {currentUserSession?.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setIsToolsOpen(false);
+                      setIsShareModalOpen(true);
+                    }}
+                    className="w-full px-2.5 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                  >
+                    <Share2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div>
+                      <div className="font-semibold text-white">Compartir con la Modelo</div>
+                      <div className="text-[10px] text-slate-400">Supervisión en vivo para creadoras</div>
+                    </div>
+                  </button>
+                )}
 
-            <button
-              onClick={() => setActiveTab('crm')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === 'crm'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <LayoutDashboard className="w-3.5 h-3.5" />
-              <span>Panel & CRM</span>
-            </button>
+                <button
+                  onClick={() => {
+                    setIsToolsOpen(false);
+                    setIsManualModalOpen(true);
+                  }}
+                  className="w-full px-2.5 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <FileText className="w-4 h-4 text-rose-400 shrink-0" />
+                  <div>
+                    <div className="font-semibold text-white">Manual Oficial PDF</div>
+                    <div className="text-[10px] text-slate-400">Dossier y manual de operación</div>
+                  </div>
+                </button>
 
-            {/* Voz & Bóveda de Mi Modelo - Visualizado dentro y después de Panel & CRM */}
-            <button
-              onClick={() => setActiveTab('vault')}
-              className={`px-3 py-1.5 text-xs font-bold rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
-                activeTab === 'vault'
-                  ? 'bg-gradient-to-r from-rose-600 to-pink-600 text-white shadow-md shadow-rose-600/30'
-                  : 'text-rose-300 hover:text-white hover:bg-rose-500/10'
-              }`}
-              title="Voz real calibrada y bóveda fotográfica de la modelo"
-            >
-              <Volume2 className="w-3.5 h-3.5 text-rose-400" />
-              <span className="hidden sm:inline">Voz & Bóveda de Mi Modelo</span>
-              <span className="sm:hidden">Voz & Bóveda</span>
-            </button>
+                <button
+                  onClick={() => {
+                    setIsToolsOpen(false);
+                    setIsInstallersModalOpen(true);
+                  }}
+                  className="w-full px-2.5 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-sky-400 shrink-0" />
+                  <div>
+                    <div className="font-semibold text-white">Descargas Win64 & APK</div>
+                    <div className="text-[10px] text-slate-400">Instalador Windows y app móvil</div>
+                  </div>
+                </button>
+
+                {currentUserSession?.role === 'admin' && (
+                  <button
+                    onClick={() => {
+                      setIsToolsOpen(false);
+                      setIsAuthModalOpen(true);
+                    }}
+                    className="w-full px-2.5 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                  >
+                    <UserPlus className="w-4 h-4 text-indigo-400 shrink-0" />
+                    <div>
+                      <div className="font-semibold text-white">Registrar Nuevo Perfil</div>
+                      <div className="text-[10px] text-slate-400">Nueva modelo real o administrador</div>
+                    </div>
+                  </button>
+                )}
+
+                <button
+                  onClick={() => {
+                    setIsToolsOpen(false);
+                    handleResetConversation();
+                  }}
+                  className="w-full px-2.5 py-2 text-left text-xs text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2.5 transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div>
+                    <div className="font-semibold text-white">Restablecer Diálogo</div>
+                    <div className="text-[10px] text-slate-400">Reiniciar conversación de prueba</div>
+                  </div>
+                </button>
+
+                <div className="h-px bg-slate-800 my-1" />
+
+                {/* Fan Switcher inside Tools */}
+                <div className="px-2.5 py-1">
+                  <div className="text-[10px] font-semibold text-slate-400 mb-1.5 flex items-center gap-1">
+                    <Users className="w-3 h-3 text-indigo-400" /> Simular Lead / Fan:
+                  </div>
+                  <div className="grid grid-cols-2 gap-1">
+                    {['@carlos_m92', '@david_tech', '@alex_madrid', '@roberto_val'].map((u) => (
+                      <button
+                        key={u}
+                        onClick={() => {
+                          handleSelectUser(u);
+                          setIsToolsOpen(false);
+                        }}
+                        className={`px-2 py-1 rounded-lg text-[11px] font-medium transition-colors cursor-pointer text-left ${
+                          activeUsername === u
+                            ? 'bg-indigo-600 text-white font-bold'
+                            : 'bg-slate-950 text-slate-300 hover:bg-slate-800'
+                        }`}
+                      >
+                        {u}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Compartir con la Modelo Button */}
-          <button
-            onClick={() => setIsShareModalOpen(true)}
-            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-sky-500/20 hover:from-emerald-500/30 hover:to-sky-500/30 text-emerald-300 hover:text-white border border-emerald-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-            title="Compartir enlace en vivo con la modelo para supervisión en directo"
-          >
-            <Share2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Compartir con la Modelo</span>
-            <span className="sm:hidden">Compartir</span>
-          </button>
+          {/* User Profile Menu with Explicit Logout */}
+          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+              className="flex items-center gap-1.5 sm:gap-2 p-1 pr-2 rounded-xl bg-slate-950 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 text-slate-200 text-xs font-semibold transition-all cursor-pointer shadow-sm"
+              title="Cuenta y sesión actual"
+            >
+              <div className="relative shrink-0">
+                <img
+                  src={currentUserSession.avatar}
+                  alt={currentUserSession.name}
+                  className="w-6 h-6 rounded-lg object-cover"
+                />
+                <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-slate-950" />
+              </div>
+              <span className="hidden sm:inline font-bold text-white truncate max-w-[90px]">
+                {currentUserSession.name.split(' ')[0]}
+              </span>
+              <ChevronDown className={`w-3 h-3 text-slate-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-          {/* Manual PDF Viewer & Download Button */}
-          <button
-            onClick={() => setIsManualModalOpen(true)}
-            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-500/20 to-purple-600/20 hover:from-rose-500/30 hover:to-purple-600/30 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-            title="Abrir o descargar el Manual Oficial y Dossier Ejecutivo"
-          >
-            <FileText className="w-3.5 h-3.5 text-rose-400" />
-            <span className="hidden md:inline">Manual PDF</span>
-          </button>
-
-          {/* Ejecutable Local Windows 64-bits & APK Instalador */}
-          <button
-            onClick={() => setIsInstallersModalOpen(true)}
-            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-sky-500/20 via-indigo-500/20 to-purple-500/20 hover:from-sky-500/30 hover:to-purple-500/30 text-sky-300 hover:text-white border border-sky-500/40 text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
-            title="Descargar ejecutable local para Windows 64-bits o instalar APK para celular"
-          >
-            <Download className="w-3.5 h-3.5 text-sky-400" />
-            <span className="hidden sm:inline">Win64 & APK</span>
-            <span className="sm:hidden">App</span>
-          </button>
-
-          {/* Reset button */}
-          <button
-            onClick={handleResetConversation}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-colors cursor-pointer border border-slate-700/80"
-            title="Restablecer diálogo de prueba"
-          >
-            <RotateCcw className="w-4 h-4" />
-          </button>
-
-          {/* Botón de Registro de Modelo Real / Administrador */}
-          <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-rose-600 via-pink-600 to-indigo-600 hover:opacity-95 text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-md shadow-rose-600/20 cursor-pointer"
-            title="Registrar nuevo perfil de modelo real o administrador"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Registrar Perfil</span>
-          </button>
-
-          {/* User Auth Login Button (X or Google) */}
-          <button
-            onClick={() => setIsAuthModalOpen(true)}
-            className={`px-3 py-1.5 rounded-xl border text-xs font-semibold flex items-center gap-2 transition-all cursor-pointer ${
-              currentUserSession
-                ? 'bg-slate-900 border-slate-700 hover:border-indigo-500 text-slate-200'
-                : 'bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 hover:opacity-90 text-white border-transparent shadow-md'
-            }`}
-            title="Panel de inicio de sesión con X o Google"
-          >
-            {currentUserSession ? (
-              <>
-                <div className="relative">
+            {isProfileMenuOpen && (
+              <div className="absolute right-0 mt-2 w-64 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 z-50 animate-fade-in flex flex-col gap-1.5">
+                <div className="p-2.5 bg-slate-950/80 rounded-xl border border-slate-800/80 flex items-center gap-2.5">
                   <img
                     src={currentUserSession.avatar}
                     alt={currentUserSession.name}
-                    className="w-5 h-5 rounded-full object-cover"
+                    className="w-10 h-10 rounded-xl object-cover shrink-0"
                   />
-                  <span className="absolute -bottom-0.5 -right-0.5 w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs font-bold text-white truncate">{currentUserSession.name}</div>
+                    <div className="text-[10px] text-sky-400 font-mono truncate">
+                      {currentUserSession.handle || currentUserSession.email}
+                    </div>
+                    <div className="text-[10px] text-emerald-400 font-semibold mt-0.5">
+                      {currentUserSession.role === 'admin' ? '👑 Administrador General' : '🔒 Modelo Real Oficial'}
+                    </div>
+                  </div>
                 </div>
-                <span className="hidden md:inline font-bold">
-                  {currentUserSession.handle || currentUserSession.name.split(' ')[0]}
-                </span>
-                <span className="text-[10px] text-sky-400 font-bold hidden lg:inline">
-                  {currentUserSession.provider === 'x' ? '𝕏' : 'G'}
-                </span>
-              </>
-            ) : (
-              <>
-                <Twitter className="w-3.5 h-3.5 text-sky-400" />
-                <span className="hidden sm:inline">Iniciar Sesión</span>
-              </>
+
+                <button
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    setIsAuthModalOpen(true);
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-medium text-slate-200 hover:bg-slate-800 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <User className="w-3.5 h-3.5 text-indigo-400" />
+                  <span>Gestionar Perfiles</span>
+                </button>
+
+                <div className="h-px bg-slate-800 my-0.5" />
+
+                <button
+                  onClick={() => {
+                    setIsProfileMenuOpen(false);
+                    handleSetUserSession(null);
+                  }}
+                  className="w-full px-3 py-2 text-left text-xs font-bold text-rose-400 hover:bg-rose-500/15 rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-3.5 h-3.5 text-rose-400" />
+                  <span>Cerrar Sesión</span>
+                </button>
+              </div>
             )}
-          </button>
+          </div>
         </div>
       </header>
 
@@ -1079,13 +1282,15 @@ export default function App() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => setIsModelCatalogOpen(true)}
-              className="px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-200 text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
-            >
-              <Users className="w-3.5 h-3.5" />
-              Cambiar Modelo
-            </button>
+            {currentUserSession?.role === 'admin' && (
+              <button
+                onClick={() => setIsModelCatalogOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-emerald-600/30 hover:bg-emerald-600/50 border border-emerald-500/40 text-emerald-200 text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
+              >
+                <Users className="w-3.5 h-3.5" />
+                Cambiar Modelo
+              </button>
+            )}
             <button
               onClick={() => setIsShareModalOpen(true)}
               className="px-3 py-1.5 rounded-xl bg-indigo-600/30 hover:bg-indigo-600/50 border border-indigo-500/40 text-indigo-200 text-xs font-bold cursor-pointer transition-all flex items-center gap-1.5 shadow-sm"
@@ -1110,21 +1315,21 @@ export default function App() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left Column: Live Chat Interface with Context Selector (7 cols) */}
             <div className="lg:col-span-7 flex flex-col gap-3 h-[800px]">
-              {/* Inbound Situational Context Bar */}
-              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-2.5 flex items-center justify-between gap-2 overflow-x-auto no-scrollbar shrink-0 shadow-md">
+              {/* Inbound Situational Context Bar matching Herramientas style */}
+              <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-2 sm:p-2.5 flex flex-wrap items-center justify-between gap-2 shrink-0 shadow-md">
                 <div className="flex items-center gap-1.5 shrink-0 text-slate-400 text-xs font-semibold pl-1">
                   <Flame className="w-3.5 h-3.5 text-rose-400" />
                   <span className="hidden sm:inline">Punto de Entrada en X:</span>
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1.5 flex-wrap">
                   {INBOUND_SCENARIOS.map((scen) => (
                     <button
                       key={scen.id}
                       onClick={() => handleSelectScenario(scen)}
-                      className={`px-2.5 py-1 rounded-xl text-xs font-medium whitespace-nowrap transition-all cursor-pointer flex items-center gap-1 ${
+                      className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center gap-1.5 shadow-sm border ${
                         activeScenarioId === scen.id
-                          ? 'bg-rose-600 text-white shadow-md font-semibold'
-                          : 'bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800'
+                          ? 'bg-rose-600 text-white border-rose-500 shadow-rose-500/20 font-bold'
+                          : 'bg-slate-950 hover:bg-slate-850 border-slate-800 hover:border-slate-700 text-slate-200'
                       }`}
                       title={scen.description}
                     >
@@ -1244,6 +1449,7 @@ export default function App() {
           /* Agent Training & Skill Benchmark Lab */
           <AgentTrainingLab
             modelProfile={modelProfile}
+            allModels={models}
             onUpdateSkills={(newSkills) =>
               setModelProfile((prev) => ({ ...prev, skills: newSkills }))
             }

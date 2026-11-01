@@ -128,6 +128,20 @@ export interface RawAudioSample {
   };
 }
 
+export interface VoiceLearningIteration {
+  id: string;
+  generation: number;
+  timestamp: string;
+  source: 'microfono_en_vivo' | 'subida_archivo' | 'auto_perfeccionamiento' | 'calibracion_admin';
+  f0PitchHz: number;
+  harmonicWarmth: number;
+  breathinessRatio: number;
+  cadenceRate: number;
+  accentDialect: string;
+  learnedTrait: string;
+  similarityScore: number; // 0 - 100%
+}
+
 export interface ModelVoiceDNA {
   isCloned: boolean;
   sampleDurationSeconds: number;
@@ -140,6 +154,18 @@ export interface ModelVoiceDNA {
   timbreScore: number;
   calibratedAt?: string;
   learningGenerationsCount: number;
+  similarityScore?: number; // e.g. 99.4% identica a la modelo
+  accentDialect?: string;
+  breathiness?: number;
+  learningHistory?: VoiceLearningIteration[];
+  // Fine-Grained Timbre & Breathiness Acoustics (Hiperrealismo de Voz)
+  formantResonance?: number; // 80 - 100% (Resonancia de formantes y cavidad vocal)
+  chestWarmth?: number; // 0 - 100% (Calidez y cuerpo de pecho)
+  harmonicAirClarity?: number; // 0 - 100% (Brillo armónico y presencia)
+  vocalFryTexture?: number; // 0 - 100% (Textura de cuerdas vocales íntima)
+  preInhaleDelayMs?: number; // 0 - 500ms (Micro-respiración previa al habla)
+  glottalTrailOff?: number; // 0 - 100% (Descompresión glotal y decaimiento de aire)
+  deEssingFilter?: number; // 0 - 100% (Filtro anti-siseo orgánico)
   // Acoustic Room Presence & Environment (Anti-Digital Silence)
   roomAcoustics?: string;
   ambientPresenceType?:

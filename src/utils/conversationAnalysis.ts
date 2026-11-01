@@ -147,12 +147,22 @@ export function calculateTrustMetrics(params: {
   mood: DetectedMood;
   isReciprocal: boolean;
   vipThreshold?: number;
+  interactionCount?: number;
+  hasExchangedMedia?: boolean;
 }): {
   newTrustScore: number;
   stage: 'cold' | 'rapport' | 'intimacy' | 'vip_ready';
   isVipReady: boolean;
 } {
-  const { currentTrust, messageText, mood, isReciprocal, vipThreshold = 75 } = params;
+  const {
+    currentTrust,
+    messageText,
+    mood,
+    isReciprocal,
+    vipThreshold = 75,
+    interactionCount,
+    hasExchangedMedia,
+  } = params;
   let delta = 0;
 
   if (mood === 'coqueto') delta += 6;
@@ -168,8 +178,12 @@ export function calculateTrustMetrics(params: {
 
   const newTrustScore = Math.min(100, Math.max(10, currentTrust + delta));
 
+  const meetsInteractions = interactionCount === undefined || interactionCount >= 6;
+  const meetsMedia = hasExchangedMedia === undefined || hasExchangedMedia;
+  const isVipReady = newTrustScore >= vipThreshold && meetsInteractions && meetsMedia;
+
   let stage: 'cold' | 'rapport' | 'intimacy' | 'vip_ready' = 'cold';
-  if (newTrustScore >= vipThreshold) {
+  if (isVipReady) {
     stage = 'vip_ready';
   } else if (newTrustScore >= 60) {
     stage = 'intimacy';
@@ -180,6 +194,6 @@ export function calculateTrustMetrics(params: {
   return {
     newTrustScore,
     stage,
-    isVipReady: newTrustScore >= vipThreshold,
+    isVipReady,
   };
 }

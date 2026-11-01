@@ -35,6 +35,7 @@ interface AuthLoginModalProps {
   onLogout: () => void;
   realModels?: ModelProfile[];
   onRegisterRealModel?: (newModel: ModelProfile) => void;
+  canClose?: boolean;
 }
 
 const PRESET_AVATARS = [
@@ -64,9 +65,10 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
   onLogout,
   realModels = [],
   onRegisterRealModel,
+  canClose = true,
 }) => {
-  // Main view mode: 'register' | 'login'
-  const [authMode, setAuthMode] = useState<'register' | 'login'>('register');
+  // Main view mode: if not logged in, default to 'login'
+  const [authMode, setAuthMode] = useState<'register' | 'login'>(currentSession ? 'register' : 'login');
   // Role selector: 'real_model' | 'admin'
   const [authRole, setAuthRole] = useState<'real_model' | 'admin'>('real_model');
 
@@ -405,12 +407,15 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
               </p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
-          >
-            <CloseIcon className="w-5 h-5" />
-          </button>
+          {canClose && (
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer"
+              title="Cerrar ventana"
+            >
+              <CloseIcon className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Status Notification Banner */}
@@ -990,8 +995,43 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                         </div>
                       ))
                     ) : (
-                      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center text-xs text-slate-400">
-                        No hay modelos reales registradas aún. Haz clic en "Registrar Nuevo Perfil".
+                      <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 text-center flex flex-col items-center gap-3">
+                        <p className="text-xs text-slate-400">
+                          No has registrado modelos reales personalizadas todavía.
+                        </p>
+                        <div className="flex flex-col sm:flex-row gap-2 w-full">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const demoSession: UserSession = {
+                                id: 'usr-sess-afire',
+                                name: 'ANAMARIA❣️',
+                                handle: '@afire_sb',
+                                avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80',
+                                provider: 'x',
+                                role: 'creator',
+                                associatedModelId: 'afire-sb',
+                                allowedModelIds: ['afire-sb'],
+                                connectedAt: new Date().toISOString(),
+                                xAccountConnected: true,
+                              };
+                              onLogin(demoSession);
+                              onClose();
+                            }}
+                            className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-rose-600 to-indigo-600 hover:opacity-95 text-white text-xs font-bold transition-all shadow-md cursor-pointer flex items-center justify-center gap-1.5"
+                          >
+                            <Heart className="w-3.5 h-3.5 text-rose-300" />
+                            Ingreso Rápido: @afire_sb (Oficial)
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAuthMode('register')}
+                            className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                          >
+                            <UserPlus className="w-3.5 h-3.5 text-indigo-400" />
+                            Registrar Mi Modelo Real
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
