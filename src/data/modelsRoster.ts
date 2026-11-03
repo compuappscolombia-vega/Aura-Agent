@@ -35,12 +35,12 @@ export const DEFAULT_MODELS: ModelProfile[] = [
       liveFromX: true,
     },
     voice: {
-      name: 'Kore',
+      name: 'Aoede',
       pitch: 1.15,
       rate: 0.96,
       lang: 'es-CO',
       accent: 'Latino dulce, sensual, cercano y pícaro (Paisa Colombiano)',
-      description: 'Voz femenina cálida, dulce, íntima, cómplice y natural de Ana María (@afire_sb)',
+      description: 'Voz femenina cálida, dulce, íntima, melódica, cómplice y natural de Ana María (@afire_sb) con timbre Aoede',
     },
     voiceDna: {
       isCloned: true,
@@ -423,7 +423,7 @@ export const DEFAULT_MODELS: ModelProfile[] = [
     vipDiscountCode: 'ELENA_SECRETS_40',
     isSystemDefault: true,
     voice: {
-      name: 'Aoede',
+      name: 'Zephyr',
       pitch: 1.02,
       rate: 0.92,
       lang: 'es-ES',

@@ -25,6 +25,8 @@ import { ManualViewerModal } from './components/ManualViewerModal';
 import { InstallersModal } from './components/InstallersModal';
 import { ModelVoiceAndMediaVault } from './components/ModelVoiceAndMediaVault';
 import { DEFAULT_MODELS } from './data/modelsRoster';
+import { AuraAgentLogo } from './components/AuraAgentLogo';
+import { voiceEngine } from './utils/audioPlayer';
 import {
   Sparkles,
   Share2,
@@ -226,10 +228,33 @@ export default function App() {
   });
   const [isModelCatalogOpen, setIsModelCatalogOpen] = useState(false);
   const [metrics, setMetrics] = useState<ConfidenceMetrics>(INITIAL_METRICS);
-  const [activeScenarioId, setActiveScenarioId] = useState<string>('story-cafe');
-  const [messages, setMessages] = useState<ChatMessage[]>(INBOUND_SCENARIOS[0].initialMessages);
   const [activeUsername, setActiveUsername] = useState<string>('@carlos_m92');
-  const [userMemory, setUserMemory] = useState<UserMemory>(INITIAL_USER_MEMORY);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const initialModelId = DEFAULT_MODELS[0].id;
+        const saved = localStorage.getItem(`aura_chat_msgs_${initialModelId}_@carlos_m92`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {
+        console.warn('Could not read saved messages:', e);
+      }
+    }
+    return INBOUND_SCENARIOS[0].initialMessages;
+  });
+  const [userMemory, setUserMemory] = useState<UserMemory>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('aura_memory_@carlos_m92');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {
+        console.warn('Could not read saved memory:', e);
+      }
+    }
+    return INITIAL_USER_MEMORY;
+  });
   const [isModelTyping, setIsModelTyping] = useState(false);
   const [activeTab, setActiveTab] = useState<'live_ops' | 'twitter_x' | 'training' | 'crm' | 'vault'>('live_ops');
   const [inspectorTab, setInspectorTab] = useState<'memory' | 'confidence' | 'brain'>('memory');
@@ -243,6 +268,7 @@ export default function App() {
   const [isManualModalOpen, setIsManualModalOpen] = useState(false);
   const [isInstallersModalOpen, setIsInstallersModalOpen] = useState(false);
   const [isModelValidationMode, setIsModelValidationMode] = useState(false);
+  const [activeScenarioId, setActiveScenarioId] = useState<string>('story-cafe');
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNavMenuOpen, setIsNavMenuOpen] = useState(false);
@@ -250,6 +276,42 @@ export default function App() {
   const profileRef = React.useRef<HTMLDivElement>(null);
   const navMenuRef = React.useRef<HTMLDivElement>(null);
   const adminAvatarInputRef = React.useRef<HTMLInputElement>(null);
+
+  // Auto-persist conversation history whenever messages change (100% resilient across reload/switches)
+  useEffect(() => {
+    if (typeof window !== 'undefined' && messages.length > 0) {
+      try {
+        const key = `aura_chat_msgs_${modelProfile.id}_${activeUsername}`;
+        localStorage.setItem(key, JSON.stringify(messages));
+      } catch (e) {
+        console.warn('Could not save chat messages:', e);
+      }
+    }
+  }, [messages, modelProfile.id, activeUsername]);
+
+  // Auto-persist user memory whenever it changes
+  useEffect(() => {
+    if (typeof window !== 'undefined' && userMemory) {
+      try {
+        localStorage.setItem(`aura_memory_${activeUsername}`, JSON.stringify(userMemory));
+      } catch (e) {
+        console.warn('Could not save user memory:', e);
+      }
+    }
+  }, [userMemory, activeUsername]);
+
+  // Synchronize calibrated natural voice profile whenever active model changes
+  useEffect(() => {
+    voiceEngine.loadModelVoiceProfile(modelProfile.id, {
+      pitch: modelProfile.voiceDna?.pitch ?? modelProfile.voice.pitch,
+      rate: modelProfile.voiceDna?.rate ?? modelProfile.voice.rate,
+      accent: modelProfile.voiceDna?.accentDialect ?? modelProfile.voice.accent,
+      voiceName: modelProfile.voice.name,
+      lang: modelProfile.voice.lang || 'es-CO',
+      ambiencePreset: (modelProfile.voiceDna?.ambientPresenceType as any) || 'room_intimate',
+      enableAmbience: true,
+    });
+  }, [modelProfile.id]);
 
   // Admin Profile Photo Upload Handler - Restricted exclusively to admin role
   const handleAdminAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -369,8 +431,22 @@ export default function App() {
 
   const handleSelectModel = (selected: ModelProfile) => {
     setModelProfile(selected);
-    setMessages((prev) => [
-      ...prev,
+    if (typeof window !== 'undefined') {
+      try {
+        const key = `aura_chat_msgs_${selected.id}_${activeUsername}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMessages(parsed);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not read saved model chat:', e);
+      }
+    }
+    setMessages([
       {
         id: `msg-model-switch-${Date.now()}`,
         sender: 'model',
@@ -509,12 +585,29 @@ export default function App() {
       }));
     }
 
-    // Default to natural coffee story context for this user
+    // Check persistent chat history for this user & model
+    if (typeof window !== 'undefined') {
+      try {
+        const key = `aura_chat_msgs_${modelProfile.id}_${uname}`;
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setMessages(parsed);
+            return;
+          }
+        }
+      } catch (e) {
+        console.warn('Could not read saved user chat history:', e);
+      }
+    }
+
+    // Default to natural initial context for a new contact
     setMessages([
       {
         id: `msg-ctx-${Date.now()}`,
         sender: 'user',
-        text: `Hola Valeria, vi tu story de hoy y me encantó tu estilo.`,
+        text: `Hola ${modelProfile.name}, vi tu perfil y me encantó tu estilo.`,
         timestamp: 'Hace 2 min',
         isEncrypted: true,
       },
@@ -790,6 +883,11 @@ export default function App() {
   };
 
   const handleResetConversation = () => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(`aura_chat_msgs_${modelProfile.id}_${activeUsername}`);
+      } catch (e) {}
+    }
     const defaultScen = INBOUND_SCENARIOS.find((s) => s.id === activeScenarioId) || INBOUND_SCENARIOS[0];
     setMessages(defaultScen.initialMessages);
     setMetrics({
@@ -888,17 +986,10 @@ export default function App() {
         {/* Left Zone: Brand & Active Model Selector */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-rose-500 via-purple-600 to-indigo-600 flex items-center justify-center shadow-md shadow-rose-500/20 shrink-0">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            <div className="hidden sm:block leading-tight">
-              <span className="font-extrabold text-sm sm:text-base tracking-tight text-white block">
-                AuraAgent
-              </span>
-              <span className="text-[10px] text-slate-400">
-                Ventas & Conversión
-              </span>
-            </div>
+            <AuraAgentLogo size="md" showText={true} />
+            <span className="hidden xl:inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-800/40">
+              Secure Engine
+            </span>
           </div>
 
           {/* Active Model Selector Pill - ONLY rendered for Administrator profile */}
@@ -1415,6 +1506,7 @@ export default function App() {
                   isModelTyping={isModelTyping}
                   platformSkin={platformSkin}
                   onChangeSkin={setPlatformSkin}
+                  onResetConversation={handleResetConversation}
                 />
               </div>
             </div>
@@ -1647,14 +1739,23 @@ export default function App() {
         </button>
       </nav>
 
-      {/* Footer / Privacy note */}
-      <footer className="border-t border-slate-800/80 bg-slate-950 py-4 px-6 text-center text-xs text-slate-500 flex flex-wrap items-center justify-between gap-4 max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-emerald-400" />
-          <span>AuraAgent Operativo en Vivo • Aprendizaje Automatizado Continuo • Cifrado TLS 1.3</span>
-        </div>
-        <div>
-          <span>AuraAgent Platform • Diseñado para Maximizar Ventas y Protección de Creadoras</span>
+      {/* Footer: By CompuApps SecureDev */}
+      <footer className="border-t border-slate-800/80 bg-slate-950/95 py-4 px-4 sm:px-6 text-xs text-slate-400 mt-auto w-full backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div className="flex items-center gap-2.5 flex-wrap justify-center sm:justify-start">
+            <AuraAgentLogo size="sm" showText={true} />
+            <span className="text-slate-600 hidden sm:inline">•</span>
+            <span className="text-slate-400 text-[11px] flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 inline shrink-0" />
+              Cifrado TLS 1.3 • Persistencia Conversacional Continua • Anti-Detección
+            </span>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
+            <span className="text-slate-500 text-[11px]">Plataforma oficial protegida por</span>
+            <span className="px-3 py-1 rounded-lg bg-gradient-to-r from-cyan-950/90 via-slate-900 to-indigo-950/90 border border-cyan-500/40 text-cyan-300 font-extrabold tracking-wide shadow-sm text-xs">
+              By CompuApps SecureDev
+            </span>
+          </div>
         </div>
       </footer>
     </div>

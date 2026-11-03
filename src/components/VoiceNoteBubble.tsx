@@ -142,10 +142,12 @@ export const VoiceNoteBubble: React.FC<VoiceNoteBubbleProps> = ({
         </div>
       </div>
 
-      {/* Transcription snippet */}
-      <p className="mt-2 text-xs text-slate-300/90 italic bg-black/20 rounded-lg p-2 border border-white/5">
-        "{text}"
-      </p>
+      {/* Audio only: Never display or repeat text transcript for system/model voice notes */}
+      {!isModel && text && (
+        <p className="mt-2 text-xs text-slate-300/90 italic bg-black/20 rounded-lg p-2 border border-white/5">
+          "{text}"
+        </p>
+      )}
     </div>
   );
 };

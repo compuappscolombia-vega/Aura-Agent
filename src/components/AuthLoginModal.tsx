@@ -705,7 +705,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                       onChange={(e) => {
                         setRegModelVoiceAccent(e.target.value);
                         if (e.target.value.includes('Español peninsular')) {
-                          setRegModelVoiceName('Aoede');
+                          setRegModelVoiceName('Zephyr');
                         } else if (e.target.value.includes('Argentino')) {
                           setRegModelVoiceName('Puck');
                         } else {
@@ -718,7 +718,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                         Latino dulce, sensual, cercano y pícaro (Paisa Colombiano) • Voz Kore
                       </option>
                       <option value="Español peninsular sofisticado, elegante y maduro">
-                        Español peninsular sofisticado, elegante y maduro • Voz Aoede
+                        Español peninsular sofisticado, elegante y maduro • Voz Zephyr
                       </option>
                       <option value="Argentino / Porteño alegre, rápido, fresco y desenfadado">
                         Argentino / Porteño alegre, rápido, fresco y desenfadado • Voz Puck

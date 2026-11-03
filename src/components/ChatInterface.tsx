@@ -30,6 +30,7 @@ import {
   AlertTriangle,
   Camera,
   Image as ImageIcon,
+  RotateCcw,
 } from 'lucide-react';
 
 interface ChatInterfaceProps {
@@ -43,6 +44,7 @@ interface ChatInterfaceProps {
   isModelTyping: boolean;
   platformSkin: 'X (Twitter)' | 'Web';
   onChangeSkin: (skin: 'X (Twitter)' | 'Web') => void;
+  onResetConversation?: () => void;
 }
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({
@@ -56,6 +58,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
   isModelTyping,
   platformSkin,
   onChangeSkin,
+  onResetConversation,
 }) => {
   const [inputText, setInputText] = useState('');
   const [showRecorder, setShowRecorder] = useState(false);
@@ -180,6 +183,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               Web VIP
             </button>
           </div>
+
+          {/* Reset Conversation Button */}
+          {onResetConversation && (
+            <button
+              onClick={onResetConversation}
+              className="p-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-rose-300 transition-colors cursor-pointer"
+              title="Reiniciar conversación actual"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          )}
         </div>
       </div>
 

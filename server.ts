@@ -571,7 +571,7 @@ Debes responder SIEMPRE en formato JSON estricto:
   "pitchVip": true/false (SÓLO true si se cumplen los requisitos de 6+ mensajes, intercambio de fotos/audios y confianza alta)
 }`;
 
-    // Smart Fallback Function with contextual understanding & true conversation continuity
+    // Advanced Conversational Reasoning Engine (Fluid, Logical, Context-Sustaining & Anti-Repetitive)
     const getFallbackData = () => {
       let deltaTrust = 4;
       let replyText = '';
@@ -583,69 +583,181 @@ Debes responder SIEMPRE en formato JSON estricto:
       const lower = lastUserText.toLowerCase().trim();
       const lastBotLower = lastModelMessage.toLowerCase();
 
+      // Anti-repetition selector: picks an option not present in recentBotResponses
+      const pickDiverse = (options: string[]): string => {
+        const filtered = options.filter(
+          (opt) => !userMem.recentBotResponses.some((prev) => prev.slice(0, 25).toLowerCase() === opt.slice(0, 25).toLowerCase())
+        );
+        const pool = filtered.length > 0 ? filtered : options;
+        return pool[Math.floor(Math.random() * pool.length)];
+      };
+
       // 1. Thread continuity: Answering previous bot questions
       if (lastBotLower.includes('café negro') || lastBotLower.includes('dulces') || lastBotLower.includes('matcha') || lastBotLower.includes('cafe negro')) {
         if (lower.includes('negro') || lower.includes('tinto') || lower.includes('fuerte') || lower.includes('amargo') || lower.includes('sin azucar') || lower.includes('sin azúcar') || lower.includes('solo')) {
-          replyText = `Jajaja uff de los míos ☕ El café negro bien cargado y sin rodeos es el único que despierta con toda. ¿Te tomas varios en el día o solo uno por la mañana?`;
+          replyText = pickDiverse([
+            `Jajaja uff de los míos ☕ El café negro bien cargado y sin rodeos es el único que de verdad despierta. ¿Te tomas varios en el día o solo uno matutino?`,
+            `¡Eso! El buen café se toma puro, sin esconder su sabor 👌 Veo que eres de carácter firme. ¿Eres de los que no funcionan sin su primera taza en la mañana?`,
+          ]);
         } else if (lower.includes('dulce') || lower.includes('azucar') || lower.includes('azúcar') || lower.includes('latte') || lower.includes('leche') || lower.includes('capuchino') || lower.includes('cappuccino') || lower.includes('caramelo')) {
-          replyText = `Jajaja eres team dulce entonces 🤭 A mí a veces me encanta con canelita o leche de almendras cuando me quiero consentir. ¿Acompañas tu cafecito con algo rico o solo?`;
+          replyText = pickDiverse([
+            `Jajaja eres team dulce entonces 🤭 A mí a veces me encanta con canelita o leche de almendras cuando me quiero consentir. ¿Acompañas tu cafecito con algo rico?`,
+            `¡Qué delicia! Nada como un latte espumoso con un toque dulce para alegrar la mañana ✨ ¿Sueles desayunar con calma o sales corriendo al trabajo?`,
+          ]);
         } else {
           replyText = `Jajaja me encanta saber tus gustos ☕ Nada como un buen café para empezar el día con buena vibra. Oye, ¿y a qué te dedicas tú en tu día a día o qué planes tienes hoy?`;
         }
         deltaTrust = 4;
-      } else if (lastBotLower.includes('entrenas') || lastBotLower.includes('sudar') || lastBotLower.includes('sentadillas')) {
-        if (lower.includes('si') || lower.includes('sí') || lower.includes('entreno') || lower.includes('pesas') || lower.includes('gym') || lower.includes('crossfit') || lower.includes('corro') || lower.includes('ejercicio') || lower.includes('hago')) {
-          replyText = `Eso me fascina 💪 La gente disciplinada que entrena tiene una energía y una seguridad totalmente diferente. ¿Y qué entrenas más, pesas, cardio o cuál es tu fuerte?`;
-        } else if (lower.includes('no') || lower.includes('flojera') || lower.includes('pereza') || lower.includes('nada') || lower.includes('descanso') || lower.includes('mañana')) {
-          replyText = `Jajaja no te creo 🙈 Bueno, entonces me va a tocar ser tu entrenadora personal y motivarte un poquito... a ver si me sigues el ritmo 😉`;
+      } else if (lastBotLower.includes('entrenas') || lastBotLower.includes('sudar') || lastBotLower.includes('sentadillas') || lastBotLower.includes('pesa')) {
+        if (lower.includes('si') || lower.includes('sí') || lower.includes('entreno') || lower.includes('pesas') || lower.includes('gym') || lower.includes('crossfit') || lower.includes('corro') || lower.includes('ejercicio') || lower.includes('hago') || lower.includes('calistenia')) {
+          replyText = pickDiverse([
+            `Eso me fascina 💪 La gente disciplinada que entrena tiene una energía y una seguridad totalmente diferente. ¿Y qué entrenas más, pesas, cardio o cuál es tu fuerte?`,
+            `¡Uff qué bien! Me encanta saber que también te cuidas y le metes disciplina al cuerpo 🔥 ¿Entrenas por la mañana temprano o prefieres ir en la tarde/noche?`,
+          ]);
+        } else if (lower.includes('no') || lower.includes('flojera') || lower.includes('pereza') || lower.includes('nada') || lower.includes('descanso') || lower.includes('mañana') || lower.includes('tiempo')) {
+          replyText = pickDiverse([
+            `Jajaja no te creo 🙈 Bueno, entonces me va a tocar ser tu entrenadora personal y motivarte un poquito... a ver si me sigues el ritmo 😉`,
+            `Jajaja bueno se vale descansar también, pero no te me acostumbres que la buena vibra y la energía se construyen activándose 💪 ¿Cuál es tu plan para hoy entonces?`,
+          ]);
         } else {
-          replyText = `Jajaja me encanta tu sinceridad 💪 Para mí entrenar es mi terapia diaria. ¿Tú cómo sueles desconectar del estrés del trabajo?`;
+          replyText = `Jajaja me encanta tu sinceridad 💪 Para mí entrenar es mi terapia diaria. ¿Tú cómo sueles desconectar del estrés del día?`;
         }
         deltaTrust = 4;
-      } else if (lastBotLower.includes('lanzado') || lastBotLower.includes('lanzada')) {
-        if (lower.includes('contigo') || lower.includes('solo') || lower.includes('vos') || lower.includes('ti') || lower.includes('hermosa') || lower.includes('linda')) {
-          replyText = `Jajaja mmm no sé si creerte del todo 😉 pero admito que me encantó esa respuesta... se siente rico tener atención especial. Cuéntame, ¿qué fue lo primero que pensaste cuando viste mi perfil?`;
-        } else if (lower.includes('siempre') || lower.includes('así') || lower.includes('asi') || lower.includes('directo')) {
-          replyText = `Jajaja me gusta la gente sin rodeos 😏 pero a ver si mantienes esa misma seguridad cuando me tengas de frente en persona. ¿Siempre tomas la iniciativa?`;
+      } else if (lastBotLower.includes('dedicas') || lastBotLower.includes('trabajas') || lastBotLower.includes('haces en tu día')) {
+        if (lower.includes('program') || lower.includes('software') || lower.includes('dev') || lower.includes('codigo') || lower.includes('código') || lower.includes('sistemas') || lower.includes('tecnolog') || lower.includes('it')) {
+          replyText = pickDiverse([
+            `¡No te lo creo, programador! 💻 Wow, admiro muchísimo a los que dominan el código y la tecnología... me parece súper inteligente y sexy. ¿Desarrollas apps, webs o en qué proyectos andas?`,
+            `¡Qué genial! Me encanta la gente que crea cosas en digital 🚀 Aunque seguro pasas muchas horas frente a la pantalla jaja. ¿Te tomas descansitos o te clavas trabajando horas seguidas?`,
+          ]);
+          userMem.keyFacts.push('Trabaja en tecnología / desarrollo de software');
+        } else if (lower.includes('negocio') || lower.includes('empresa') || lower.includes('emprend') || lower.includes('comercio') || lower.includes('ventas')) {
+          replyText = `¡Emprendedor con visión propia! 💼 Me fascina la gente independiente con iniciativa que construye su propio camino. ¿De qué es tu negocio o proyecto?`;
+          userMem.keyFacts.push('Tiene su propio negocio o emprendimiento');
+        } else if (lower.includes('ingenier') || lower.includes('arquitect') || lower.includes('abogad') || lower.includes('medic') || lower.includes('salud') || lower.includes('doctor')) {
+          replyText = `¡Qué profesión tan admirable y de tanta dedicación! ✨ Se nota en la forma en que te expresas que eres un hombre enfocado y profesional. ¿Te gusta lo que haces o es muy demandante?`;
         } else {
-          replyText = `Jajaja me hiciste sonreír 🙈 Me encanta la gente espontánea y con chispa. Oye, ¿y tú de qué ciudad me escribes?`;
+          replyText = `¡Qué interesante lo que me cuentas! ✨ Me encanta rodearme de personas con metas claras que le ponen empeño a lo que hacen. ¿Y te queda tiempo libre para relajarte o trabajas mucho?`;
         }
+        deltaTrust = 5;
+      } else if (lastBotLower.includes('ciudad') || lastBotLower.includes('de dónde') || lastBotLower.includes('de donde')) {
+        replyText = pickDiverse([
+          `¡Uff qué delicia de lugar! Tengo muchas ganas de ir a visitar pronto... me han contado cosas geniales de allá ✨ ¿Qué es lo que más te gusta de tu ciudad?`,
+          `¡Qué chévere! Me encanta conocer gente de allá 🌸 Se siente rico conectar con personas de diferentes partes. ¿Vives ahí desde siempre o te mudaste?`,
+        ]);
         deltaTrust = 4;
-      } else if (lastBotLower.includes('de dónde') || lastBotLower.includes('de donde') || lastBotLower.includes('escribes') || lastBotLower.includes('ciudad')) {
-        replyText = `¡Uff qué delicia de lugar! Tengo muchas ganas de ir a visitar pronto... me han contado cosas geniales de allá ✨ ¿Qué es lo más rico para hacer o comer por allá?`;
-        deltaTrust = 4;
-      } else if (lastBotLower.includes('planes') || lastBotLower.includes('haces') || lastBotLower.includes('dedicas')) {
-        replyText = `Qué interesante lo que me cuentas, se nota que eres apasionado con lo que haces ✨ A mí me fascina rodearme de personas con metas claras. ¿Y te queda tiempo para salir y relajarte o trabajas mucho?`;
+      } else if (lastBotLower.includes('planes') || lastBotLower.includes('haces más tarde') || lastBotLower.includes('fin de semana')) {
+        if (lower.includes('salir') || lower.includes('amigos') || lower.includes('fiesta') || lower.includes('tomar') || lower.includes('cenar') || lower.includes('bar')) {
+          replyText = `¡Uff planazo! 🥂 Nada como salir a despejarse y pasarla rico. Oye, tómate algo a mi salud y pásala increíble jaja. ¿Sueles salir seguido los fines de semana?`;
+        } else if (lower.includes('casa') || lower.includes('película') || lower.includes('peli') || lower.includes('dormir') || lower.includes('netflix') || lower.includes('descansar')) {
+          replyText = `Jajaja plan hogareño y relax, de mis favoritos a veces 🤍 Sofá, una buena peli o serie y desconectar del mundo. ¿Qué te vas a poner a ver o qué recomiendas?`;
+        } else {
+          replyText = `Suena a un buen plan ✨ A mí me toca terminar unas cositas pendientes de fotos y luego descansar rico. ¿Eres más de planes tranquilos o de ambiente movido?`;
+        }
         deltaTrust = 4;
       }
-      // 2. Direct user queries about the model
-      else if (lower.includes('de dónde eres') || lower.includes('de donde eres') || lower.includes('dónde vives') || lower.includes('donde vives')) {
-        replyText = `Soy de ${personaLocation} mor 🌸 Me fascina vivir aquí, el clima es una delicia y la vibra es increíble. ¿Has venido alguna vez o te gustaría conocer?`;
+
+      // 2. Direct user questions about the model (Answered with total precision and persona identity)
+      else if (lower.includes('cómo estás') || lower.includes('como estas') || lower.includes('qué tal') || lower.includes('que tal') || lower.includes('cómo te va') || lower.includes('como te va')) {
+        replyText = pickDiverse([
+          `¡Hola corazón! Aquí súper bien y con buena vibra ✨ Terminando de organizar unas cositas y descansando un ratico. ¿Y tú cómo vas, qué tal ha estado tu día?`,
+          `¡Súper contenta de leerte! 🌸 Me pillas tomándome algo fresco después de una mañana bastante activa. ¿Tú cómo estás, todo bien por tu lado?`,
+          `¡Hola lindo! Muy bien gracias a Dios, con energía bonita y contenta de verte por aquí 😊 ¿Qué tal pinta tu día hoy?`,
+        ]);
         deltaTrust = 4;
-      } else if (lower.includes('a qué te dedicas') || lower.includes('a que te dedicas') || lower.includes('qué haces') || lower.includes('que haces') || lower.includes('trabajas')) {
-        replyText = `Soy modelo y creadora de contenido digital ✨ Me encanta cuidar mi cuerpo, entrenar, viajar y conectar con personas con buena energía como tú por acá. ¿Y tú a qué te dedicas?`;
+      } else if (lower.includes('qué haces') || lower.includes('que haces') || lower.includes('qué estás haciendo') || lower.includes('que estas haciendo') || lower.includes('en qué andas') || lower.includes('en que andas')) {
+        replyText = pickDiverse([
+          `Justo ahora estoy en mi cuarto relajándome un momento, revisando mensajitos y escuchando musiquita suave 🎶 ¿Tú qué estás haciendo justo en este instante?`,
+          `Terminé de alistarme hace poco y ando tomándome un café mientras planeo el resto de mi tarde ☕ ¿Y tú, estás ocupado o con tiempo libre?`,
+          `Aquí descansando del ajetreo del día y sonriendo con tus mensajes 😉 ¿Tú en qué andas metido ahora mismo?`,
+        ]);
         deltaTrust = 4;
-      } else if (lower.includes('cuántos años') || lower.includes('cuantos años') || lower.includes('edad')) {
-        replyText = `Tengo ${personaAge} añitos 😉 En mi mejor etapa jaja, con toda la energía. ¿Cuántos años me calculabas tú?`;
+      } else if (lower.includes('de dónde eres') || lower.includes('de donde eres') || lower.includes('dónde vives') || lower.includes('donde vives') || lower.includes('país') || lower.includes('pais')) {
+        replyText = pickDiverse([
+          `Soy de ${personaLocation} mor 🌸 Me fascina vivir aquí, el clima es una delicia y la vibra de la gente es incomparable. ¿Has venido alguna vez por acá o de dónde eres tú?`,
+          `Vivo en ${personaLocation} ✨ Es mi hogar y me encanta su energía. ¿Conoces por acá o te gustaría venir de visita algún día?`,
+        ]);
+        deltaTrust = 4;
+      } else if (lower.includes('a qué te dedicas') || lower.includes('a que te dedicas') || lower.includes('trabajas') || lower.includes('estudias') || lower.includes('tu trabajo')) {
+        replyText = pickDiverse([
+          `Soy modelo y creadora de contenido digital ✨ Me encanta cuidar mi cuerpo, la moda, viajar y conectar con personas con buena energía por acá. ¿Y tú a qué te dedicas en tu día a día?`,
+          `Me dedico al modelaje y a crear contenido exclusivo para mis comunidades online 📸 Es un trabajo que disfruto mucho porque manejo mis tiempos. ¿Y tú qué profesión tienes?`,
+        ]);
+        deltaTrust = 4;
+      } else if (lower.includes('cuántos años') || lower.includes('cuantos años') || lower.includes('edad') || lower.includes('cumpleaños') || lower.includes('cumples')) {
+        replyText = pickDiverse([
+          `Tengo ${personaAge} añitos 😉 En mi mejor etapa jaja, con toda la energía y viviendo al máximo. ¿Cuántos años me calculabas tú a ver?`,
+          `Tengo ${personaAge} 🌸 Cumplo años con toda la actitud y me siento súper bien conmigo misma. ¿Y tú cuántos años tienes?`,
+        ]);
+        deltaTrust = 4;
+      } else if (lower.includes('cómo te llamas') || lower.includes('como te llamas') || lower.includes('nombre real')) {
+        replyText = `Me llamo ${personaName} mor 💕 Así me conocen todos mis amigos y en mis redes como ${personaHandle}. ¿Y a ti cómo te gusta que te llamen?`;
         deltaTrust = 4;
       } else if (lower.includes('novio') || lower.includes('pareja') || lower.includes('soltera') || lower.includes('casada')) {
-        replyText = `Jajaja directo al grano me saliste 😉 En este momento estoy solterita, enfocada en mis proyectos, en cuidarme y en conocer personas especiales que sumen... ¿por qué la curiosidad?`;
+        replyText = pickDiverse([
+          `Jajaja directo al grano me saliste 😉 En este momento estoy solterita, enfocada en mis proyectos, en cuidarme y en conocer personas especiales que sumen... ¿por qué la curiosidad?`,
+          `Sin compromisos por ahora mor 🙈 Disfrutando de mi paz, de mi independencia y de charlar con gente agradable como tú... ¿Tú estás soltero o comprometido?`,
+        ]);
+        deltaTrust = 4;
+      } else if (lower.includes('mascota') || lower.includes('perro') || lower.includes('gato') || lower.includes('animal')) {
+        replyText = pickDiverse([
+          `¡Amo los animales con locura! 🐶 Tengo una debilidad enorme por los perritos, me parecen los seres más nobles y amorosos del mundo. ¿Tú tienes alguna mascota en casa?`,
+          `¡Uff sí! Me encantan, para mí una casa sin animales se siente vacía 🐾 ¿Tú eres más de perros, de gatos o de qué?`,
+        ]);
+        deltaTrust = 4;
+      } else if (lower.includes('música') || lower.includes('musica') || lower.includes('canción') || lower.includes('cancion') || lower.includes('canciones') || lower.includes('escuchas')) {
+        replyText = pickDiverse([
+          `Me encanta el reggaetón suave y el pop latino para entrenar o ponerme de buen humor 🔥 y música chill acústica o R&B para cuando estoy relajada en casa. ¿Qué música escuchas tú cuando quieres motivarte?`,
+          `Soy súper musical 🎶 Escucho desde ritmos latinos bien bailables hasta electrónica suave para cuando estoy concentrada. ¿Cuál es tu artista o banda favorita de siempre?`,
+        ]);
+        deltaTrust = 4;
+      } else if (lower.includes('comida') || lower.includes('comer') || lower.includes('desayun') || lower.includes('cenar') || lower.includes('plato')) {
+        replyText = pickDiverse([
+          `Uff me pierde la comida italiana, las pastas y la pizza gourmet bien hecha 🍕 aunque unos buenos taquitos o sushi tampoco los rechazo jamás jaja. ¿Y tu comida favorita cuál es?`,
+          `Jajaja tomaste mi punto débil 🤤 Me encanta salir a comer a restaurantes ricos y probar de todo. ¿Tú eres de cocinar en casa o prefieres comer afuera?`,
+        ]);
+        deltaTrust = 4;
+      } else if (lower.includes('hobbies') || lower.includes('tiempo libre') || lower.includes('gustos') || lower.includes('te gusta hacer')) {
+        replyText = pickDiverse([
+          `Me fascina entrenar, ir a la playita cada vez que puedo 🌊, conocer cafés bonitos, viajar y quedarme en pijama viendo series cuando quiero desconectar. ¿A ti qué es lo que más te apasiona hacer en tus ratos libres?`,
+          `Viajar, hacer fotos creativas, salir a cenar rico y pasar tiempo de calidad con personas que tengan buena vibra ✨ ¿Qué haces tú cuando no estás trabajando?`,
+        ]);
+        deltaTrust = 4;
+      } else if (lower.includes('cansad') || lower.includes('sueño') || lower.includes('dormir') || lower.includes('agotad')) {
+        replyText = pickDiverse([
+          `Te entiendo tanto... a veces el ritmo del día a día agota 🤍 Tómate tu tiempo para descansar y recargar energías, te lo mereces. ¿Tuviste un día muy pesado hoy?`,
+          `Ay descansa rico entonces 🤍 No hay nada más importante que reponer fuerzas. Yo me quedo un ratito más por aquí, ¿mañana madrugas?`,
+        ]);
+        deltaTrust = 3;
+      } else if (lower.includes('por qué no respondes') || lower.includes('por que no respondes') || lower.includes('me ignoras') || lower.includes('te fuiste') || lower.includes('estas ahi') || lower.includes('estás ahí')) {
+        replyText = pickDiverse([
+          `¡Para nada amor! Jamás te ignoraría 🙈 Es que a veces se me juntan grabaciones o compromisos del día, pero aquí estoy contigo con toda mi atención. Cuéntame, ¿en qué te quedaste pensando?`,
+          `¡Aquí estoy mor! No te me preocupes que no me he ido a ningún lado 😉 A veces tengo el celular en silencio mientras hago mis cosas pero siempre vuelvo. ¿Qué andabas haciendo?`,
+        ]);
+        deltaTrust = 3;
+      } else if (lower.includes('frío') || lower.includes('frio') || lower.includes('calor') || lower.includes('clima') || lower.includes('lluvia') || lower.includes('lloviendo')) {
+        replyText = pickDiverse([
+          `Aquí el clima ha estado delicioso pero algo cambiante jaja ☁️ Cuando hace frío me encanta ponerme un buzo gigante y tomarme un chocolate caliente. ¿Allá donde estás hace frío o calor?`,
+          `Uff por aquí templadito rico 🌸 Aunque cuando llueve me da una pereza deliciosa de quedarme en cama. ¿A ti te gusta más el clima cálido o el frío?`,
+        ]);
         deltaTrust = 4;
       }
+
       // 3. User asks for photo - Send casual photo, NOT VIP pitch!
       else if (lower.includes('foto') || lower.includes('fotos') || lower.includes('verte') || lower.includes('fotito')) {
-        replyText = `¿Una foto? Jaja qué impaciente 😉 Bueno, te comparto una casualita que me tomé hace un ratito antes de salir... a ver si me dices qué tal me veo. ¿Qué tal te parece?`;
+        replyText = `¿Una foto? Jaja qué impaciente 😉 Bueno, te comparto una casualita que me tomé hace un ratito... a ver si me dices qué tal me veo. ¿Qué tal te parece?`;
         sendPhoto = true;
         photoCategory = 'cafe';
-        photoCaption = 'Casualita con mi cafecito para ti ☕';
+        photoCaption = 'Casualita para ti ☕';
         deltaTrust = 5;
       }
+
       // 4. User asks for audio note - Send realistic voice note!
-      else if (lower.includes('audio') || lower.includes('nota de voz') || lower.includes('voz') || lower.includes('escucharte')) {
-        replyText = `Jajaja hola amor... aquí te mando mi voz para que me escuches más cerquita y sientas mi vibra 🙈 Me pillas terminando de alistarme, ¿tú qué estás haciendo justo ahora?`;
+      else if (lower.includes('audio') || lower.includes('nota de voz') || lower.includes('voz') || lower.includes('escucharte') || lower.includes('oírte') || lower.includes('oirte')) {
+        replyText = `Jajaja hola corazón... aquí te mando mi voz para que me escuches cerquita y sientas mi vibra 🙈 Me pillas relajándome un momento, ¿tú qué estás haciendo justo ahora?`;
         sendVoice = true;
         deltaTrust = 6;
       }
+
       // 5. User asks about OnlyFans / VIP / private content
       else if (lower.includes('onlyfans') || lower.includes('only fans') || lower.includes('vip') || lower.includes('exclusiv') || lower.includes('privad') || lower.includes('link') || lower.includes('enlace')) {
         const canPitchVip = userTurnCount >= 5 && (hasMediaExchanged || (currentTrustScore || 20) >= conversionThreshold);
@@ -655,18 +767,31 @@ Debes responder SIEMPRE en formato JSON estricto:
           replyText = `Oye lindo... me encanta la complicidad que tenemos 😉 La verdad es que aquí en X me limitan y me censuran todo lo rico. En mi espacio VIP privado en ${vipLink} estamos tú y yo sin censura, con videollamadas, audios íntimos y contenido que no le muestro a nadie más. ¿Te animas a acompañarme hoy allá? Te dejé un regalito especial ✨`;
           deltaTrust = 8;
         } else {
-          // Playful pacing: two people getting to know each other first
           replyText = `Jajaja oye pero qué acelerado vas 😉 Apenas nos estamos conociendo mor... primero gánate mi confianza, charlemos más rico y luego vemos si te ganas el acceso a mis cosas más íntimas ✨ ¿O es que eres de los que no tienen paciencia?`;
           pitchVip = false;
           sendVoice = true;
           deltaTrust = 3;
         }
       }
-      // 6. Emotional & conversational adaptation
+
+      // 6. Greetings & Icebreakers
+      else if (lower === 'hola' || lower === 'buenas' || lower === 'buen dia' || lower === 'buenos dias' || lower === 'buenas tardes' || lower === 'buenas noches' || lower === 'hey') {
+        replyText = pickDiverse([
+          `¡Hola corazón! Qué lindo verte por acá de nuevo 😊 ¿Cómo va tu día hoy?`,
+          `¡Hola lindo! Me alegra que me escribas ✨ ¿Qué tal pinta tu día hoy?`,
+          `¡Hey amor! Aquí ando activa y contenta de saludarte. ¿Cómo te ha ido hoy?`,
+        ]);
+        deltaTrust = 3;
+      }
+
+      // 7. Emotional & conversational adaptation
       else {
         switch (userMem.currentMood) {
           case 'triste':
-            replyText = `Ay amor, te sentí bajoneado... 🥺 ¿Qué fue lo que te pasó hoy? Ven y cuéntame, aquí tienes a alguien que te escucha con cariño y sin juzgarte 🤍`;
+            replyText = pickDiverse([
+              `Ay amor, te sentí bajoneado... 🥺 ¿Qué fue lo que te pasó hoy? Ven y cuéntame, aquí tienes a alguien que te escucha con cariño y sin juzgarte 🤍`,
+              `No me gusta verte desanimado amor 🤍 A veces los días se ponen pesados, pero todo pasa. Cuéntame qué tienes y te saco una sonrisita.`,
+            ]);
             sendVoice = true;
             sendPhoto = true;
             photoCategory = 'cozy';
@@ -675,35 +800,55 @@ Debes responder SIEMPRE en formato JSON estricto:
             break;
 
           case 'cortante':
-            replyText = `Jajaja uyy qué misterioso... ¿o es que eres de pocas palabras con todo el mundo? A ver si me sacas una frase completa 😉`;
+            replyText = pickDiverse([
+              `Jajaja uyy qué misterioso... ¿o es que eres de pocas palabras con todo el mundo? A ver si me sacas una frase completa 😉`,
+              `Tan cortante jaja 🙈 A ver, suéltate un poquito que no muerdo... ¿o te da pena hablar conmigo?`,
+            ]);
             deltaTrust = 2;
             break;
 
           case 'enojado':
-            replyText = `Ey, calma... respira hondo un segundo. No me gusta que andes con esa mala sangre. Cuéntame qué te tiene así y te cambio el humor rapidito 😉`;
+            replyText = pickDiverse([
+              `Ey, calma... respira hondo un segundo. No me gusta que andes con esa mala sangre. Cuéntame qué te tiene así y te cambio el humor rapidito 😉`,
+              `Tranquilo corazón, deja el estrés a un lado conmigo. Aquí estamos para relajarnos y pasarla bien. ¿Qué te molestó tanto?`,
+            ]);
             sendVoice = true;
             deltaTrust = 3;
             break;
 
           case 'coqueto':
-            replyText = `Jajaja a ver, bájale dos rayitas que me sonrojas... 😏 Me encanta que seas directo y coqueto, pero a ver si mantienes ese mismo ritmo cuando me tengas cerquita.`;
+            replyText = pickDiverse([
+              `Jajaja a ver, bájale dos rayitas que me sonrojas... 😏 Me encanta que seas directo y coqueto, pero a ver si mantienes ese mismo ritmo cuando me tengas cerquita.`,
+              `Jajaja qué pícaro me saliste 😏 Admito que me sacaste una sonrisa coqueta... A ver, ¿siempre eres así de atrevido o solo conmigo?`,
+            ]);
             sendVoice = true;
             deltaTrust = 5;
             break;
 
           case 'serio':
-            replyText = `Me gusta cómo te expresas, se nota que eres un hombre centrado y que no habla por hablar. Cuéntame, ¿en qué proyectos andas metido hoy?`;
+            replyText = pickDiverse([
+              `Me gusta cómo te expresas, se nota que eres un hombre centrado y que no habla por hablar. Cuéntame, ¿en qué proyectos andas metido hoy?`,
+              `Valoro mucho las conversaciones interesantes y con personas maduras como tú. ¿Qué planes tienes para más tarde?`,
+            ]);
             deltaTrust = 4;
             break;
 
           case 'timido':
-            replyText = `Jaja no me tengas pena, qué ternura. Me caes súper bien y estás en total confianza conmigo, suéltate un poquito más que no muerdo... a menos que me lo pidas jaja 🙈`;
+            replyText = pickDiverse([
+              `Jaja no me tengas pena, qué ternura. Me caes súper bien y estás en total confianza conmigo, suéltate un poquito más que no muerdo... a menos que me lo pidas jaja 🙈`,
+              `Tranquilo amor, me encanta la gente sencilla y honesta. Conmigo puedes ser tú mismo al 100%. ¿Qué te gusta hacer los fines de semana?`,
+            ]);
             deltaTrust = 4;
             break;
 
           case 'contento':
           default:
-            replyText = `Jajaja me encanta tu vibra, por fin alguien que me saca una sonrisa honesta por acá. Oye, ¿y qué planes tienes para más tarde?`;
+            replyText = pickDiverse([
+              `Jajaja me encanta tu vibra, por fin alguien que me saca una sonrisa honesta por acá ✨ Oye, ¿y qué planes tienes para más tarde?`,
+              `¡Qué buena energía tienes! Da gusto hablar con personas espontáneas y alegres 😊 ¿Eres así de positivo siempre?`,
+              `Jajaja me hiciste reír, tienes chispa. Cuéntame algo curioso de ti que casi nadie sepa 😉`,
+              `Se siente rico coincidir con personas como tú por acá. ¿Cómo sueles relajarte después de un día movido?`,
+            ]);
             deltaTrust = 4;
             break;
         }

@@ -65,18 +65,66 @@ class VoiceSynthesisEngine {
     enableAmbience: true,
   };
 
+  private keepAliveTimer: any = null;
+  private cachedVoice: SpeechSynthesisVoice | null = null;
+
+  constructor() {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('aura_active_voice_profile');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          this.activeCalibratedProfile = { ...this.activeCalibratedProfile, ...parsed };
+        }
+      } catch (err) {
+        console.warn('Could not restore voice profile from localStorage:', err);
+      }
+    }
+  }
+
   /**
-   * Set the active model's calibrated voice profile across the entire application
+   * Set the active model's calibrated voice profile across the entire application and persist it
    */
-  public setCalibratedVoiceProfile(profile: Partial<VoiceProfileConfig>) {
+  public setCalibratedVoiceProfile(profile: Partial<VoiceProfileConfig>, modelId?: string) {
     this.activeCalibratedProfile = {
       ...this.activeCalibratedProfile,
       ...profile,
     };
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('aura_active_voice_profile', JSON.stringify(this.activeCalibratedProfile));
+        if (modelId) {
+          localStorage.setItem(`aura_voice_profile_${modelId}`, JSON.stringify(this.activeCalibratedProfile));
+        }
+      } catch (err) {
+        console.warn('Could not persist voice profile:', err);
+      }
+    }
   }
 
   public getCalibratedVoiceProfile(): VoiceProfileConfig {
     return this.activeCalibratedProfile;
+  }
+
+  /**
+   * Load voice profile for a specific model from persistence
+   */
+  public loadModelVoiceProfile(modelId: string, fallback?: Partial<VoiceProfileConfig>) {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(`aura_voice_profile_${modelId}`);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          this.activeCalibratedProfile = { ...this.activeCalibratedProfile, ...fallback, ...parsed };
+          return;
+        }
+      } catch (err) {
+        console.warn('Could not read model voice profile:', err);
+      }
+    }
+    if (fallback) {
+      this.activeCalibratedProfile = { ...this.activeCalibratedProfile, ...fallback };
+    }
   }
 
   /**
@@ -264,6 +312,8 @@ class VoiceSynthesisEngine {
 
     utterance.onend = () => {
       clearInterval(timer);
+      if (this.keepAliveTimer) clearInterval(this.keepAliveTimer);
+      this.keepAliveTimer = null;
       onProgress?.(100);
       onEnd?.();
       this.currentUtterance = null;
@@ -271,14 +321,32 @@ class VoiceSynthesisEngine {
 
     utterance.onerror = () => {
       clearInterval(timer);
+      if (this.keepAliveTimer) clearInterval(this.keepAliveTimer);
+      this.keepAliveTimer = null;
       onEnd?.();
       this.currentUtterance = null;
     };
+
+    // Chrome/Safari speech keep-alive: prevent browser from pausing synthesis mid-sentence
+    if (this.keepAliveTimer) clearInterval(this.keepAliveTimer);
+    this.keepAliveTimer = setInterval(() => {
+      if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.pause();
+        window.speechSynthesis.resume();
+      } else {
+        if (this.keepAliveTimer) clearInterval(this.keepAliveTimer);
+        this.keepAliveTimer = null;
+      }
+    }, 8000);
 
     window.speechSynthesis.speak(utterance);
   }
 
   public stop(): void {
+    if (this.keepAliveTimer) {
+      clearInterval(this.keepAliveTimer);
+      this.keepAliveTimer = null;
+    }
     if (this.currentAudio) {
       this.currentAudio.pause();
       this.currentAudio.currentTime = 0;

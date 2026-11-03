@@ -2743,9 +2743,12 @@ print("Estado emocional:", data['reply']['detectedMood'])`;
                         </span>
                       </div>
 
-                      <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 leading-relaxed font-sans">
-                        {testResult.reply?.text}
-                      </div>
+                      {/* Text content: Only shown when NOT a voice note, per pure audio policy */}
+                      {!testResult.reply?.voiceNote?.send && testResult.reply?.text && (
+                        <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 leading-relaxed font-sans">
+                          {testResult.reply?.text}
+                        </div>
+                      )}
 
                       {/* Attached Voice Note Player with Model's Voice */}
                       {testResult.reply?.voiceNote?.send && (

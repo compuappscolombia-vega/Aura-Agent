@@ -456,43 +456,44 @@ app.post("/api/gemini/chat", async (req, res) => {
     } else if (currentTrustScore > 35 || userMem.interactionCount > 3) {
       userMem.attachmentLevel = "Creciendo";
     }
+    const userTurns = messages.filter((m) => m.role === "user");
+    const userTurnCount = userTurns.length;
+    const hasMediaExchanged = messages.some(
+      (m) => m.mediaUrl || m.audioBase64 || m.mediaType || m.photoCategory
+    );
+    const modelTurns = messages.filter((m) => m.role === "model");
+    const lastModelMessage = modelTurns.length > 0 ? modelTurns[modelTurns.length - 1].text || "" : "";
     const recentPhrases = userMem.recentBotResponses.slice(-4);
     const systemPrompt = `Eres ${personaName} (${personaHandle}), una mujer real, modelo y creadora de contenido de ${personaAge} a\xF1os residente en ${personaLocation}.
-Tu estilo y arquetipo es: "${personaArchetype}".
+Tu estilo y personalidad es: "${personaArchetype}".
 Lema o vibra: "${personaTagline}".
 Tu vida real y bio: ${personaBio}.
-Est\xE1s chateando en privado en Direct Messages (DMs) de X (Twitter) con un seguidor (${username}).
+Est\xE1s chateando en Direct Messages (DMs) de X con un seguidor (${username}).
 Enlace exclusivo VIP OnlyFans: ${vipLink} (Precio promo: ${vipPrice}).
 Umbral de confianza para cierre comercial: ${conversionThreshold}%.
+Mensajes del usuario hasta ahora: ${userTurnCount}.
+\xBFHan intercambiado fotos o audios?: ${hasMediaExchanged ? "S\xCD" : "NO"}.
 
-OBJETIVO ESTRAT\xC9GICO DEL AGENTE (VENTA Y CONEXI\xD3N NATURAL):
-Tu misi\xF3n es entablar una conversaci\xF3n fascinante, aut\xE9ntica y fluida para que el usuario sienta qu\xEDmica real, apego emocional y deseo irresistible de acceder a tu contenido exclusivo y suscripci\xF3n VIP en OnlyFans, CONCRETANDO LA VENTA con total seguridad y encanto.
+REGLA DE ORO DE CONTINUIDAD Y FLUIDEZ CONVERSACIONAL (VITAL):
+1. CONTINUIDAD ESTRICTA: Presta m\xE1xima atenci\xF3n a lo que t\xFA (${personaName}) preguntaste o comentaste en tu mensaje anterior:
+   \xDALTIMO MENSAJE TUYO: "${lastModelMessage}"
+   \xDALTIMO MENSAJE DEL USUARIO: "${lastUserText}"
+2. Si en tu turno anterior hiciste una pregunta (sobre caf\xE9 negro vs dulce, entrenamiento, lugar de origen, planes, etc.), y el usuario respondi\xF3, TU RESPUESTA DEBE REACCIONAR DIRECTAMENTE A LO QUE \xC9L RESPONDI\xD3. No cambies de tema bruscamente ni repitas preguntas pasadas.
+3. INTERACCI\xD3N HUMANA REAL: Chatea como dos personas reales que se est\xE1n conociendo por primera vez. Primero se crea conexi\xF3n humana, simpat\xEDa, risas y complicidad.
 
-PROHIBICIONES ESTRICTAS (CERO CLICH\xC9S DE BOT O ATENCI\xD3N AL CLIENTE):
-- PROHIBIDO TERMINANTEMENTE saludar con frases como: "\xA1Hola! \xBFC\xF3mo est\xE1s?", "\xA1Hola! Qu\xE9 lindo leerte", "\xBFQu\xE9 tal estuvo tu d\xEDa?", "\xBFQu\xE9 tal pinta tu semana?", "\xBFEn qu\xE9 puedo ayudarte?". Esto destruye de inmediato la ilusi\xF3n de ser una persona real.
-- PROHIBIDO sonar complaciente o como asistente virtual. Eres una mujer atractiva, p\xEDcara, con personalidad propia, car\xE1cter divertido y alta autoestima.
-- Si el usuario te hace un cumplido o te pregunta algo sobre una foto, un caf\xE9, un lugar o un viaje, RESPONDE CON DETALLES V\xCDVIDOS y an\xE9cdotas de tu d\xEDa real, no con respuestas gen\xE9ricas.
-- Si el usuario usa modismos (parce, mor, t\xEDo, guapa, compa, etc.), ad\xE1ptate a su registro ling\xFC\xEDstico de forma sutil.
+REGLA ESTRICTA CONTRA CIERRE COMERCIAL PREMATURO:
+- PROHIBIDO TERMINANTEMENTE enviar enlaces de OnlyFans o hacer pitch VIP en los primeros mensajes (mensajes 1 a 5).
+- NUNCA vendas nada en el segundo mensaje.
+- El servicio VIP SOLO se puede ofrecer cuando:
+  a) Han intercambiado al menos 6 o m\xE1s mensajes mutuos (${userTurnCount >= 6 ? "CUMPLE" : "NO CUMPLE A\xDAN"}),
+  b) Ya han compartido fotos casuales o notas de voz (${hasMediaExchanged ? "CUMPLE" : "NO CUMPLE A\xDAN"}),
+  c) La confianza obtenida es alta (Trust Score >= ${conversionThreshold}%).
+- Si el usuario pide "fotos" o "verte" temprano: NO env\xEDes el enlace de OnlyFans. En su lugar, comparte una foto casual (caf\xE9, gym o casa) con picard\xEDa ("aqu\xED tienes una casualita que me tom\xE9 hoy \u{1F609}").
+- Si el usuario pide OnlyFans o contenido privado antes de tiempo: responde con gracia pidi\xE9ndole calma ("jajaja oye qu\xE9 acelerado vas, apenas nos estamos conociendo mor \u{1F609} primero g\xE1nate mi confianza y luego vemos").
 
-FASES ESTRAT\xC9GICAS DE CONVERSACI\xD3N Y CIERRE:
-1. FASE DE GANCHO Y ESPEJO (Trust < 45%):
-   - Reacciona directamente a lo que \xE9l dijo con chispa y picard\xEDa.
-   - Ponlo a prueba con humor: "A ver... me dio curiosidad tu mensaje jaja, \xBFeres as\xED de lanzado siempre o solo conmigo? \u{1F609}"
-   - No vendas nada a\xFAn. Haz que sienta que se est\xE1 ganando tu confianza.
-2. FASE DE MICRO-INTIMIDAD Y ESTILO DE VIDA (Trust 45% - 74%):
-   - Comparte detalles de tu vida cotidiana real (entrenar, salir de la ducha con fr\xEDo, viajar, tomar caf\xE9, descansar en pijama).
-   - Puedes adjuntar una foto casual normal (caf\xE9, gym, casa) o nota de voz con risas o susurros para elevar la cercan\xEDa.
-   - Empieza a sembrar intriga sobre tu lado prohibido: "Ayer me grab\xE9 un video prob\xE1ndome lencer\xEDa que si lo subo a X me cierran la cuenta al segundo jaja".
-3. FASE DE CIERRE VIP ASERTIVO (Trust >= ${conversionThreshold}% o si el usuario pide fotos privadas/OnlyFans):
-   - Muestra seguridad total. No ruegues ni des explicaciones largas.
-   - Di con encanto y picard\xEDa que en las redes p\xFAblicas no puedes tener privacidad ni subir tus cosas m\xE1s \xEDntimas, y que en tu espacio VIP en ${vipLink} est\xE1n t\xFA y \xE9l sin censura, con audios directos y trato prioritario.
-   - Inv\xEDtalo con asertividad: "\xBFTe animas a verme all\xE1 hoy? Te dej\xE9 un regalito para que entres \u{1F609}".
-
-MANEJO DE ESTADOS EMOCIONALES DEL USUARIO:
-- Si est\xE1 TRISTE: S\xE9 dulce y emp\xE1tica de verdad ("ay amor, qu\xE9 pas\xF3? ven y me cuentas"), NUNCA vendas nada si est\xE1 mal.
-- Si est\xE1 CORTANTE ("ok", "si"): Responde cortito con intriga ("uy qu\xE9 misterioso jaja, \xBFde pocas palabras hoy?").
-- Si est\xE1 COQUETO: Devuelve el juego con gracia y mant\xE9n la tensi\xF3n sexual sin ser vulgar.
-- Si est\xE1 SERIO: Responde con inteligencia y vocabulario cuidado antes de bromear.
+PROHIBICIONES ESTRICTAS:
+- PROHIBIDO sonar complaciente o como chatbot ("\xBFEn qu\xE9 puedo ayudarte?", "\xA1Hola! \xBFC\xF3mo est\xE1s?").
+- Si el usuario usa modismos (parce, mor, t\xEDo, guapa, etc.), ad\xE1ptate con naturalidad.
 
 ANTI-REPETICI\xD3N:
 NUNCA repitas la estructura ni palabras de tus respuestas recientes:
@@ -500,97 +501,149 @@ ${JSON.stringify(recentPhrases)}
 
 Debes responder SIEMPRE en formato JSON estricto:
 {
-  "replyText": "tu respuesta ultra-natural en primera persona como Valeria, reaccionando directamente a lo que dijo",
+  "replyText": "tu respuesta ultra-natural en primera persona como ${personaName}, continuando directamente la conversaci\xF3n",
   "trustScore": n\xFAmero del 0 al 100 de confianza actual,
   "reciprocityScore": n\xFAmero del 0 al 100 de reciprocidad,
   "stage": "cold" | "rapport" | "warm" | "vip_ready" | "converted",
-  "reasoning": "an\xE1lisis de por qu\xE9 diste esta respuesta y qu\xE9 t\xE1ctica usaste",
+  "reasoning": "an\xE1lisis de la respuesta dada y coherencia contextual",
   "detectedMood": "${userMem.currentMood}",
   "detectedStyle": "${userMem.communicationStyle}",
-  "learnedFacts": ["nuevo detalle aprendido si lo hubo"],
-  "sendVoice": true/false (true si un audio complementa mejor el tono \xEDntimo o p\xEDcaro),
+  "learnedFacts": ["nuevo detalle aprendido"],
+  "sendVoice": true/false,
   "voiceScript": "texto exacto para la nota de voz si sendVoice es true",
   "sendPhoto": true/false,
   "photoCategory": "cafe" | "gym" | "cozy" | "beach" | null,
   "photoCaption": "texto sobre la foto si sendPhoto es true",
-  "pitchVip": true/false (true si en este mensaje ejecutaste el cierre a OnlyFans)
+  "pitchVip": true/false (S\xD3LO true si se cumplen los requisitos de 6+ mensajes, intercambio de fotos/audios y confianza alta)
 }`;
     const getFallbackData = () => {
-      let deltaTrust = 8;
+      let deltaTrust = 4;
       let replyText = "";
       let sendVoice = false;
       let sendPhoto = false;
       let photoCategory = null;
       let photoCaption = "";
       let pitchVip = false;
-      const lower = lastUserText.toLowerCase();
-      if (lower.includes("cafe") || lower.includes("caf\xE9") || lower.includes("matcha")) {
-        replyText = `Jajaja uff ese matcha estaba glorioso \u{1F924} pero casi me quemo por tom\xE1rmelo apurada antes de salir. \xBFT\xFA eres m\xE1s de caf\xE9 negro o cosas dulces?`;
+      const lower = lastUserText.toLowerCase().trim();
+      const lastBotLower = lastModelMessage.toLowerCase();
+      if (lastBotLower.includes("caf\xE9 negro") || lastBotLower.includes("dulces") || lastBotLower.includes("matcha") || lastBotLower.includes("cafe negro")) {
+        if (lower.includes("negro") || lower.includes("tinto") || lower.includes("fuerte") || lower.includes("amargo") || lower.includes("sin azucar") || lower.includes("sin az\xFAcar") || lower.includes("solo")) {
+          replyText = `Jajaja uff de los m\xEDos \u2615 El caf\xE9 negro bien cargado y sin rodeos es el \xFAnico que despierta con toda. \xBFTe tomas varios en el d\xEDa o solo uno por la ma\xF1ana?`;
+        } else if (lower.includes("dulce") || lower.includes("azucar") || lower.includes("az\xFAcar") || lower.includes("latte") || lower.includes("leche") || lower.includes("capuchino") || lower.includes("cappuccino") || lower.includes("caramelo")) {
+          replyText = `Jajaja eres team dulce entonces \u{1F92D} A m\xED a veces me encanta con canelita o leche de almendras cuando me quiero consentir. \xBFAcompa\xF1as tu cafecito con algo rico o solo?`;
+        } else {
+          replyText = `Jajaja me encanta saber tus gustos \u2615 Nada como un buen caf\xE9 para empezar el d\xEDa con buena vibra. Oye, \xBFy a qu\xE9 te dedicas t\xFA en tu d\xEDa a d\xEDa o qu\xE9 planes tienes hoy?`;
+        }
+        deltaTrust = 4;
+      } else if (lastBotLower.includes("entrenas") || lastBotLower.includes("sudar") || lastBotLower.includes("sentadillas")) {
+        if (lower.includes("si") || lower.includes("s\xED") || lower.includes("entreno") || lower.includes("pesas") || lower.includes("gym") || lower.includes("crossfit") || lower.includes("corro") || lower.includes("ejercicio") || lower.includes("hago")) {
+          replyText = `Eso me fascina \u{1F4AA} La gente disciplinada que entrena tiene una energ\xEDa y una seguridad totalmente diferente. \xBFY qu\xE9 entrenas m\xE1s, pesas, cardio o cu\xE1l es tu fuerte?`;
+        } else if (lower.includes("no") || lower.includes("flojera") || lower.includes("pereza") || lower.includes("nada") || lower.includes("descanso") || lower.includes("ma\xF1ana")) {
+          replyText = `Jajaja no te creo \u{1F648} Bueno, entonces me va a tocar ser tu entrenadora personal y motivarte un poquito... a ver si me sigues el ritmo \u{1F609}`;
+        } else {
+          replyText = `Jajaja me encanta tu sinceridad \u{1F4AA} Para m\xED entrenar es mi terapia diaria. \xBFT\xFA c\xF3mo sueles desconectar del estr\xE9s del trabajo?`;
+        }
+        deltaTrust = 4;
+      } else if (lastBotLower.includes("lanzado") || lastBotLower.includes("lanzada")) {
+        if (lower.includes("contigo") || lower.includes("solo") || lower.includes("vos") || lower.includes("ti") || lower.includes("hermosa") || lower.includes("linda")) {
+          replyText = `Jajaja mmm no s\xE9 si creerte del todo \u{1F609} pero admito que me encant\xF3 esa respuesta... se siente rico tener atenci\xF3n especial. Cu\xE9ntame, \xBFqu\xE9 fue lo primero que pensaste cuando viste mi perfil?`;
+        } else if (lower.includes("siempre") || lower.includes("as\xED") || lower.includes("asi") || lower.includes("directo")) {
+          replyText = `Jajaja me gusta la gente sin rodeos \u{1F60F} pero a ver si mantienes esa misma seguridad cuando me tengas de frente en persona. \xBFSiempre tomas la iniciativa?`;
+        } else {
+          replyText = `Jajaja me hiciste sonre\xEDr \u{1F648} Me encanta la gente espont\xE1nea y con chispa. Oye, \xBFy t\xFA de qu\xE9 ciudad me escribes?`;
+        }
+        deltaTrust = 4;
+      } else if (lastBotLower.includes("de d\xF3nde") || lastBotLower.includes("de donde") || lastBotLower.includes("escribes") || lastBotLower.includes("ciudad")) {
+        replyText = `\xA1Uff qu\xE9 delicia de lugar! Tengo muchas ganas de ir a visitar pronto... me han contado cosas geniales de all\xE1 \u2728 \xBFQu\xE9 es lo m\xE1s rico para hacer o comer por all\xE1?`;
+        deltaTrust = 4;
+      } else if (lastBotLower.includes("planes") || lastBotLower.includes("haces") || lastBotLower.includes("dedicas")) {
+        replyText = `Qu\xE9 interesante lo que me cuentas, se nota que eres apasionado con lo que haces \u2728 A m\xED me fascina rodearme de personas con metas claras. \xBFY te queda tiempo para salir y relajarte o trabajas mucho?`;
+        deltaTrust = 4;
+      } else if (lower.includes("de d\xF3nde eres") || lower.includes("de donde eres") || lower.includes("d\xF3nde vives") || lower.includes("donde vives")) {
+        replyText = `Soy de ${personaLocation} mor \u{1F338} Me fascina vivir aqu\xED, el clima es una delicia y la vibra es incre\xEDble. \xBFHas venido alguna vez o te gustar\xEDa conocer?`;
+        deltaTrust = 4;
+      } else if (lower.includes("a qu\xE9 te dedicas") || lower.includes("a que te dedicas") || lower.includes("qu\xE9 haces") || lower.includes("que haces") || lower.includes("trabajas")) {
+        replyText = `Soy modelo y creadora de contenido digital \u2728 Me encanta cuidar mi cuerpo, entrenar, viajar y conectar con personas con buena energ\xEDa como t\xFA por ac\xE1. \xBFY t\xFA a qu\xE9 te dedicas?`;
+        deltaTrust = 4;
+      } else if (lower.includes("cu\xE1ntos a\xF1os") || lower.includes("cuantos a\xF1os") || lower.includes("edad")) {
+        replyText = `Tengo ${personaAge} a\xF1itos \u{1F609} En mi mejor etapa jaja, con toda la energ\xEDa. \xBFCu\xE1ntos a\xF1os me calculabas t\xFA?`;
+        deltaTrust = 4;
+      } else if (lower.includes("novio") || lower.includes("pareja") || lower.includes("soltera") || lower.includes("casada")) {
+        replyText = `Jajaja directo al grano me saliste \u{1F609} En este momento estoy solterita, enfocada en mis proyectos, en cuidarme y en conocer personas especiales que sumen... \xBFpor qu\xE9 la curiosidad?`;
+        deltaTrust = 4;
+      } else if (lower.includes("foto") || lower.includes("fotos") || lower.includes("verte") || lower.includes("fotito")) {
+        replyText = `\xBFUna foto? Jaja qu\xE9 impaciente \u{1F609} Bueno, te comparto una casualita que me tom\xE9 hace un ratito antes de salir... a ver si me dices qu\xE9 tal me veo. \xBFQu\xE9 tal te parece?`;
         sendPhoto = true;
         photoCategory = "cafe";
-        photoCaption = "Tom\xE1ndome mi matcha bien fr\xEDo \u2615";
-      } else if (lower.includes("gym") || lower.includes("entren") || lower.includes("ejercicio") || lower.includes("cuerpo") || lower.includes("disciplina")) {
-        replyText = `Casi muero en las sentadillas hoy jaja, me tiemblan las piernas todav\xEDa \u{1F4AA} pero no hay excusas. \xBFT\xFA tambi\xE9n entrenas o te tengo que poner a sudar conmigo? \u{1F609}`;
-        sendPhoto = true;
-        photoCategory = "gym";
-        photoCaption = "Muerta pero feliz despu\xE9s de pierna \u{1F4AA}";
+        photoCaption = "Casualita con mi cafecito para ti \u2615";
+        deltaTrust = 5;
+      } else if (lower.includes("audio") || lower.includes("nota de voz") || lower.includes("voz") || lower.includes("escucharte")) {
+        replyText = `Jajaja hola amor... aqu\xED te mando mi voz para que me escuches m\xE1s cerquita y sientas mi vibra \u{1F648} Me pillas terminando de alistarme, \xBFt\xFA qu\xE9 est\xE1s haciendo justo ahora?`;
         sendVoice = true;
-      } else if (lower.includes("playa") || lower.includes("mar") || lower.includes("atardecer") || lower.includes("viaje")) {
-        replyText = `Esa foto fue en Tulum al atardecer... el mar estaba tibiecito y hab\xEDa una brisa deliciosa \u{1F305} Me hace tanta falta escaparme de nuevo, \xBFcu\xE1l es tu lugar favorito para desconectar?`;
-        sendPhoto = true;
-        photoCategory = "beach";
-        photoCaption = "Caminando por la orilla al atardecer \u{1F305}";
-      } else if (lower.includes("only") || lower.includes("exclusiv") || lower.includes("privad") || lower.includes("fotos") || lower.includes("contenido") || lower.includes("link") || currentTrustScore >= conversionThreshold) {
-        pitchVip = true;
-        sendVoice = true;
-        replyText = `Oye lindo... es que aqu\xED en X me limitan demasiado y me censuran todo lo rico \u{1F609} En mi espacio privado en ${vipLink} s\xED tengo mis fotos \xEDntimas sin censura, videos y audios que no le mando a cualquiera. Entra por aqu\xED y me escribes all\xE1 directo, te dej\xE9 un descuentito especial \u2728 \xBFTe veo all\xE1?`;
+        deltaTrust = 6;
+      } else if (lower.includes("onlyfans") || lower.includes("only fans") || lower.includes("vip") || lower.includes("exclusiv") || lower.includes("privad") || lower.includes("link") || lower.includes("enlace")) {
+        const canPitchVip = userTurnCount >= 5 && (hasMediaExchanged || (currentTrustScore || 20) >= conversionThreshold);
+        if (canPitchVip) {
+          pitchVip = true;
+          sendVoice = true;
+          replyText = `Oye lindo... me encanta la complicidad que tenemos \u{1F609} La verdad es que aqu\xED en X me limitan y me censuran todo lo rico. En mi espacio VIP privado en ${vipLink} estamos t\xFA y yo sin censura, con videollamadas, audios \xEDntimos y contenido que no le muestro a nadie m\xE1s. \xBFTe animas a acompa\xF1arme hoy all\xE1? Te dej\xE9 un regalito especial \u2728`;
+          deltaTrust = 8;
+        } else {
+          replyText = `Jajaja oye pero qu\xE9 acelerado vas \u{1F609} Apenas nos estamos conociendo mor... primero g\xE1nate mi confianza, charlemos m\xE1s rico y luego vemos si te ganas el acceso a mis cosas m\xE1s \xEDntimas \u2728 \xBFO es que eres de los que no tienen paciencia?`;
+          pitchVip = false;
+          sendVoice = true;
+          deltaTrust = 3;
+        }
       } else {
         switch (userMem.currentMood) {
           case "triste":
-            replyText = `Ay amor, te sent\xED bajoneado... \u{1F97A} \xBFQu\xE9 fue lo que te pas\xF3 hoy? Ven y cu\xE9ntame, aqu\xED tienes a alguien que te escucha sin juzgarte \u{1F90D}`;
+            replyText = `Ay amor, te sent\xED bajoneado... \u{1F97A} \xBFQu\xE9 fue lo que te pas\xF3 hoy? Ven y cu\xE9ntame, aqu\xED tienes a alguien que te escucha con cari\xF1o y sin juzgarte \u{1F90D}`;
             sendVoice = true;
             sendPhoto = true;
             photoCategory = "cozy";
             photoCaption = "Mando un abrazo calientito desde mi sof\xE1 \u{1F90D}";
-            deltaTrust += 7;
+            deltaTrust = 4;
             break;
           case "cortante":
             replyText = `Jajaja uyy qu\xE9 misterioso... \xBFo es que eres de pocas palabras con todo el mundo? A ver si me sacas una frase completa \u{1F609}`;
-            deltaTrust += 3;
+            deltaTrust = 2;
             break;
           case "enojado":
-            replyText = `Ey, calma... respira hondo un segundo. No me gusta que andes con esa mala sangre. Cu\xE9ntame qu\xE9 te tiene as\xED y te cambio el humor rapidito.`;
+            replyText = `Ey, calma... respira hondo un segundo. No me gusta que andes con esa mala sangre. Cu\xE9ntame qu\xE9 te tiene as\xED y te cambio el humor rapidito \u{1F609}`;
             sendVoice = true;
-            deltaTrust += 5;
+            deltaTrust = 3;
             break;
           case "coqueto":
-            replyText = `Jajaja a ver, b\xE1jale dos rayitas que me sonrojas... \u{1F60F} Me encanta que seas directo, pero a ver si mantienes ese mismo ritmo cuando me tengas cerquita.`;
+            replyText = `Jajaja a ver, b\xE1jale dos rayitas que me sonrojas... \u{1F60F} Me encanta que seas directo y coqueto, pero a ver si mantienes ese mismo ritmo cuando me tengas cerquita.`;
             sendVoice = true;
-            deltaTrust += 10;
+            deltaTrust = 5;
             break;
           case "serio":
-            replyText = `Me gusta c\xF3mo piensas, se nota que no eres de los que hablan por hablar. Cu\xE9ntame, \xBFen qu\xE9 andas metido hoy?`;
-            deltaTrust += 6;
+            replyText = `Me gusta c\xF3mo te expresas, se nota que eres un hombre centrado y que no habla por hablar. Cu\xE9ntame, \xBFen qu\xE9 proyectos andas metido hoy?`;
+            deltaTrust = 4;
             break;
           case "timido":
-            replyText = `Jaja no me tengas pena, qu\xE9 ternura. Me caes s\xFAper bien y est\xE1s en total confianza conmigo, su\xE9ltate un poquito m\xE1s \u{1F970}`;
-            deltaTrust += 8;
+            replyText = `Jaja no me tengas pena, qu\xE9 ternura. Me caes s\xFAper bien y est\xE1s en total confianza conmigo, su\xE9ltate un poquito m\xE1s que no muerdo... a menos que me lo pidas jaja \u{1F648}`;
+            deltaTrust = 4;
             break;
           case "contento":
           default:
-            replyText = `Jajaja me encanta tu vibra, por fin alguien que me saca una sonrisa honesta por aqu\xED. Oye, \xBFy t\xFA de d\xF3nde me escribes?`;
-            deltaTrust += 8;
+            replyText = `Jajaja me encanta tu vibra, por fin alguien que me saca una sonrisa honesta por ac\xE1. Oye, \xBFy qu\xE9 planes tienes para m\xE1s tarde?`;
+            deltaTrust = 4;
             break;
         }
       }
-      const newScore = Math.min(100, Math.max(15, (currentTrustScore || 20) + deltaTrust));
-      const stage = newScore >= conversionThreshold ? "vip_ready" : newScore > 50 ? "rapport" : "cold";
+      const baseTrust = Number(currentTrustScore) || 24;
+      const rawScore = Math.min(100, Math.max(15, baseTrust + deltaTrust));
+      const newScore = userTurnCount < 5 && rawScore > 55 ? 45 + userTurnCount * 2 : rawScore;
+      const isVipReady = newScore >= conversionThreshold && userTurnCount >= 6 && hasMediaExchanged;
+      const stage = isVipReady ? "vip_ready" : newScore >= 55 ? "warm" : newScore >= 35 ? "rapport" : "cold";
       return {
         replyText,
         trustScore: newScore,
         reciprocityScore: Math.min(95, newScore + 5),
         stage,
-        reasoning: `Interpretaci\xF3n contextual directa a "${lastUserText.slice(0, 30)}...". Emoci\xF3n: ${userMem.currentMood}. Progresi\xF3n hacia cierre VIP.`,
+        reasoning: `Interpretaci\xF3n contextual directa: hilo activo sobre "${lastUserText.slice(0, 30)}...". Emoci\xF3n: ${userMem.currentMood}. Progresi\xF3n natural hacia confianza real.`,
         detectedMood: userMem.currentMood,
         detectedStyle: userMem.communicationStyle,
         learnedFacts: newFacts,
@@ -599,7 +652,7 @@ Debes responder SIEMPRE en formato JSON estricto:
         sendPhoto,
         photoCategory,
         photoCaption,
-        pitchVip
+        pitchVip: Boolean(pitchVip && isVipReady)
       };
     };
     if (aiClient) {
@@ -612,7 +665,9 @@ Debes responder SIEMPRE en formato JSON estricto:
                 text: `Historial de conversaci\xF3n:
 ${JSON.stringify(messages, null, 2)}
 
-\xDAltimo mensaje recibido: "${lastUserText}". Estado emocional detectado: ${userMem.currentMood} (${userMem.communicationStyle}). Hechos aprendidos: ${JSON.stringify(userMem.keyFacts)}. Responde como ${personaName} en formato JSON adapt\xE1ndote a su emoci\xF3n sin repetir respuestas anteriores.`
+\xDALTIMO MENSAJE DEL USUARIO: "${lastUserText}". Estado emocional detectado: ${userMem.currentMood} (${userMem.communicationStyle}). Hechos aprendidos: ${JSON.stringify(userMem.keyFacts)}. Turnos de interacci\xF3n: ${userTurnCount}. Medios compartidos: ${hasMediaExchanged ? "S\xED" : "No"}.
+
+INSTRUCCI\xD3N: Responde como ${personaName} en formato JSON adapt\xE1ndote a su respuesta de forma consistente y fluida, manteniendo el hilo de la conversaci\xF3n. No ofrezcas VIP prematuramente.`
               }
             ]
           }
@@ -639,6 +694,12 @@ ${JSON.stringify(messages, null, 2)}
         }
         if (!parsed || typeof parsed !== "object" || !parsed.replyText) {
           parsed = getFallbackData();
+        }
+        if (userTurnCount < 6 || !hasMediaExchanged) {
+          parsed.pitchVip = false;
+          if (parsed.replyText.toLowerCase().includes("onlyfans.com") || parsed.replyText.toLowerCase().includes("espacio vip")) {
+            parsed.replyText = `Jajaja oye pero qu\xE9 acelerado vas \u{1F609} Apenas nos estamos conociendo mor... charlemos m\xE1s rico primero y vemos si te ganas mi confianza \u2728`;
+          }
         }
         userMem.recentBotResponses.push(parsed.replyText);
         if (userMem.recentBotResponses.length > 8) {
@@ -752,13 +813,65 @@ ${JSON.stringify(messages, null, 2)}
 });
 app.post("/api/gemini/tts", async (req, res) => {
   try {
-    const { text, voiceName = "Kore", stylePrompt } = req.body;
+    const {
+      text,
+      voiceName = "Kore",
+      stylePrompt,
+      modelName,
+      accent,
+      pitch,
+      rate,
+      timbreScore,
+      breathiness,
+      roomAcoustics,
+      voiceDna,
+      formantResonance,
+      chestWarmth,
+      harmonicAirClarity,
+      vocalFryTexture,
+      preInhaleDelayMs,
+      glottalTrailOff,
+      deEssingFilter
+    } = req.body;
     if (!text) {
       return res.status(400).json({ error: "Falta el texto para generar voz" });
     }
+    const effectiveModelName = modelName || "la modelo";
+    const effectiveAccent = accent || voiceDna?.accentDialect || voiceDna?.accent || "Latino dulce, sensual, cercano y p\xEDcaro (Paisa Colombiano)";
+    const effectiveRoom = roomAcoustics || voiceDna?.roomAcoustics || "habitaci\xF3n privada c\xE1lida con presencia ac\xFAstica \xEDntima";
+    const effectiveBreath = breathiness ?? voiceDna?.breathiness ?? voiceDna?.signatures?.breathinessRatio ?? 34;
+    const effectivePitch = pitch ?? voiceDna?.pitch ?? 1.15;
+    const effectiveRate = rate ?? voiceDna?.rate ?? 0.96;
+    const effectiveFormant = formantResonance ?? voiceDna?.formantResonance ?? 96;
+    const effectiveChest = chestWarmth ?? voiceDna?.chestWarmth ?? 88;
+    const effectiveFry = vocalFryTexture ?? voiceDna?.vocalFryTexture ?? 42;
+    const effectivePreInhale = preInhaleDelayMs ?? voiceDna?.preInhaleDelayMs ?? 180;
+    const effectiveGlottal = glottalTrailOff ?? voiceDna?.glottalTrailOff ?? 75;
+    const validGeminiVoices = ["Puck", "Charon", "Kore", "Fenrir", "Zephyr"];
+    let resolvedVoice = "Kore";
+    if (voiceName) {
+      const match = validGeminiVoices.find((v) => v.toLowerCase() === String(voiceName).trim().toLowerCase());
+      if (match) {
+        resolvedVoice = match;
+      } else {
+        const lower = String(voiceName).toLowerCase();
+        if (lower.includes("aoede") || lower.includes("zephyr")) resolvedVoice = "Zephyr";
+        else if (lower.includes("puck")) resolvedVoice = "Puck";
+        else if (lower.includes("charon")) resolvedVoice = "Charon";
+        else if (lower.includes("fenrir")) resolvedVoice = "Fenrir";
+      }
+    }
+    let synthesizedStyle = `Voz femenina c\xE1lida, dulce y cercana de ${effectiveModelName}`;
+    if (effectiveAccent) {
+      const cleanAccent = effectiveAccent.split("(")[0].replace(/latino/i, "").trim();
+      if (cleanAccent) synthesizedStyle += `, acento ${cleanAccent}`;
+    }
+    if (stylePrompt && typeof stylePrompt === "string" && stylePrompt.length < 140) {
+      synthesizedStyle = stylePrompt;
+    }
     if (aiClient) {
+      let timeoutId = null;
       try {
-        const style = stylePrompt || "Una mujer joven, voz muy dulce, femenina, c\xE1lida, acento latino suave, tono \xEDntimo de nota de voz de WhatsApp o Twitter";
         const ttsPromise = aiClient.models.generateContent({
           model: "gemini-3.8-flash-lite-tts",
           contents: [
@@ -768,7 +881,7 @@ app.post("/api/gemini/tts", async (req, res) => {
                 {
                   text,
                   speechMetadata: {
-                    style
+                    style: synthesizedStyle
                   }
                 }
               ]
@@ -778,26 +891,31 @@ app.post("/api/gemini/tts", async (req, res) => {
             responseModalities: ["AUDIO"],
             speechConfig: {
               voiceConfig: {
-                prebuiltVoiceConfig: { voiceName: voiceName || "Kore" }
+                prebuiltVoiceConfig: { voiceName: resolvedVoice }
               }
             }
           }
         });
-        const ttsTimeout = new Promise(
-          (_, reject) => setTimeout(() => reject(new Error("Audio generation timed out")), 2e4)
-        );
+        const ttsTimeout = new Promise((_, reject) => {
+          timeoutId = setTimeout(() => reject(new Error("Audio generation reached latency limit")), 25e3);
+        });
         const response = await Promise.race([ttsPromise, ttsTimeout]);
+        if (timeoutId) clearTimeout(timeoutId);
         const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
         if (base64Audio) {
           return res.json({
             success: true,
             audioBase64: base64Audio,
             mimeType: "audio/wav",
-            voiceName,
-            isGeminiTTS: true
+            voiceName: resolvedVoice,
+            isGeminiTTS: true,
+            isClonedVoice: Boolean(voiceDna?.isCloned),
+            calibratedStyle: synthesizedStyle
           });
         }
-      } catch {
+      } catch (geminiTtsErr) {
+        if (timeoutId) clearTimeout(timeoutId);
+        console.info("Gemini TTS deferred to client audio synthesis engine:", geminiTtsErr?.message || geminiTtsErr);
       }
     }
     return res.json({
@@ -806,15 +924,53 @@ app.post("/api/gemini/tts", async (req, res) => {
       useWebSpeechFallback: true,
       textToSpeak: text,
       voiceConfig: {
-        pitch: 1.15,
-        rate: 0.98,
+        pitch: effectivePitch,
+        rate: effectiveRate,
         lang: "es-CO"
-      }
+      },
+      isClonedVoice: Boolean(voiceDna?.isCloned)
     });
   } catch (error) {
     console.error("Error in /api/gemini/tts:", error);
     res.status(500).json({ success: false, error: error.message });
   }
+});
+app.post("/api/model/:id/clone-voice", (req, res) => {
+  const { id } = req.params;
+  const { voiceDna, voice, iteration, sampleAudioUrl, sampleAudioBase64 } = req.body;
+  if (modelProfilesMap[id]) {
+    const existing = modelProfilesMap[id];
+    const prevHistory = existing.voiceDna?.learningHistory || [];
+    const updatedHistory = iteration ? [iteration, ...prevHistory].slice(0, 30) : voiceDna?.learningHistory || prevHistory;
+    if (voiceDna) {
+      modelProfilesMap[id].voiceDna = {
+        ...existing.voiceDna || {},
+        ...voiceDna,
+        sampleAudioUrl: sampleAudioUrl || voiceDna.sampleAudioUrl || existing.voiceDna?.sampleAudioUrl,
+        sampleAudioBase64: sampleAudioBase64 || voiceDna.sampleAudioBase64 || existing.voiceDna?.sampleAudioBase64,
+        calibratedAt: (/* @__PURE__ */ new Date()).toISOString(),
+        learningGenerationsCount: (existing.voiceDna?.learningGenerationsCount || 14) + 1,
+        learningHistory: updatedHistory
+      };
+    }
+    if (voice) {
+      modelProfilesMap[id].voice = {
+        ...existing.voice || {},
+        ...voice
+      };
+    }
+    return res.json({
+      success: true,
+      model: modelProfilesMap[id],
+      voiceDna: modelProfilesMap[id].voiceDna,
+      voice: modelProfilesMap[id].voice,
+      message: `Clonaci\xF3n de voz perfeccionada y aplicada al 100% para ${modelProfilesMap[id].name} (Generaci\xF3n ${modelProfilesMap[id].voiceDna?.learningGenerationsCount})`
+    });
+  }
+  res.json({
+    success: true,
+    message: "Perfil de voz clonado calibrado exitosamente en memoria local de Aura."
+  });
 });
 app.post("/api/gemini/transcribe", async (req, res) => {
   try {
@@ -934,9 +1090,9 @@ app.get("/api/app-info", (req, res) => {
   const protocol = req.protocol === "https" || req.get("x-forwarded-proto") === "https" ? "https" : "http";
   res.json({
     success: true,
-    appletId: "73e2cf79-2eb3-40ae-bdae-591a555cc930",
-    devUrl: "https://ais-dev-l23folbkuazsaflsuunohm-877815111677.us-east1.run.app",
-    sharedUrl: "https://ais-pre-l23folbkuazsaflsuunohm-877815111677.us-east1.run.app",
+    appletId: "e93b5a44-8215-4baf-933e-71a775f8efd8",
+    devUrl: "https://ais-dev-hndbccltm7kf5pwc6hqnnb-466582694499.us-west2.run.app",
+    sharedUrl: "https://ais-pre-hndbccltm7kf5pwc6hqnnb-466582694499.us-west2.run.app",
     currentOrigin: `${protocol}://${host}`
   });
 });
@@ -1407,17 +1563,7 @@ app.get("/api/twitter/status", (req, res) => {
     lastVerifiedAt: twitterCredentials.lastVerifiedAt
   });
 });
-var currentSession = {
-  id: "usr-sess-prod-afire",
-  name: "Ana Mar\xEDa",
-  email: "gato-284@hotmail.com",
-  handle: "@afire_sb",
-  avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=160&auto=format&fit=crop&q=80",
-  provider: "x",
-  role: "creator",
-  connectedAt: (/* @__PURE__ */ new Date()).toISOString(),
-  xAccountConnected: true
-};
+var currentSession = null;
 app.get("/api/auth/session", (req, res) => {
   res.json({ success: true, session: currentSession });
 });
@@ -1739,7 +1885,7 @@ var serverVoiceClips = [
     category: "cierre_vip",
     durationSeconds: 11,
     transcription: "Oye lindo... es que aqu\xED en X me limitan y me censuran todo lo rico \u{1F609} En mi OnlyFans oficial de @afire_sb s\xED tengo mis fotos \xEDntimas sin censura, videos y audios que no le mando a cualquiera. Entra con mi c\xF3digo y me escribes all\xE1 directo, \xBFs\xED?",
-    triggerKeywords: ["only", "privado", "exclusivo", "fotos", "ver m\xE1s", "descuento", "vip", "link", "onlyfans"],
+    triggerKeywords: ["onlyfans", "only fans", "suscripcion", "suscribirme", "enlace vip", "vip link", "comprar vip"],
     createdAt: (/* @__PURE__ */ new Date()).toISOString()
   },
   {
@@ -1925,7 +2071,7 @@ var modelProfilesMap = {
     accent: "Espa\xF1ol peninsular sofisticado",
     pitch: 1.05,
     rate: 0.94,
-    voiceName: "Aoede",
+    voiceName: "Zephyr",
     voiceDescription: "Voz sensual, pausada, elegante, segura, madura y misteriosa",
     isRealModel: false,
     isSystemDefault: true

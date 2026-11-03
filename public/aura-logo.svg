@@ -1,0 +1,36 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="auraLeftArm" x1="60" y1="10" x2="10" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#00F0FF" />
+      <stop offset="35%" stop-color="#00A3FF" />
+      <stop offset="70%" stop-color="#2563EB" />
+      <stop offset="100%" stop-color="#4F46E5" />
+    </linearGradient>
+    <linearGradient id="auraRightArm" x1="60" y1="10" x2="110" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="25%" stop-color="#818CF8" />
+      <stop offset="55%" stop-color="#A855F7" />
+      <stop offset="85%" stop-color="#D946EF" />
+      <stop offset="100%" stop-color="#F43F5E" />
+    </linearGradient>
+    <linearGradient id="auraInnerFold" x1="35" y1="70" x2="85" y2="95" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="40%" stop-color="#7C3AED" />
+      <stop offset="80%" stop-color="#C026D3" />
+      <stop offset="100%" stop-color="#E11D48" />
+    </linearGradient>
+    <linearGradient id="auraFoldShadow" x1="60" y1="70" x2="60" y2="102" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1E1B4B" stop-opacity="0.8" />
+      <stop offset="100%" stop-color="#581C87" stop-opacity="0.2" />
+    </linearGradient>
+    <filter id="auraDropShadow" x="-10%" y="-10%" width="125%" height="125%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000000" flood-opacity="0.5" />
+    </filter>
+  </defs>
+  <g filter="url(#auraDropShadow)">
+    <path d="M 60 10 L 43 28 L 14 88 L 26 98 L 50 82 L 64 56 L 60 10 Z" fill="url(#auraLeftArm)" />
+    <path d="M 60 10 L 64 56 L 75 80 L 96 98 L 106 88 L 77 28 L 60 10 Z" fill="url(#auraRightArm)" />
+    <path d="M 38 78 L 60 62 L 82 78 L 68 85 L 60 81 L 52 85 Z" fill="url(#auraInnerFold)" />
+    <path d="M 60 62 L 68 85 L 60 96 L 52 85 Z" fill="url(#auraFoldShadow)" />
+  </g>
+</svg>

@@ -100,14 +100,14 @@ export const AgentBrainHUD: React.FC<AgentBrainHUDProps> = ({
             Umbral de Confianza para Enlace VIP:
           </span>
           <span className="font-bold text-amber-400 text-sm">
-            {modelProfile.rules.conversionThreshold}%
+            {modelProfile.rules?.conversionThreshold ?? (modelProfile as any).conversionThreshold ?? 75}%
           </span>
         </div>
         <input
           type="range"
           min="40"
           max="95"
-          value={modelProfile.rules.conversionThreshold}
+          value={modelProfile.rules?.conversionThreshold ?? (modelProfile as any).conversionThreshold ?? 75}
           onChange={(e) => onUpdateThreshold(parseInt(e.target.value, 10))}
           className="w-full accent-amber-500 cursor-pointer h-1.5 bg-slate-800 rounded-lg"
         />

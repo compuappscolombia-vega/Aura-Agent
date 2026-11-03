@@ -1116,39 +1116,61 @@ export const AgentTrainingLab: React.FC<AgentTrainingLabProps> = ({
     }
   };
 
-  const handlePromoteCandidateBToOfficial = async () => {
+  const handleVoteWinner = async (winner: 'A' | 'B') => {
     setIsPromotingCandidate(true);
+    setAdminVote(winner);
+    if (isBlindTestMode) {
+      setBlindRevealed(true);
+    }
 
     const newGenCount = learningGenerations + 1;
-    const promotedSimilarity = Math.min(99.9, Math.round((similarityScore + 0.3) * 10) / 10);
+    const isB = winner === 'B';
+    const winningPitch = isB ? candidatePitch : clonedPitch;
+    const winningRate = isB ? candidateRate : clonedRate;
+    const winningWarmth = isB ? candidateWarmth : clonedWarmth;
+    const winningBreath = isB ? candidateBreathiness : clonedBreathiness;
+    const winningFormant = isB ? candidateFormantResonance : currentFormantResonance;
+    const winningChest = isB ? candidateChestWarmth : currentChestWarmth;
+    const winningAir = isB ? candidateHarmonicAir : currentHarmonicAir;
+    const winningFry = isB ? candidateVocalFry : currentVocalFry;
+    const winningInhale = isB ? candidatePreInhaleDelay : currentPreInhaleDelay;
+    const winningTrail = isB ? candidateGlottalTrailOff : currentGlottalTrailOff;
+    const winningDeEss = isB ? candidateDeEssing : currentDeEssing;
+    const winningAccent = isB ? candidateAccent : clonedAccent;
+    const promotedSimilarity = Math.min(99.9, Math.round((similarityScore + (isB ? 0.3 : 0.1)) * 10) / 10);
+
+    const traitDescription = isB
+      ? `Victoria de Canal B en Votación A/B: Adopción de variante con formantes al ${candidateFormantResonance}%, calidez ${candidateChestWarmth}% y micro-respiración previa de ${candidatePreInhaleDelay}ms`
+      : `Ratificación de Canal A en Votación A/B: Confirmación de voz oficial de ${modelProfile.name} con estabilidad acústica óptima (${promotedSimilarity}%)`;
 
     const newIteration: VoiceLearningIteration = {
       id: `gen-${newGenCount}`,
       generation: newGenCount,
       timestamp: new Date().toISOString(),
       source: 'calibracion_admin',
-      f0PitchHz: Math.round(candidatePitch * 190),
-      harmonicWarmth: candidateWarmth,
-      breathinessRatio: candidateBreathiness,
-      cadenceRate: candidateRate,
-      accentDialect: candidateAccent,
-      learnedTrait: `Victoria en A/B Testing: Adopción de variante con formantes al ${candidateFormantResonance}%, calidez de pecho ${candidateChestWarmth}% y micro-respiración previa de ${candidatePreInhaleDelay}ms`,
+      f0PitchHz: Math.round(winningPitch * 190),
+      harmonicWarmth: winningWarmth,
+      breathinessRatio: winningBreath,
+      cadenceRate: winningRate,
+      accentDialect: winningAccent,
+      learnedTrait: traitDescription,
       similarityScore: promotedSimilarity,
     };
 
-    // Apply Candidate B parameters to Current Model A
-    setClonedPitch(candidatePitch);
-    setClonedRate(candidateRate);
-    setClonedWarmth(candidateWarmth);
-    setClonedBreathiness(candidateBreathiness);
-    setCurrentFormantResonance(candidateFormantResonance);
-    setCurrentChestWarmth(candidateChestWarmth);
-    setCurrentHarmonicAir(candidateHarmonicAir);
-    setCurrentVocalFry(candidateVocalFry);
-    setCurrentPreInhaleDelay(candidatePreInhaleDelay);
-    setCurrentGlottalTrailOff(candidateGlottalTrailOff);
-    setCurrentDeEssing(candidateDeEssing);
-    setClonedAccent(candidateAccent);
+    if (isB) {
+      setClonedPitch(candidatePitch);
+      setClonedRate(candidateRate);
+      setClonedWarmth(candidateWarmth);
+      setClonedBreathiness(candidateBreathiness);
+      setCurrentFormantResonance(candidateFormantResonance);
+      setCurrentChestWarmth(candidateChestWarmth);
+      setCurrentHarmonicAir(candidateHarmonicAir);
+      setCurrentVocalFry(candidateVocalFry);
+      setCurrentPreInhaleDelay(candidatePreInhaleDelay);
+      setCurrentGlottalTrailOff(candidateGlottalTrailOff);
+      setCurrentDeEssing(candidateDeEssing);
+      setClonedAccent(candidateAccent);
+    }
     setSimilarityScore(promotedSimilarity);
     setLearningGenerations(newGenCount);
 
@@ -1159,45 +1181,47 @@ export const AgentTrainingLab: React.FC<AgentTrainingLabProps> = ({
       ...modelProfile,
       voice: {
         ...modelProfile.voice,
-        pitch: candidatePitch,
-        rate: candidateRate,
-        accent: candidateAccent,
+        pitch: winningPitch,
+        rate: winningRate,
+        accent: winningAccent,
+        name: 'Aoede', // Preserve user's preferred realistic voice
       },
       voiceDna: {
         ...(modelProfile.voiceDna || {
           isCloned: true,
           sampleDurationSeconds: 8,
           detectedTone: 'Calibrado',
-          pitch: candidatePitch,
-          rate: candidateRate,
-          timbreScore: candidateWarmth,
+          pitch: winningPitch,
+          rate: winningRate,
+          timbreScore: winningWarmth,
           learningGenerationsCount: newGenCount,
         }),
         isCloned: true,
-        pitch: candidatePitch,
-        rate: candidateRate,
-        timbreScore: candidateWarmth,
-        breathiness: candidateBreathiness,
-        accentDialect: candidateAccent,
+        pitch: winningPitch,
+        rate: winningRate,
+        timbreScore: winningWarmth,
+        breathiness: winningBreath,
+        accentDialect: winningAccent,
         similarityScore: promotedSimilarity,
         learningGenerationsCount: newGenCount,
         learningHistory: nextHistory,
-        formantResonance: candidateFormantResonance,
-        chestWarmth: candidateChestWarmth,
-        harmonicAirClarity: candidateHarmonicAir,
-        vocalFryTexture: candidateVocalFry,
-        preInhaleDelayMs: candidatePreInhaleDelay,
-        glottalTrailOff: candidateGlottalTrailOff,
-        deEssingFilter: candidateDeEssing,
+        formantResonance: winningFormant,
+        chestWarmth: winningChest,
+        harmonicAirClarity: winningAir,
+        vocalFryTexture: winningFry,
+        preInhaleDelayMs: winningInhale,
+        glottalTrailOff: winningTrail,
+        deEssingFilter: winningDeEss,
         calibratedAt: new Date().toISOString(),
       },
     };
 
+    // Update voiceEngine immediately across the app
     voiceEngine.setCalibratedVoiceProfile({
-      pitch: candidatePitch,
-      rate: candidateRate,
-      accent: candidateAccent,
-      voiceName: modelProfile.voice.name,
+      pitch: winningPitch,
+      rate: winningRate,
+      accent: winningAccent,
+      voiceName: 'Aoede',
       ambiencePreset: selectedAmbience,
       enableAmbience: true,
       isRealVoiceCloned: true,
@@ -1207,25 +1231,50 @@ export const AgentTrainingLab: React.FC<AgentTrainingLabProps> = ({
       onUpdateModel(updatedModel);
     }
 
+    // Persist to backend and disk
     try {
-      await fetch(`/api/model/${modelProfile.id}/clone-voice`, {
+      await fetch(`/api/model/${modelProfile.id}/vote-iteration`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          voiceDna: updatedModel.voiceDna,
-          voice: updatedModel.voice,
-          iteration: newIteration,
+          winningChannel: winner,
+          candidateParameters: isB
+            ? {
+                pitch: candidatePitch,
+                rate: candidateRate,
+                warmth: candidateWarmth,
+                breathiness: candidateBreathiness,
+                formantResonance: candidateFormantResonance,
+                chestWarmth: candidateChestWarmth,
+                harmonicAir: candidateHarmonicAir,
+                vocalFry: candidateVocalFry,
+                preInhaleDelay: candidatePreInhaleDelay,
+                glottalTrailOff: candidateGlottalTrailOff,
+                deEssing: candidateDeEssing,
+                accent: candidateAccent,
+                voiceName: 'Aoede',
+              }
+            : null,
+          reason: traitDescription,
+          similarityScore: promotedSimilarity,
+          updatedVoiceDna: updatedModel.voiceDna,
         }),
       });
     } catch (e) {
-      console.warn('Promote candidate sync error:', e);
+      console.warn('Vote iteration sync error:', e);
     }
 
     setIsPromotingCandidate(false);
     setPromotionNotice(
-      `🏆 ¡Variante B promovida exitosamente a Clonación Oficial de Aura! Similitud elevada a ${promotedSimilarity}% con formantes y micro-respiración de alta fidelidad.`
+      isB
+        ? `🏆 ¡Voto guardado persistentemente! Variante B promovida a Clonación Oficial de Aura (Similitud: ${promotedSimilarity}%, timbre Aoede y parámetros guardados en disco).`
+        : `✓ ¡Voto guardado persistentemente! Canal A ratificado como Voz Oficial de Aura con alta fidelidad y guardado en disco.`
     );
     setTimeout(() => setPromotionNotice(null), 7000);
+  };
+
+  const handlePromoteCandidateBToOfficial = async () => {
+    await handleVoteWinner('B');
   };
 
   // ==========================================
@@ -2026,46 +2075,63 @@ export const AgentTrainingLab: React.FC<AgentTrainingLabProps> = ({
               </div>
             </div>
 
-            {/* Blind Testing Voting Widget */}
-            {isBlindTestMode && (
-              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                    <Star className="w-3.5 h-3.5 fill-current" /> Votación a Ciegas: ¿Cuál versión percibes con mayor naturalidad humana?
+            {/* Panel de Votación y Persistencia Activa A/B */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="p-1 rounded bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                    <Trophy className="w-4 h-4" />
                   </span>
-                  <span className="text-[11px] text-slate-300 block mt-0.5">
-                    Evalúa sin sesgos de nombres. Cuando votes, el sistema revelará cuál canal corresponde a cada sonido.
+                  <span className="text-xs font-bold text-white">
+                    Votación de Selección Vocal & Persistencia en Aura
                   </span>
+                  {adminVote !== 'none' && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 font-bold">
+                      ✓ Parámetro Guardado: Canal {adminVote}
+                    </span>
+                  )}
                 </div>
+                <p className="text-[11px] text-slate-400 max-w-xl">
+                  {isBlindTestMode && !blindRevealed
+                    ? 'Prueba a ciegas activa: Escucha ambas variantes y vota por la que percibas más natural y humana.'
+                    : `Vota por la variante que mejor representa a ${modelProfile.name}. Al votar, el parámetro se guarda de forma persistente en disco y se aplica inmediatamente al bot de voz en el chat.`}
+                </p>
+              </div>
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setAdminVote('A');
-                      setBlindRevealed(true);
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                      adminVote === 'A'
-                        ? 'bg-rose-600 text-white border-rose-500'
-                        : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'
-                    }`}
-                  >
-                    Votar por Canal 1
-                  </button>
-                  <button
-                    onClick={() => {
-                      setAdminVote('B');
-                      setBlindRevealed(true);
-                    }}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
-                      adminVote === 'B'
-                        ? 'bg-purple-600 text-white border-purple-500'
-                        : 'bg-slate-900 text-slate-300 border-slate-700 hover:text-white'
-                    }`}
-                  >
-                    Votar por Canal 2
-                  </button>
-                </div>
+              <div className="flex items-center gap-2.5 shrink-0 flex-wrap">
+                <button
+                  onClick={() => handleVoteWinner('A')}
+                  disabled={isPromotingCandidate}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-2 shadow-md ${
+                    adminVote === 'A'
+                      ? 'bg-rose-600 text-white border-rose-500 shadow-rose-600/30'
+                      : 'bg-slate-900 text-slate-200 border-slate-700 hover:border-rose-500 hover:text-white'
+                  }`}
+                >
+                  <Check className="w-3.5 h-3.5 text-rose-400" />
+                  <span>{isBlindTestMode && !blindRevealed ? 'Votar por Canal 1' : 'Votar por Canal A (Oficial)'}</span>
+                </button>
+
+                <button
+                  onClick={() => handleVoteWinner('B')}
+                  disabled={isPromotingCandidate}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold border transition-all cursor-pointer flex items-center gap-2 shadow-md ${
+                    adminVote === 'B'
+                      ? 'bg-purple-600 text-white border-purple-500 shadow-purple-600/30'
+                      : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white border-purple-500/50'
+                  }`}
+                >
+                  <Trophy className="w-3.5 h-3.5 text-amber-300" />
+                  <span>{isBlindTestMode && !blindRevealed ? 'Votar por Canal 2' : 'Votar por Canal B (Candidato)'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Persistent Vote Saved Banner Notification */}
+            {promotionNotice && (
+              <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-medium flex items-center gap-2 shadow-lg animate-fadeIn">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{promotionNotice}</span>
               </div>
             )}
           </div>

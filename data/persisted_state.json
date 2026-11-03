@@ -1,0 +1,520 @@
+{
+  "version": "2.5.0",
+  "lastSavedAt": "2026-11-02T14:52:54.016Z",
+  "models": {
+    "afire-sb": {
+      "id": "afire-sb",
+      "name": "ANAMARIA❣️",
+      "handle": "@afire_sb",
+      "username": "afire_sb",
+      "restId": "1139963967391092739",
+      "bio": "Hi Honey bienvenido a mi mundo \nModelo WC CB y ST Creadora de contenido +18",
+      "location": "Medellín, Colombia",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2098509842214182916/7dJgS3em_normal.jpg",
+      "bannerUrl": "https://pbs.twimg.com/profile_banners/1139963967391092739/1789158709",
+      "archetype": "Modelo WC CB y ST • Perfil Oficial X @afire_sb",
+      "tagline": "Modelo WC CB y ST • Creadora de contenido +18",
+      "vipLink": "https://onlyfans.com/afire_sb",
+      "vipPrice": "$19.99/mes",
+      "discountCode": "ANAMARIA_VIP_30",
+      "conversionThreshold": 75,
+      "accent": "Latino dulce, sensual, cercano y pícaro",
+      "pitch": 1.15,
+      "rate": 0.98,
+      "voiceName": "Aoede",
+      "voiceDescription": "Voz femenina cálida, dulce, íntima, melódica, cómplice y natural de Ana María (@afire_sb) con timbre Aoede",
+      "isRealModel": true,
+      "xProfileMetrics": {
+        "followers": 89,
+        "following": 211,
+        "tweets": 126,
+        "isVerified": true,
+        "lastSyncedAt": "2026-11-02T14:52:45.412Z",
+        "liveFromX": true
+      },
+      "voiceDna": {
+        "learningGenerationsCount": 15,
+        "learningHistory": [
+          {
+            "id": "gen-ab-15",
+            "generation": 15,
+            "timestamp": "2026-11-02T14:52:54.016Z",
+            "source": "voto_ab_testing",
+            "learnedTrait": "Votación A/B: Victoria de Canal A (Clonación Oficial)",
+            "similarityScore": 99.6,
+            "accentDialect": "Latino dulce, sensual, cercano y pícaro",
+            "cadenceRate": 0.98,
+            "f0PitchHz": 218,
+            "harmonicWarmth": 99.6,
+            "breathinessRatio": 35
+          }
+        ],
+        "calibratedAt": "2026-11-02T14:52:54.016Z"
+      }
+    },
+    "valeria-gomez": {
+      "id": "valeria-gomez",
+      "name": "Valeria Gómez",
+      "handle": "@valeriag_official",
+      "vipLink": "https://onlyfans.com/valeria_exclusive",
+      "vipPrice": "$19.99/mes",
+      "discountCode": "VALERIA_VIP_30",
+      "conversionThreshold": 75,
+      "accent": "Latino / Colombiano suave y dulce",
+      "pitch": 1.15,
+      "rate": 0.98,
+      "voiceName": "Aoede",
+      "voiceDescription": "Tono cercano, cálido, femenino, íntimo y sutilmente pícaro",
+      "isRealModel": false,
+      "isSystemDefault": true
+    },
+    "elena-russo": {
+      "id": "elena-russo",
+      "name": "Elena Russo",
+      "handle": "@elena_russo_vip",
+      "vipLink": "https://onlyfans.com/elena_russo_vip",
+      "vipPrice": "$24.99/mes",
+      "discountCode": "ELENA_SECRETS_40",
+      "conversionThreshold": 70,
+      "accent": "Español peninsular sofisticado",
+      "pitch": 1.05,
+      "rate": 0.94,
+      "voiceName": "Aoede",
+      "voiceDescription": "Voz sensual, pausada, elegante, segura, madura y misteriosa",
+      "isRealModel": false,
+      "isSystemDefault": true
+    },
+    "mia-soler": {
+      "id": "mia-soler",
+      "name": "Mia Soler",
+      "handle": "@miasoler_fit",
+      "vipLink": "https://onlyfans.com/mia_soler_fit",
+      "vipPrice": "$14.99/mes",
+      "discountCode": "MIA_WILD_50",
+      "conversionThreshold": 65,
+      "accent": "Argentino / Porteño alegre y desenfadado",
+      "pitch": 1.2,
+      "rate": 1.05,
+      "voiceName": "Puck",
+      "voiceDescription": "Voz alegre, picante, rápida, risueña, enérgica y espontánea",
+      "isRealModel": false,
+      "isSystemDefault": true
+    },
+    "camila-torres": {
+      "id": "camila-torres",
+      "name": "Camila Torres",
+      "handle": "@camila_exclusive",
+      "vipLink": "https://onlyfans.com/camila_torres_vip",
+      "vipPrice": "$18.50/mes",
+      "discountCode": "CAMI_FIT_VIP",
+      "conversionThreshold": 80,
+      "accent": "Mexicano neutral dulce y motivador",
+      "pitch": 1.1,
+      "rate": 1,
+      "voiceName": "Aoede",
+      "voiceDescription": "Voz dulce, motivadora, pícara, atlética y muy natural",
+      "isRealModel": false,
+      "isSystemDefault": true
+    }
+  },
+  "memories": {
+    "@carlos_m92": {
+      "userId": "lead-1",
+      "username": "@carlos_m92",
+      "nameAlias": "Carlos",
+      "currentMood": "coqueto",
+      "communicationStyle": "Directo y Coqueto",
+      "moodIntensity": 8,
+      "keyFacts": [
+        "Empresario de 32 años",
+        "Viaja con frecuencia a Miami",
+        "Le encanta el fitness y las fotos de gym",
+        "Busca conexión exclusiva y trato preferencial"
+      ],
+      "preferredTopics": [
+        "viajes",
+        "gym",
+        "planes nocturnos",
+        "exclusividad"
+      ],
+      "interactionCount": 14,
+      "lastEmotionalState": "Muy entusiasmado y receptivo",
+      "suggestedApproach": "Mantener coqueteo recíproco y trato exclusivo VIP.",
+      "attachmentLevel": "Alto",
+      "recentBotResponses": []
+    },
+    "@david_tech": {
+      "userId": "lead-2",
+      "username": "@david_tech",
+      "nameAlias": "David",
+      "currentMood": "contento",
+      "communicationStyle": "Expresivo y Emojis",
+      "moodIntensity": 7,
+      "keyFacts": [
+        "Ingeniero de software en remoto",
+        "Entrena por las mañanas a las 6 AM",
+        "Amante del café matcha y café negro",
+        "Persona curiosa y respetuosa"
+      ],
+      "preferredTopics": [
+        "rutina de gym",
+        "café",
+        "música relax",
+        "estilo de vida"
+      ],
+      "interactionCount": 6,
+      "lastEmotionalState": "Curioso y amigable",
+      "suggestedApproach": "Conectar por intereses en común de entrenamiento y rutina matutina.",
+      "attachmentLevel": "Creciendo",
+      "recentBotResponses": []
+    },
+    "@alex_madrid": {
+      "userId": "lead-3",
+      "username": "@alex_madrid",
+      "nameAlias": "Alex",
+      "currentMood": "contento",
+      "communicationStyle": "Directo y Coqueto",
+      "moodIntensity": 9,
+      "keyFacts": [
+        "Vive en Madrid",
+        "Suscriptor VIP activo de OnlyFans",
+        "Le encantan las notas de voz personalizadas",
+        "Fanático de la playa y el sol"
+      ],
+      "preferredTopics": [
+        "audios íntimos",
+        "viajes a España",
+        "anécdotas diarias"
+      ],
+      "interactionCount": 28,
+      "lastEmotionalState": "Completamente fidelizado y cariñoso",
+      "suggestedApproach": "Mimar con audios cariñosos y acceso prioritario a fotos.",
+      "attachmentLevel": "Devoto",
+      "recentBotResponses": []
+    },
+    "@roberto_val": {
+      "userId": "lead-4",
+      "username": "@roberto_val",
+      "nameAlias": "Roberto",
+      "currentMood": "cortante",
+      "communicationStyle": "Monosilábico y Seco",
+      "moodIntensity": 6,
+      "keyFacts": [
+        "Primer contacto en Twitter/X",
+        "Respuestas muy breves tipo telegrama",
+        "Aún cauteloso"
+      ],
+      "preferredTopics": [
+        "rompehielos ligero",
+        "humor casual"
+      ],
+      "interactionCount": 2,
+      "lastEmotionalState": "Distante y reservado",
+      "suggestedApproach": "No abrumar con textos largos. Usar preguntas cortas e intriga casual.",
+      "attachmentLevel": "Inicial",
+      "recentBotResponses": []
+    }
+  },
+  "leads": [
+    {
+      "id": "lead-1",
+      "username": "@carlos_m92",
+      "platform": "X (Twitter)",
+      "trustScore": 88,
+      "stage": "vip_ready",
+      "reciprocity": 92,
+      "lastMessage": "Me encanta cómo piensas, ¿dónde puedo ver más de tu contenido?",
+      "lastActive": "Hace 5 min",
+      "totalMessages": 14,
+      "unlockedVip": false,
+      "notes": "Interés alto en fotos exclusivas y videollamada personalizada."
+    },
+    {
+      "id": "lead-2",
+      "username": "@david_tech",
+      "platform": "X (Twitter)",
+      "trustScore": 45,
+      "stage": "rapport",
+      "reciprocity": 50,
+      "lastMessage": "Genial, ¿también te gusta entrenar por las mañanas?",
+      "lastActive": "Hace 22 min",
+      "totalMessages": 6,
+      "unlockedVip": false,
+      "notes": "Pregunta sobre rutina diaria. Enviar foto casual de gym."
+    },
+    {
+      "id": "lead-3",
+      "username": "@alex_madrid",
+      "platform": "Web",
+      "trustScore": 95,
+      "stage": "converted",
+      "reciprocity": 96,
+      "lastMessage": "¡Ya me suscribí a tu OnlyFans VIP! Eres increíble.",
+      "lastActive": "Hace 1 hora",
+      "totalMessages": 28,
+      "unlockedVip": true,
+      "notes": "Suscripción Tier Diamante activa ($29.99/mes)."
+    },
+    {
+      "id": "lead-4",
+      "username": "@roberto_val",
+      "platform": "X (Twitter)",
+      "trustScore": 20,
+      "stage": "cold",
+      "reciprocity": 25,
+      "lastMessage": "Hola linda qué haces",
+      "lastActive": "Hace 2 horas",
+      "totalMessages": 2,
+      "unlockedVip": false,
+      "notes": "Primer contacto. Mantener conversación amigable y casual."
+    }
+  ],
+  "voiceClips": [
+    {
+      "id": "afire-vc-1",
+      "modelId": "afire-sb",
+      "title": "Saludo Íntimo de Ana María en X ☕",
+      "category": "saludo",
+      "durationSeconds": 7,
+      "transcription": "Hola amor, soy Ana María, qué lindo saludarte por aquí en X. Me pillas justo tomándome algo antes de salir, ¿tú qué estás haciendo hoy? Cuéntame...",
+      "triggerKeywords": [
+        "hola",
+        "buenas",
+        "saludos",
+        "hola hermosa",
+        "hey",
+        "matcha",
+        "cafe",
+        "audio",
+        "voz",
+        "ana",
+        "afire"
+      ],
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "afire-vc-2",
+      "modelId": "afire-sb",
+      "title": "Respuesta Coqueta & Pícara 😉",
+      "category": "coqueto",
+      "durationSeconds": 9,
+      "transcription": "Jajaja a ver, bájale dos rayitas que me vas a sonrojar... Me encanta que seas lanzado, pero a ver si mantienes ese mismo ritmo cuando me tengas cerquita 😉",
+      "triggerKeywords": [
+        "linda",
+        "hermosa",
+        "guapa",
+        "me gustas",
+        "bombón",
+        "ojazos",
+        "beso",
+        "sexy"
+      ],
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "afire-vc-3",
+      "modelId": "afire-sb",
+      "title": "Audio de Gym & Rutina Fitness 💪",
+      "category": "gym",
+      "durationSeconds": 8,
+      "transcription": "Uff casi muero con las sentadillas hoy jaja, me tiemblan las piernas todavía. ¿Tú también entrenas o te tengo que poner a sudar conmigo?",
+      "triggerKeywords": [
+        "gym",
+        "entren",
+        "ejercicio",
+        "cuerpo",
+        "rutina",
+        "sentadillas",
+        "pesas"
+      ],
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "afire-vc-4",
+      "modelId": "afire-sb",
+      "title": "Invitación a Espacio VIP OnlyFans de Ana María ✨",
+      "category": "cierre_vip",
+      "durationSeconds": 11,
+      "transcription": "Oye lindo... es que aquí en X me limitan y me censuran todo lo rico 😉 En mi OnlyFans oficial de @afire_sb sí tengo mis fotos íntimas sin censura, videos y audios que no le mando a cualquiera. Entra con mi código y me escribes allá directo, ¿sí?",
+      "triggerKeywords": [
+        "onlyfans",
+        "only fans",
+        "suscripcion",
+        "suscribirme",
+        "enlace vip",
+        "vip link",
+        "comprar vip"
+      ],
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "afire-vc-5",
+      "modelId": "afire-sb",
+      "title": "Susurro Íntimo de Buenas Noches 🤍",
+      "category": "susurro",
+      "durationSeconds": 8,
+      "transcription": "Ya me voy a la cama a descansar un ratito... me haces falta por aquí para consentirte. Que descanses muy rico, sueña conmigo 🤍",
+      "triggerKeywords": [
+        "noche",
+        "dormir",
+        "cama",
+        "descansar",
+        "sueña",
+        "besos"
+      ],
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "val-vc-1",
+      "modelId": "valeria-gomez",
+      "title": "Saludo Íntimo con Café ☕",
+      "category": "saludo",
+      "durationSeconds": 7,
+      "transcription": "Hola amor, qué lindo saludarte por aquí. Me pillas justo tomándome un café antes de salir, ¿tú qué estás haciendo hoy? Cuéntame...",
+      "triggerKeywords": [
+        "hola",
+        "buenas",
+        "saludos",
+        "hola hermosa",
+        "hey",
+        "matcha",
+        "cafe",
+        "audio",
+        "voz"
+      ],
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "val-vc-2",
+      "modelId": "valeria-gomez",
+      "title": "Rutina de Gym & Energía Fitness 💪",
+      "category": "gym",
+      "durationSeconds": 8,
+      "transcription": "Uff casi muero en las sentadillas hoy jaja, me tiemblan las piernas todavía. ¿Tú también entrenas o te tengo que poner a sudar conmigo?",
+      "triggerKeywords": [
+        "gym",
+        "entren",
+        "ejercicio",
+        "cuerpo",
+        "rutina",
+        "sentadillas",
+        "pesas"
+      ],
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "val-vc-4",
+      "modelId": "valeria-gomez",
+      "title": "Invitación a Espacio Privado & OnlyFans VIP ✨",
+      "category": "cierre_vip",
+      "durationSeconds": 11,
+      "transcription": "Oye lindo... es que aquí en X me limitan y me censuran todo lo rico. En mi OnlyFans privado sí tengo mis fotos íntimas sin censura, videos y audios que no le mando a cualquiera. Entra por el enlace con mi código y me escribes allá directo, ¿sí?",
+      "triggerKeywords": [
+        "only",
+        "privado",
+        "exclusivo",
+        "fotos",
+        "ver más",
+        "descuento",
+        "vip",
+        "link"
+      ],
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    }
+  ],
+  "mediaItems": [
+    {
+      "id": "afire-med-1",
+      "modelId": "afire-sb",
+      "title": "Café de la Mañana de Ana María",
+      "category": "cafe",
+      "url": "/src/assets/images/model_cafe_selfie_1793159131949.jpg",
+      "caption": "Tomándome un café bien frío antes de salir ☕ ¿Tú ya tomaste café?",
+      "isExclusive": false,
+      "watermark": "@afire_sb / OFFICIAL_AURA",
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "afire-med-2",
+      "modelId": "afire-sb",
+      "title": "Post-Entreno Gym Casual",
+      "category": "gym",
+      "url": "/src/assets/images/model_gym_casual_1793159144992.jpg",
+      "caption": "Muerta pero feliz después de pierna hoy 💪 ¿Hiciste ejercicio?",
+      "isExclusive": false,
+      "watermark": "@afire_sb / OFFICIAL_AURA",
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "afire-med-3",
+      "modelId": "afire-sb",
+      "title": "Tarde de Sofá & Mantita",
+      "category": "cozy",
+      "url": "/src/assets/images/model_cozy_home_1793159159023.jpg",
+      "caption": "Tarde fría y yo aquí en mantita viendo pelis... me hace falta compañía 🤍",
+      "isExclusive": false,
+      "watermark": "@afire_sb / OFFICIAL_AURA",
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "afire-med-4",
+      "modelId": "afire-sb",
+      "title": "Atardecer en la Playa",
+      "category": "beach",
+      "url": "/src/assets/images/model_beach_sunset_1793159171363.jpg",
+      "caption": "Caminando por la orilla al atardecer, mi momento favorito del día 🌅",
+      "isExclusive": false,
+      "watermark": "@afire_sb / OFFICIAL_AURA",
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "afire-med-5",
+      "modelId": "afire-sb",
+      "title": "Teaser Exclusivo Lencería de Seda (PPV)",
+      "category": "teaser",
+      "url": "/src/assets/images/model_cozy_home_1793159159023.jpg",
+      "caption": "Vista previa de mi sesión íntima en seda. Desbloquea el set completo en mi OnlyFans VIP de @afire_sb 🔥",
+      "isExclusive": true,
+      "unlockPrice": "$19.99",
+      "watermark": "VIP_ONLY_@AFIRE_SB",
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "val-med-1",
+      "modelId": "valeria-gomez",
+      "title": "Café de la Mañana Casual",
+      "category": "cafe",
+      "url": "/src/assets/images/model_cafe_selfie_1793159131949.jpg",
+      "caption": "Tomándome un matcha latte bien frío antes de salir ☕ ¿Tú ya tomaste café?",
+      "isExclusive": false,
+      "watermark": "@valeriag_official / AURA_VERIFIED",
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    },
+    {
+      "id": "val-med-2",
+      "modelId": "valeria-gomez",
+      "title": "Post-Entreno Gym Casual",
+      "category": "gym",
+      "url": "/src/assets/images/model_gym_casual_1793159144992.jpg",
+      "caption": "Muerta pero feliz después de pierna hoy 💪 ¿Hiciste ejercicio?",
+      "isExclusive": false,
+      "watermark": "@valeriag_official / AURA_VERIFIED",
+      "createdAt": "2026-11-02T14:52:45.412Z"
+    }
+  ],
+  "twitterCredentials": {
+    "apiKey": "yCbZCbgRk6bqwqRVvM9bacLHr",
+    "apiKeySecret": "mFbq9RF81YoDxELUWYMRLxmWKqrNkfwC1s9hnoqYuoVu1wWfFu",
+    "bearerToken": "AAAAAAAAAAAAAAAAAAAAADCBAAIAAAAA%2BUf2sgKe1X8FwRZpLAqlzXUIIeI%3DxcbiSfXHRW6cFhTxp3qWIEfvG4UKbtX9XeS2a39qpdWgEBB7mw",
+    "accessToken": "1139963967391092739-mui5nP3J937y37y3795F8BZPpYGAl9tFi",
+    "accessTokenSecret": "MV5Di1mBNPPiHjy7IeaqecJQbht6RVZ5thKSDnbktQETb",
+    "clientId": "UGYxNFBXQjZRZGhSeVRGMEtBM2U6MTpjaQ",
+    "clientSecret": "M0RIoUKSry3zHsNqByCzPdnq0Fl7BQ2VZ9YqhgUYkivXWODw9e",
+    "webhookUrl": "/api/webhooks/twitter-x",
+    "webhookEnvName": "env-prod-aura-x",
+    "lastVerifiedAt": "2026-11-02T14:52:45.411Z",
+    "status": "active",
+    "statusMessage": "Credenciales oficiales de X API v2 configuradas y listas para operar."
+  },
+  "session": null
+}

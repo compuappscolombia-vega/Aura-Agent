@@ -403,7 +403,7 @@ export const CRMSubscriptions: React.FC<CRMSubscriptionsProps> = ({
                 >
                   <option value="Kore">Kore (Cálida, dulce, femenina - Recomendada)</option>
                   <option value="Zephyr">Zephyr (Suave, relajada, íntima)</option>
-                  <option value="Aoede">Aoede (Expresiva, juvenil, brillante)</option>
+                  <option value="Charon">Charon (Profunda, magnética, envolvente)</option>
                   <option value="Puck">Puck (Espontánea, juguetona)</option>
                 </select>
               </div>
@@ -447,19 +447,26 @@ export const CRMSubscriptions: React.FC<CRMSubscriptionsProps> = ({
                     Umbral de Confianza Requerido para VIP:
                   </span>
                   <span className="font-bold text-amber-400">
-                    {profileForm.rules.conversionThreshold}%
+                    {profileForm.rules?.conversionThreshold ?? (profileForm as any).conversionThreshold ?? 75}%
                   </span>
                 </div>
                 <input
                   type="range"
                   min="50"
                   max="90"
-                  value={profileForm.rules.conversionThreshold}
+                  value={profileForm.rules?.conversionThreshold ?? (profileForm as any).conversionThreshold ?? 75}
                   onChange={(e) =>
                     setProfileForm({
                       ...profileForm,
                       rules: {
-                        ...profileForm.rules,
+                        ...(profileForm.rules || {
+                          conversionThreshold: 75,
+                          autoSendVoiceNotes: true,
+                          autoSendCasualPhotos: true,
+                          requireReciprocityForVip: true,
+                          adaptiveToneMatching: true,
+                          activeMemoryRetention: true,
+                        }),
                         conversionThreshold: parseInt(e.target.value, 10),
                       },
                     })

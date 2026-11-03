@@ -409,7 +409,7 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
                         <span className="text-slate-400 block text-[10px]">Suscripción OnlyFans:</span>
                         <div className="text-rose-400 font-bold mt-0.5">{model.vipPrice}</div>
                         <span className="text-[9px] text-slate-400 truncate block mt-0.5">
-                          Umbral: {model.rules.conversionThreshold}% confianza
+                          Umbral: {model.rules?.conversionThreshold ?? (model as any).conversionThreshold ?? 75}% confianza
                         </span>
                       </div>
                     </div>
@@ -558,7 +558,7 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
                     Voz Sintética TTS:
                   </div>
                   <div className="flex gap-2 mb-2">
-                    {['Kore', 'Aoede', 'Puck'].map((v) => (
+                    {['Kore', 'Zephyr', 'Puck'].map((v) => (
                       <button
                         type="button"
                         key={v}
