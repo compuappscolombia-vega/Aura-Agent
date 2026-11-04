@@ -4,8 +4,8 @@ title AuraAgent - Sistema Agentico de Ventas y Fidelización [Win64]
 color 0C
 
 echo ===============================================================================
-echo                🌟 AURAAGENT - SISTEMA AGENTICO DE VENTAS Y FIDELIZACIÓN
-echo                                 Versión Windows 64-bits
+echo      🌟 Sistema Agéntico Autónomo de Ventas, Fidelización y Conversión VIP
+echo                         Versión Windows 64-bits
 echo ===============================================================================
 echo.
 echo [1/4] Verificando arquitectura del sistema...
