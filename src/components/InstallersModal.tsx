@@ -66,7 +66,7 @@ export const InstallersModal: React.FC<InstallersModalProps> = ({ isOpen, onClos
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-white">Instaladores & Ejecutores AuraAgent</h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> Win64 / APK
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" /> v2.6.2 • Win64 / APK
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -140,7 +140,7 @@ export const InstallersModal: React.FC<InstallersModalProps> = ({ isOpen, onClos
               <div className="p-4 rounded-2xl bg-gradient-to-r from-rose-950/40 via-purple-950/40 to-slate-900 border border-rose-500/30">
                 <div className="flex items-center gap-2 text-rose-300 font-bold text-sm mb-1">
                   <Zap className="w-4 h-4 text-amber-400" />
-                  Ejecutador Local Automático para Windows 64-bits
+                  Ejecutador Local Automático para Windows 64-bits (v2.6.2)
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   Descarga el lanzador <code>.bat</code> oficial. Al ejecutarlo en tu PC con Windows 64 bits, verificará Node.js, instalará dependencias e iniciará AuraAgent automáticamente en <code>http://localhost:3000</code> abriendo tu navegador.
@@ -312,7 +312,7 @@ npm run dev
         {/* Footer */}
         <div className="p-4 bg-slate-950 border-t border-slate-800 flex items-center justify-between">
           <span className="text-xs text-slate-400">
-            AuraAgent v2.5 • Windows x64 & PWA Android Multiplataforma
+            AuraAgent v2.6.2 • Windows x64 & PWA Android Multiplataforma
           </span>
           <button
             onClick={onClose}

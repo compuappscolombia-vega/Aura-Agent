@@ -1,11 +1,11 @@
 @echo off
 chcp 65001 >nul
-title AuraAgent - Sistema Agentico de Ventas y Fidelización [Win64]
+title AuraAgent v2.6.2 - Sistema Agentico de Ventas y Fidelización [Win64]
 color 0C
 
 echo ===============================================================================
 echo      🌟 Sistema Agéntico Autónomo de Ventas, Fidelización y Conversión VIP
-echo                         Versión Windows 64-bits
+echo                         Versión Windows 64-bits v2.6.2
 echo ===============================================================================
 echo.
 echo [1/4] Verificando arquitectura del sistema...
@@ -51,7 +51,7 @@ echo.
 echo [4/4] Iniciando Servidor AuraAgent en http://localhost:3000...
 echo.
 echo ===============================================================================
-echo   🚀 SERVIDOR AURAAGENT INICIADO
+echo   🚀 SERVIDOR AURAAGENT v2.6.2 INICIADO
 echo   • URL Local:    http://localhost:3000
 echo   • Síntesis Voz: Hiperrealista (Aura Voice Engine activo)
 echo   • X API v2:     Account Activity Webhook preparado

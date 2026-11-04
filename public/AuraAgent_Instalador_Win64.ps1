@@ -1,6 +1,6 @@
-# AuraAgent Windows x64 Auto-Launcher & Installer Script
+# AuraAgent Windows x64 Auto-Launcher & Installer Script v2.6.2
 Write-Host "=================================================================" -ForegroundColor Magenta
-Write-Host "       🌟 AURAAGENT - SISTEMA AGENTICO DE VENTAS (WIN64)        " -ForegroundColor White
+Write-Host "  🌟 AURAAGENT v2.6.2 - SISTEMA AGENTICO DE VENTAS (WIN64)       " -ForegroundColor White
 Write-Host "=================================================================" -ForegroundColor Magenta
 Write-Host ""
 

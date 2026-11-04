@@ -1062,9 +1062,14 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
         <div className="px-6 py-3 border-t border-slate-800/80 bg-slate-950/70 flex items-center justify-between text-[11px] text-slate-400">
           <div className="flex items-center gap-1.5">
             <Shield className="w-3 h-3 text-cyan-400" />
-            <span>AuraAgent • Aislamiento Criptográfico de Perfiles</span>
+            <span>AuraAgent • Aislamiento Criptográfico de Perfil • Cero Mezcla de Datos</span>
           </div>
-          <span className="font-semibold text-cyan-300">By CompuApps SecureDev</span>
+          <div className="flex items-center gap-2.5">
+            <span className="font-semibold text-cyan-300">By CompuApps SecureDev</span>
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-cyan-950/80 text-cyan-300 border border-cyan-800/60 font-semibold tracking-wider">
+              Aura v2.6.2
+            </span>
+          </div>
         </div>
       </div>
     </div>

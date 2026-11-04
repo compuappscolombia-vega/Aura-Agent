@@ -54,7 +54,7 @@ export function savePersistedState(state: Partial<PersistedState>): boolean {
   ensureDataDir();
   try {
     const currentState = loadPersistedState() || {
-      version: '2.5.0',
+      version: '2.6.2',
       lastSavedAt: new Date().toISOString(),
       models: {},
       memories: {},
@@ -64,7 +64,7 @@ export function savePersistedState(state: Partial<PersistedState>): boolean {
     };
 
     const merged: PersistedState = {
-      version: '2.5.0',
+      version: '2.6.2',
       lastSavedAt: new Date().toISOString(),
       models: { ...currentState.models, ...(state.models || {}) },
       memories: { ...currentState.memories, ...(state.memories || {}) },

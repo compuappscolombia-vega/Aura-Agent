@@ -73,7 +73,7 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-bold text-white">Manual Oficial & Dossier Ejecutivo</h3>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30">
-                  DOCUMENTO OFICIAL v2.5
+                  DOCUMENTO OFICIAL v2.6.2
                 </span>
               </div>
               <p className="text-xs text-slate-400">
@@ -177,7 +177,7 @@ export const ManualViewerModal: React.FC<ManualViewerModalProps> = ({ isOpen, on
               <div className="p-4 rounded-xl bg-gradient-to-r from-rose-950/30 to-purple-950/30 border border-rose-500/20">
                 <h4 className="text-base font-bold text-white mb-2 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-rose-400" />
-                  Definición de AuraAgent v2.5
+                  Definición de AuraAgent v2.6.2
                 </h4>
                 <p className="text-xs text-slate-300 leading-relaxed">
                   <strong>AuraAgent</strong> no es un bot genérico ni un asistente corporativo. Es un <strong>sistema agéntico autónomo de interacción íntima, seducción psicológica y conversión automatizada</strong> concebido para modelos webcam reales (ej. perfil oficial de <strong>ANAMARIA❣️ @afire_sb</strong>) y agencias de gestión de talentos VIP (OnlyFans / Fanvue).

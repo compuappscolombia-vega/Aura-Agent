@@ -2374,7 +2374,7 @@ print("Estado emocional:", data['reply']['detectedMood'])`;
                     </p>
                   </div>
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                    REST API v2.5
+                    REST API v2.6.2
                   </span>
                 </div>
 
@@ -3179,7 +3179,7 @@ print("Estado emocional:", data['reply']['detectedMood'])`;
                     </p>
                   </div>
                   <span className="text-[10px] font-mono px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/30 font-bold">
-                    Anti-Ban v2.5
+                    Anti-Ban v2.6.2
                   </span>
                 </div>
 

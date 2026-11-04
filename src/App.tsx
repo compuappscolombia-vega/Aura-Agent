@@ -1151,8 +1151,8 @@ export default function App() {
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="flex items-center gap-2">
             <AuraAgentLogo size="md" showText={true} />
-            <span className="hidden xl:inline-block text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-950/60 text-cyan-300 border border-cyan-800/40">
-              Secure Engine
+            <span className="hidden sm:inline-block text-[10px] font-mono px-2 py-0.5 rounded-full bg-cyan-950/60 text-cyan-300 border border-cyan-800/40 font-semibold">
+              v2.6.2
             </span>
           </div>
 
