@@ -12,6 +12,13 @@ import {
   AmbiencePresetId,
 } from '../utils/ambientSoundscape';
 import {
+  persistMediaItemToFirestore,
+  deleteMediaItemFromFirestore,
+  persistVoiceClipToFirestore,
+  deleteVoiceClipFromFirestore,
+  persistModelToFirestore,
+} from '../lib/firebase';
+import {
   Volume2,
   Mic,
   Square,
@@ -341,6 +348,14 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
         voiceClips: resData.clip ? [resData.clip, ...voiceClips] : voiceClips,
       };
 
+      // Persist to Firestore as well for continuous persistence across devices/logouts
+      persistModelToFirestore(updatedProfile).catch((err) => console.warn('Firestore voice update fallback:', err));
+      if (resData.clip) {
+        persistVoiceClipToFirestore(activeModel.id, resData.clip).catch((err) =>
+          console.warn('Firestore clip save fallback:', err)
+        );
+      }
+
       if (resData.clip) {
         setVoiceClips((prev) => [resData.clip, ...prev]);
       }
@@ -462,6 +477,11 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
       console.warn('Backend sync warning:', e);
     }
 
+    // Persist photo directly in Firestore collection models/{modelId}/mediaVault
+    persistMediaItemToFirestore(activeModel.id, newPhoto).catch((err) =>
+      console.warn('Firestore photo save fallback:', err)
+    );
+
     const updatedVault = [newPhoto, ...mediaVault];
     setMediaVault(updatedVault);
 
@@ -485,6 +505,12 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
     } catch (e) {
       console.warn('Delete warning:', e);
     }
+
+    // Delete photo from Firestore
+    deleteMediaItemFromFirestore(activeModel.id, photoId).catch((err) =>
+      console.warn('Firestore photo delete fallback:', err)
+    );
+
     const filtered = mediaVault.filter((p) => p.id !== photoId);
     setMediaVault(filtered);
     if (onUpdateModel) {
@@ -535,6 +561,12 @@ export const ModelVoiceAndMediaVault: React.FC<ModelVoiceAndMediaVaultProps> = (
     } catch (e) {
       console.warn('Delete warning:', e);
     }
+
+    // Delete clip from Firestore
+    deleteVoiceClipFromFirestore(activeModel.id, clipId).catch((err) =>
+      console.warn('Firestore clip delete fallback:', err)
+    );
+
     const filtered = voiceClips.filter((c) => c.id !== clipId);
     setVoiceClips(filtered);
     if (onUpdateModel) {

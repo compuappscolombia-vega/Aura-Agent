@@ -28,6 +28,19 @@ import { DEFAULT_MODELS } from './data/modelsRoster';
 import { AuraAgentLogo } from './components/AuraAgentLogo';
 import { voiceEngine } from './utils/audioPlayer';
 import {
+  testConnection,
+  persistModelToFirestore,
+  fetchAllModelsFromFirestore,
+  fetchMediaItemsFromFirestore,
+  fetchVoiceClipsFromFirestore,
+  persistLeadMemoryToFirestore,
+  fetchLeadMemoryFromFirestore,
+  persistChatMessagesToFirestore,
+  fetchChatMessagesFromFirestore,
+  auraSyncService,
+} from './lib/firebase';
+
+import {
   Sparkles,
   Share2,
   ShieldCheck,
@@ -277,7 +290,7 @@ export default function App() {
   const navMenuRef = React.useRef<HTMLDivElement>(null);
   const adminAvatarInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Auto-persist conversation history whenever messages change (100% resilient across reload/switches)
+  // Auto-persist conversation history whenever messages change (100% resilient across reload/switches & Firestore)
   useEffect(() => {
     if (typeof window !== 'undefined' && messages.length > 0) {
       try {
@@ -286,10 +299,13 @@ export default function App() {
       } catch (e) {
         console.warn('Could not save chat messages:', e);
       }
+      persistChatMessagesToFirestore(modelProfile.id, activeUsername, messages).catch((err) =>
+        console.warn('Firestore chat messages persist fallback:', err)
+      );
     }
   }, [messages, modelProfile.id, activeUsername]);
 
-  // Auto-persist user memory whenever it changes
+  // Auto-persist user memory whenever it changes (learned psychological profile)
   useEffect(() => {
     if (typeof window !== 'undefined' && userMemory) {
       try {
@@ -297,8 +313,12 @@ export default function App() {
       } catch (e) {
         console.warn('Could not save user memory:', e);
       }
+      persistLeadMemoryToFirestore(modelProfile.id, activeUsername, userMemory).catch((err) =>
+        console.warn('Firestore lead memory persist fallback:', err)
+      );
     }
-  }, [userMemory, activeUsername]);
+  }, [userMemory, modelProfile.id, activeUsername]);
+
 
   // Synchronize calibrated natural voice profile whenever active model changes
   useEffect(() => {
@@ -333,6 +353,9 @@ export default function App() {
       };
       setCurrentUserSession(updatedSession);
       localStorage.setItem('aura_current_session', JSON.stringify(updatedSession));
+      auraSyncService.saveUserProfile(updatedSession).catch((err) =>
+        console.warn('Firestore admin avatar sync fallback:', err)
+      );
     };
     reader.readAsDataURL(file);
   };
@@ -429,6 +452,96 @@ export default function App() {
       .catch((err) => console.warn('Could not fetch auth session:', err));
   }, []);
 
+  // Bootstrap Firebase Firestore persistence for models, vault, voice clips, and user memories
+  useEffect(() => {
+    testConnection().catch((e) => console.warn('Firestore connection check:', e));
+
+    // 1. Fetch models from Firestore
+    fetchAllModelsFromFirestore()
+      .then((fsModels) => {
+        if (fsModels && fsModels.length > 0) {
+          setModels((prev) => {
+            const map = new Map<string, ModelProfile>();
+            prev.forEach((m) => map.set(m.id, m));
+            fsModels.forEach((m) => map.set(m.id, { ...(map.get(m.id) || {}), ...m }));
+            const merged = Array.from(map.values());
+            try {
+              localStorage.setItem('aura_models', JSON.stringify(merged));
+            } catch (e) {}
+            return merged;
+          });
+        } else {
+          // Seed official Ana María profile to Firestore so it exists in the database permanently
+          persistModelToFirestore(DEFAULT_MODELS[0]).catch((e) =>
+            console.warn('Initial Ana María Firestore seed fallback:', e)
+          );
+        }
+      })
+      .catch((err) => console.warn('Could not fetch models from Firestore:', err));
+  }, []);
+
+  // Fetch persisted media items, voice clips, and chat messages for the active model from Firestore
+  useEffect(() => {
+    if (!modelProfile?.id) return;
+
+    // Load media vault from Firestore
+    fetchMediaItemsFromFirestore(modelProfile.id)
+      .then((items) => {
+        if (items && items.length > 0) {
+          setModelProfile((prev) => {
+            const existingIds = new Set((prev.mediaVault || []).map((m) => m.id));
+            const newItems = items.filter((it) => !existingIds.has(it.id));
+            if (newItems.length > 0) {
+              return {
+                ...prev,
+                mediaVault: [...(prev.mediaVault || []), ...newItems],
+              };
+            }
+            return prev;
+          });
+        }
+      })
+      .catch((err) => console.warn('Firestore media fetch error:', err));
+
+    // Load voice vault from Firestore
+    fetchVoiceClipsFromFirestore(modelProfile.id)
+      .then((clips) => {
+        if (clips && clips.length > 0) {
+          setModelProfile((prev) => {
+            const existingIds = new Set((prev.voiceClips || []).map((c) => c.id));
+            const newClips = clips.filter((cl) => !existingIds.has(cl.id));
+            if (newClips.length > 0) {
+              return {
+                ...prev,
+                voiceClips: [...(prev.voiceClips || []), ...newClips],
+              };
+            }
+            return prev;
+          });
+        }
+      })
+      .catch((err) => console.warn('Firestore voice clips fetch error:', err));
+
+    // Load lead memory from Firestore
+    fetchLeadMemoryFromFirestore(modelProfile.id, activeUsername)
+      .then((mem) => {
+        if (mem) {
+          setUserMemory(mem);
+        }
+      })
+      .catch((err) => console.warn('Firestore memory fetch error:', err));
+
+    // Load chat messages from Firestore
+    fetchChatMessagesFromFirestore(modelProfile.id, activeUsername)
+      .then((msgs) => {
+        if (msgs && msgs.length > 0) {
+          setMessages(msgs);
+        }
+      })
+      .catch((err) => console.warn('Firestore chat fetch error:', err));
+  }, [modelProfile.id, activeUsername]);
+
+
   const handleSelectModel = (selected: ModelProfile) => {
     setModelProfile(selected);
     if (typeof window !== 'undefined') {
@@ -468,7 +581,8 @@ export default function App() {
       return updated;
     });
 
-    // Also persist to backend
+    // Persist to Firestore and backend
+    persistModelToFirestore(newM).catch((err) => console.warn('Firestore model add fallback:', err));
     fetch('/api/models', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -476,34 +590,83 @@ export default function App() {
     }).catch((err) => console.warn('Could not sync model to backend:', err));
   };
 
-  const handleSetUserSession = (sess: UserSession | null, associatedModel?: ModelProfile) => {
-    setCurrentUserSession(sess);
-    if (typeof window !== 'undefined') {
-      try {
-        if (sess) {
-          localStorage.setItem('aura_current_session', JSON.stringify(sess));
-        } else {
-          localStorage.removeItem('aura_current_session');
-        }
-      } catch (e) {}
-    }
-
+  const handleSetUserSession = async (sess: UserSession | null, associatedModel?: ModelProfile) => {
     if (!sess) {
+      // Flush and synchronize all profile, photos, voice notes, and learned memories to Firestore before clearing session
+      try {
+        await auraSyncService.syncOnLogout(currentUserSession, {
+          modelProfile,
+          userMemory,
+          messages,
+          activeUsername,
+          preferences: {
+            platformSkin,
+            activeScenarioId,
+          },
+        });
+      } catch (err) {
+        console.warn('Logout sync fallback:', err);
+      }
+
+      setCurrentUserSession(null);
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('aura_current_session');
+        } catch (e) {}
+      }
+
       fetch('/api/auth/logout', { method: 'POST' }).catch((err) =>
         console.warn('Could not sync logout to backend:', err)
       );
       return;
     }
 
-    if (associatedModel) {
-      setModelProfile(associatedModel);
-    } else if (sess?.role === 'creator') {
-      const matched =
-        models.find((m) => m.id === sess.associatedModelId || m.handle === sess.handle) ||
-        models.find((m) => !m.isSystemDefault);
-      if (matched) {
-        setModelProfile(matched);
+    // Immediate optimistic state update
+    setCurrentUserSession(sess);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('aura_current_session', JSON.stringify(sess));
+      } catch (e) {}
+    }
+
+    const targetModel =
+      associatedModel ||
+      (sess.role === 'creator'
+        ? models.find((m) => m.id === sess.associatedModelId || m.handle === sess.handle) ||
+          models.find((m) => !m.isSystemDefault)
+        : modelProfile);
+
+    if (targetModel) {
+      setModelProfile(targetModel);
+    }
+
+    // Synchronize all session state, vault photos, cloned audio, and memories with Firestore
+    try {
+      const loginSync = await auraSyncService.syncOnLogin(sess, targetModel, activeUsername);
+      if (loginSync.session) {
+        setCurrentUserSession(loginSync.session);
       }
+      if (loginSync.modelProfile) {
+        setModelProfile(loginSync.modelProfile);
+        setModels((prev) => {
+          const exists = prev.some((m) => m.id === loginSync.modelProfile!.id);
+          if (exists) {
+            return prev.map((m) => (m.id === loginSync.modelProfile!.id ? loginSync.modelProfile! : m));
+          }
+          return [loginSync.modelProfile!, ...prev];
+        });
+      }
+      if (loginSync.memory) {
+        setUserMemory(loginSync.memory);
+      }
+      if (loginSync.messages && loginSync.messages.length > 0) {
+        setMessages(loginSync.messages);
+      }
+      if (loginSync.preferences?.platformSkin) {
+        setPlatformSkin(loginSync.preferences.platformSkin);
+      }
+    } catch (syncErr) {
+      console.warn('Unified login sync error, keeping local profile:', syncErr);
     }
   };
 
@@ -520,6 +683,7 @@ export default function App() {
     if (modelProfile.id === updated.id) {
       setModelProfile(updated);
     }
+    persistModelToFirestore(updated).catch((err) => console.warn('Firestore model update fallback:', err));
     fetch('/api/models', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

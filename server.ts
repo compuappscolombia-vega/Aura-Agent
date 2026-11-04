@@ -2073,7 +2073,45 @@ app.post('/api/auth/register', (req, res) => {
 });
 
 app.post('/api/auth/login', (req, res) => {
-  const { provider, name, email, handle, avatar, role, associatedModelId, allowedModelIds } = req.body;
+  const { provider, name, email, handle, avatar, role, associatedModelId, allowedModelIds, username, password } = req.body;
+
+  // 1. Direct credentials validation for Administrator (Usuario: Administrador | Contraseña: 20101217.)
+  if (username && (username.trim().toLowerCase() === 'administrador' || username.trim() === 'Administrador')) {
+    const cleanPass = (password || '').trim();
+    if (cleanPass === '20101217.' || cleanPass === '20101217') {
+      currentSession = {
+        id: `usr-admin-${Date.now()}`,
+        name: 'Administrador General Aura',
+        email: 'compuappscolombia@gmail.com',
+        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80',
+        provider: 'google',
+        role: 'admin',
+        connectedAt: new Date().toISOString(),
+        xAccountConnected: true,
+      };
+      return res.json({ success: true, session: currentSession, message: 'Sesión de Administrador iniciada correctamente.' });
+    } else {
+      return res.status(401).json({ success: false, message: 'Contraseña de Administrador incorrecta.' });
+    }
+  }
+
+  // 2. Direct validation for Ana María via X (Twitter) or handle
+  if (provider === 'x' || (username && (username.toLowerCase() === 'anamaria' || username.toLowerCase() === '@afire_sb' || username.toLowerCase() === 'afire_sb'))) {
+    currentSession = {
+      id: `usr-x-afire-${Date.now()}`,
+      name: 'ANAMARIA❣️',
+      handle: '@afire_sb',
+      avatar: 'https://pbs.twimg.com/profile_images/2098509842214182916/7dJgS3em_normal.jpg',
+      provider: 'x',
+      role: 'creator',
+      associatedModelId: 'afire-sb',
+      allowedModelIds: ['afire-sb'],
+      connectedAt: new Date().toISOString(),
+      xAccountConnected: true,
+    };
+    return res.json({ success: true, session: currentSession, message: 'Sesión iniciada con X (Twitter) como @afire_sb' });
+  }
+
   const isCreator = (role || 'creator') === 'creator';
   currentSession = {
     id: `usr-sess-${Date.now()}`,
@@ -2092,7 +2130,7 @@ app.post('/api/auth/login', (req, res) => {
     connectedAt: new Date().toISOString(),
     xAccountConnected: provider === 'x' || Boolean(req.body.xAccountConnected),
   };
-  res.json({ success: true, session: currentSession, message: `Sesión iniciada exitosamente con ${provider}` });
+  res.json({ success: true, session: currentSession, message: `Sesión iniciada exitosamente con ${provider || 'credenciales'}` });
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -2727,6 +2765,62 @@ Responde ÚNICAMENTE en formato JSON:
     return res.status(500).json({ error: error.message });
   }
 });
+
+// Dedicated Audio Transcription Endpoint using gemini-3.5-transcribe
+app.post('/api/gemini/transcribe', async (req, res) => {
+  try {
+    const { audioBase64, mimeType = 'audio/webm' } = req.body;
+    if (!audioBase64) {
+      return res.status(400).json({ error: 'Falta audioBase64 para transcripción' });
+    }
+
+    let cleanBase64 = audioBase64;
+    let detectedMime = mimeType;
+    if (cleanBase64.startsWith('data:')) {
+      const match = cleanBase64.match(/^data:([^;]+);base64,(.+)$/);
+      if (match) {
+        detectedMime = match[1];
+        cleanBase64 = match[2];
+      }
+    }
+
+    if (!aiClient) {
+      return res.json({
+        success: true,
+        text: 'Transcripción de prueba activada.',
+        modelUsed: 'gemini-3.5-transcribe',
+      });
+    }
+
+    const response = await aiClient.models.generateContent({
+      model: 'gemini-3.5-transcribe',
+      contents: {
+        parts: [
+          {
+            inlineData: {
+              mimeType: detectedMime,
+              data: cleanBase64,
+            },
+          },
+          {
+            text: 'Transcribe fiel y exactamente el audio en el idioma hablado sin explicaciones adicionales ni agregados.',
+          },
+        ],
+      },
+    });
+
+    const transcribedText = (response.text || '').trim();
+    return res.json({
+      success: true,
+      text: transcribedText,
+      modelUsed: 'gemini-3.5-transcribe',
+    });
+  } catch (error: any) {
+    console.error('Error in /api/gemini/transcribe:', error);
+    return res.status(500).json({ error: error.message });
+  }
+});
+
 
 // Direct Raw Audio Upload (Ignores Text Transcription Requirements)
 app.post('/api/model/:modelId/raw-audio-upload', async (req, res) => {

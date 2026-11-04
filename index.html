@@ -1,6 +1,102 @@
 <!doctype html>
 <html lang="es">
   <head>
+    <script>
+      (function() {
+        // 1. Stub ethereum provider to prevent MetaMask inpage.js from crashing in iframes
+        try {
+          if (!window.ethereum) {
+            var noop = function() {};
+            window.ethereum = {
+              isMetaMask: true,
+              isConnected: function() { return false; },
+              request: function() { return Promise.reject(new Error('Extension offline')); },
+              connect: function() { return Promise.resolve(); },
+              on: noop,
+              removeListener: noop,
+              addListener: noop,
+              emit: noop,
+              enable: function() { return Promise.reject(new Error('Extension offline')); },
+              send: noop,
+              sendAsync: noop,
+              selectedAddress: null,
+              networkVersion: '1',
+              chainId: '0x1'
+            };
+          }
+        } catch (e) {}
+
+        function isBenignExtensionError(msg, src, stack) {
+          var str = ((msg || '') + ' ' + (src || '') + ' ' + (stack || '')).toLowerCase();
+          return str.indexOf('metamask') !== -1 ||
+                 str.indexOf('ethereum') !== -1 ||
+                 str.indexOf('chrome-extension://') !== -1 ||
+                 str.indexOf('inpage.js') !== -1 ||
+                 str.indexOf('failed to connect to') !== -1;
+        }
+
+        // 2. Intercept window.onerror
+        var prevOnError = window.onerror;
+        window.onerror = function(message, source, lineno, colno, error) {
+          var stack = (error && error.stack) || '';
+          if (isBenignExtensionError(String(message || ''), String(source || ''), stack)) {
+            return true;
+          }
+          if (typeof prevOnError === 'function') {
+            return prevOnError.apply(this, arguments);
+          }
+          return false;
+        };
+
+        // 3. Intercept capture phase error events
+        window.addEventListener('error', function(e) {
+          var msg = (e.message || (e.error && e.error.message) || '');
+          var src = (e.filename || '');
+          var stack = (e.error && e.error.stack) || '';
+          if (isBenignExtensionError(msg, src, stack)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+            return true;
+          }
+        }, true);
+
+        // 4. Intercept window.onunhandledrejection
+        var prevUnhandled = window.onunhandledrejection;
+        window.onunhandledrejection = function(e) {
+          var reason = (e && e.reason) || {};
+          var msg = typeof reason === 'string' ? reason : (reason.message || '');
+          var stack = reason.stack || '';
+          if (isBenignExtensionError(msg, '', stack)) {
+            if (e && e.preventDefault) e.preventDefault();
+            return true;
+          }
+          if (typeof prevUnhandled === 'function') {
+            return prevUnhandled.apply(this, arguments);
+          }
+        };
+
+        // 5. Intercept capture phase unhandledrejection
+        window.addEventListener('unhandledrejection', function(e) {
+          var reason = (e && e.reason) || {};
+          var msg = typeof reason === 'string' ? reason : (reason.message || '');
+          var stack = reason.stack || '';
+          if (isBenignExtensionError(msg, '', stack)) {
+            e.preventDefault();
+            e.stopImmediatePropagation();
+          }
+        }, true);
+
+        // 6. Suppress console.error noise from MetaMask
+        var origConsoleError = console.error;
+        console.error = function() {
+          var fullArgs = Array.prototype.slice.call(arguments).join(' ');
+          if (isBenignExtensionError(fullArgs, '', '')) {
+            return;
+          }
+          origConsoleError.apply(console, arguments);
+        };
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>Sistema Agéntico Autónomo de Ventas, Fidelización y Conversión VIP</title>

@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 64 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Users collection
+    match /users/{userId} {
+      allow read, write: if isValidId(userId);
+    }
+
+    // Models collection & subcollections
+    match /models/{modelId} {
+      allow read, write: if isValidId(modelId);
+
+      match /mediaVault/{photoId} {
+        allow read, write: if isValidId(modelId) && isValidId(photoId);
+      }
+
+      match /voiceVault/{clipId} {
+        allow read, write: if isValidId(modelId) && isValidId(clipId);
+      }
+
+      match /leads/{leadId} {
+        allow read, write: if isValidId(modelId) && isValidId(leadId);
+      }
+
+      match /chats/{chatId}/messages/{messageId} {
+        allow read, write: if isValidId(modelId) && isValidId(chatId) && isValidId(messageId);
+      }
+    }
+  }
+}

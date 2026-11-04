@@ -313,9 +313,19 @@ export interface UserSession {
   provider: 'x' | 'google';
   role: 'creator' | 'admin' | 'agency_manager';
   connectedAt: string;
+  updatedAt?: string;
   xAccountConnected?: boolean;
   associatedModelId?: string; // Links this real creator account to her isolated model profile
   allowedModelIds?: string[];
+  preferences?: {
+    theme?: string;
+    activeModelId?: string;
+    ambientSoundEnabled?: boolean;
+    activeUsername?: string;
+    volume?: number;
+    platformSkin?: 'X (Twitter)' | 'Web';
+    [key: string]: any;
+  };
 }
 
 export interface ExternalWebhookConfig {

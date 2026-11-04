@@ -440,6 +440,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({
               onSendAudio(audioBase64, duration, transcription);
               setShowRecorder(false);
             }}
+            onTranscribe={(text) => {
+              setInputText((prev) => (prev ? `${prev} ${text}` : text));
+              setShowRecorder(false);
+            }}
             onCancel={() => setShowRecorder(false)}
           />
         </div>

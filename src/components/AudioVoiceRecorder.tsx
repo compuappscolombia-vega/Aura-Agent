@@ -1,21 +1,25 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Send, Trash2, Radio } from 'lucide-react';
+import { Mic, Square, Send, Trash2, Radio, Sparkles } from 'lucide-react';
 
 interface AudioVoiceRecorderProps {
   onSendAudio: (audioBase64: string, durationSeconds: number, simulatedTranscription?: string) => void;
   onCancel: () => void;
+  onTranscribe?: (text: string) => void;
   disabled?: boolean;
 }
 
 export const AudioVoiceRecorder: React.FC<AudioVoiceRecorderProps> = ({
   onSendAudio,
   onCancel,
+  onTranscribe,
   disabled = false,
 }) => {
   const [isRecording, setIsRecording] = useState(false);
   const [recordTime, setRecordTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [hasMicPermission, setHasMicPermission] = useState<boolean | null>(null);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const [transcribedResult, setTranscribedResult] = useState<string | null>(null);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -33,6 +37,7 @@ export const AudioVoiceRecorder: React.FC<AudioVoiceRecorderProps> = ({
   const startRecording = async () => {
     try {
       audioChunksRef.current = [];
+      setTranscribedResult(null);
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       setHasMicPermission(true);
 
@@ -78,6 +83,42 @@ export const AudioVoiceRecorder: React.FC<AudioVoiceRecorderProps> = ({
     setIsRecording(false);
   };
 
+  const handleTranscribeWithGemini = async () => {
+    if (!audioBlob) return;
+    setIsTranscribing(true);
+    try {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        try {
+          const base64Data = (reader.result as string).split(',')[1];
+          const res = await fetch('/api/gemini/transcribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              audioBase64: base64Data,
+              mimeType: 'audio/webm',
+            }),
+          });
+          const data = await res.json();
+          if (data?.text) {
+            setTranscribedResult(data.text);
+            if (onTranscribe) {
+              onTranscribe(data.text);
+            }
+          }
+        } catch (err) {
+          console.warn('Transcription error:', err);
+        } finally {
+          setIsTranscribing(false);
+        }
+      };
+      reader.readAsDataURL(audioBlob);
+    } catch (e) {
+      console.warn('Transcription reader error:', e);
+      setIsTranscribing(false);
+    }
+  };
+
   const handleSend = async () => {
     if (recordTime < 1) {
       onCancel();
@@ -88,7 +129,7 @@ export const AudioVoiceRecorder: React.FC<AudioVoiceRecorderProps> = ({
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64data = (reader.result as string).split(',')[1];
-        onSendAudio(base64data, Math.max(1, recordTime));
+        onSendAudio(base64data, Math.max(1, recordTime), transcribedResult || undefined);
       };
       reader.readAsDataURL(audioBlob);
     } else {
@@ -167,6 +208,18 @@ export const AudioVoiceRecorder: React.FC<AudioVoiceRecorderProps> = ({
               >
                 <Trash2 className="w-4 h-4" />
               </button>
+              {audioBlob && onTranscribe && (
+                <button
+                  type="button"
+                  onClick={handleTranscribeWithGemini}
+                  disabled={isTranscribing}
+                  className="px-2.5 py-1 bg-indigo-700 hover:bg-indigo-600 text-indigo-100 font-medium text-xs rounded-lg flex items-center gap-1 cursor-pointer transition-colors disabled:opacity-50"
+                  title="Transcribir con gemini-3.5-transcribe"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-300" />
+                  {isTranscribing ? 'Transcribiendo...' : 'Transcribir (Gemini 3.5)'}
+                </button>
+              )}
               <button
                 onClick={handleSend}
                 className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs rounded-lg flex items-center gap-1 cursor-pointer transition-colors shadow-sm"
@@ -178,6 +231,20 @@ export const AudioVoiceRecorder: React.FC<AudioVoiceRecorderProps> = ({
           )}
         </div>
       </div>
+
+      {/* Transcribed text banner if available */}
+      {transcribedResult && (
+        <div className="bg-slate-950/80 border border-indigo-900/60 rounded-xl p-2.5 text-xs text-indigo-200 flex items-start gap-2">
+          <Sparkles className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
+          <div>
+            <div className="font-semibold text-[11px] text-indigo-300 uppercase tracking-wider">
+              Transcripción (gemini-3.5-transcribe):
+            </div>
+            <p className="mt-0.5 text-slate-200 italic font-mono text-[11px]">"{transcribedResult}"</p>
+          </div>
+        </div>
+      )}
+
 
       {/* Live Waveform Indicator */}
       {isRecording && (

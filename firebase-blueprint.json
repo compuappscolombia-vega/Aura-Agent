@@ -1,0 +1,152 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents an authenticated user or administrator of AuraAgent",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "model"] },
+        "modelId": { "type": "string" },
+        "name": { "type": "string" },
+        "avatar": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "username", "role", "createdAt"]
+    },
+    "ModelProfile": {
+      "title": "ModelProfile",
+      "description": "Hyper-realistic webcam or digital creator model profile managed by AuraAgent",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "handle": { "type": "string" },
+        "age": { "type": "number" },
+        "location": { "type": "string" },
+        "bio": { "type": "string" },
+        "archetype": { "type": "string" },
+        "tagline": { "type": "string" },
+        "avatar": { "type": "string" },
+        "bannerUrl": { "type": "string" },
+        "vipLink": { "type": "string" },
+        "vipPrice": { "type": "string" },
+        "discountCode": { "type": "string" },
+        "conversionThreshold": { "type": "number" },
+        "accent": { "type": "string" },
+        "pitch": { "type": "number" },
+        "rate": { "type": "number" },
+        "voiceName": { "type": "string" },
+        "voiceDescription": { "type": "string" },
+        "isRealModel": { "type": "boolean" },
+        "isSystemDefault": { "type": "boolean" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "name", "handle"]
+    },
+    "MediaItem": {
+      "title": "MediaItem",
+      "description": "Photos and exclusive content in the model vault",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "modelId": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "url": { "type": "string" },
+        "caption": { "type": "string" },
+        "isExclusive": { "type": "boolean" },
+        "unlockPrice": { "type": "string" },
+        "watermark": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "modelId", "title", "url"]
+    },
+    "VoiceClip": {
+      "title": "VoiceClip",
+      "description": "Acoustic cloned voice notes and vault audio clips",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "modelId": { "type": "string" },
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "durationSeconds": { "type": "number" },
+        "audioUrl": { "type": "string" },
+        "audioBase64": { "type": "string" },
+        "transcription": { "type": "string" },
+        "triggerKeywords": { "type": "array" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "modelId", "title"]
+    },
+    "LeadMemory": {
+      "title": "LeadMemory",
+      "description": "Continuous emotional analysis, attachment stage, and deep memory for CRM leads",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "username": { "type": "string" },
+        "nameAlias": { "type": "string" },
+        "currentMood": { "type": "string" },
+        "communicationStyle": { "type": "string" },
+        "moodIntensity": { "type": "number" },
+        "trustScore": { "type": "number" },
+        "attachmentLevel": { "type": "string" },
+        "keyFacts": { "type": "array" },
+        "preferredTopics": { "type": "array" },
+        "interactionCount": { "type": "number" },
+        "lastEmotionalState": { "type": "string" },
+        "suggestedApproach": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "username"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Persistent conversational messages between followers and the model agent",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "modelId": { "type": "string" },
+        "sender": { "type": "string", "enum": ["user", "model", "system"] },
+        "text": { "type": "string" },
+        "timestamp": { "type": "string" },
+        "audioUrl": { "type": "string" },
+        "audioBase64": { "type": "string" },
+        "photoCategory": { "type": "string" },
+        "photoCaption": { "type": "string" },
+        "mediaUrl": { "type": "string" }
+      },
+      "required": ["id", "sender", "text", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Authenticated users and administrator metadata"
+    },
+    "/models/{modelId}": {
+      "schema": "ModelProfile",
+      "description": "Model profiles with voice DNA and psychological parameters"
+    },
+    "/models/{modelId}/mediaVault/{photoId}": {
+      "schema": "MediaItem",
+      "description": "Photos and media items associated with the model"
+    },
+    "/models/{modelId}/voiceVault/{clipId}": {
+      "schema": "VoiceClip",
+      "description": "Cloned acoustic voice clips and voice notes"
+    },
+    "/models/{modelId}/leads/{leadId}": {
+      "schema": "LeadMemory",
+      "description": "Continuous emotional analysis and conversational memory for CRM leads"
+    },
+    "/models/{modelId}/chats/{chatId}/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Persistent chat messages for conversations"
+    }
+  }
+}
