@@ -92,7 +92,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Handle Standard Login with Usuario and Contraseña
+  // Handle Standard Login with Usuario and Contraseña authenticated against database & disk
   const handleFormLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatusNotice(null);
@@ -110,123 +110,103 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
 
     setIsAuthenticating(true);
 
-    // 1. Check Administrator credentials (Usuario: Administrador | Contraseña: 20101217.)
-    const isAdminUser = cleanUser.toLowerCase() === 'administrador';
-    const isAdminPass = cleanPass === '20101217.' || cleanPass === '20101217';
+    try {
+      // Call backend database for official authentication
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: cleanUser,
+          password: cleanPass,
+        }),
+      });
 
-    if (isAdminUser) {
-      if (!isAdminPass) {
+      const data = await res.json();
+
+      if (data.success && data.session) {
+        let associatedModel: ModelProfile | undefined = data.model;
+        if (!associatedModel && data.session.role === 'creator') {
+          associatedModel = realModels.find(
+            (m) => m.id === data.session.associatedModelId || m.handle === data.session.handle
+          ) || DEFAULT_MODELS[0];
+        }
+
+        if (associatedModel) {
+          if (data.voiceClips && Array.isArray(data.voiceClips) && data.voiceClips.length > 0) {
+            associatedModel = {
+              ...associatedModel,
+              voiceClips: data.voiceClips,
+            };
+          }
+          if (data.mediaVault && Array.isArray(data.mediaVault) && data.mediaVault.length > 0) {
+            associatedModel = {
+              ...associatedModel,
+              mediaVault: data.mediaVault,
+            };
+          }
+        }
+
+        // Synchronize with Firebase
+        auraSyncService.saveUserProfile(data.session).catch(() => {});
+        if (associatedModel) {
+          auraSyncService.saveModelProfile(associatedModel).catch(() => {});
+        }
+
+        onLogin(data.session, associatedModel);
+        setStatusNotice({
+          type: 'success',
+          message: data.message || `¡Bienvenido(a) ${data.session.name}! Perfil y contenido completamente restaurados.`,
+        });
+
+        setTimeout(() => {
+          setIsAuthenticating(false);
+          onClose();
+        }, 800);
+        return;
+      } else {
         setIsAuthenticating(false);
         setStatusNotice({
           type: 'error',
-          message: 'Contraseña de Administrador incorrecta.',
+          message: data.message || 'Credenciales incorrectas. Verifique su usuario y contraseña.',
         });
         return;
       }
+    } catch (networkErr) {
+      console.warn('Network auth failed, executing local fallback:', networkErr);
 
-      const adminSession: UserSession = {
-        id: `usr-admin-${Date.now()}`,
-        name: 'Administrador General Aura',
-        email: 'compuappscolombia@gmail.com',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80',
-        provider: 'google',
-        role: 'admin',
-        connectedAt: new Date().toISOString(),
-        xAccountConnected: true,
-      };
+      // Local Fallback for Admin
+      const isAdminUser = cleanUser.toLowerCase() === 'administrador';
+      const isAdminPass = cleanPass === '20101217.' || cleanPass === '20101217';
 
-      try {
-        await fetch('/api/auth/register', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            role: 'admin',
-            name: adminSession.name,
-            email: adminSession.email,
-          }),
+      if (isAdminUser && isAdminPass) {
+        const adminSession: UserSession = {
+          id: `usr-admin-${Date.now()}`,
+          name: 'Administrador General Aura',
+          email: 'compuappscolombia@gmail.com',
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80',
+          provider: 'google',
+          role: 'admin',
+          connectedAt: new Date().toISOString(),
+          xAccountConnected: true,
+        };
+        onLogin(adminSession);
+        setStatusNotice({
+          type: 'success',
+          message: '¡Sesión de Administrador iniciada correctamente!',
         });
-      } catch (err) {
-        console.warn('Admin API login sync fallback:', err);
+        setTimeout(() => {
+          setIsAuthenticating(false);
+          onClose();
+        }, 800);
+        return;
       }
 
-      onLogin(adminSession);
+      setIsAuthenticating(false);
       setStatusNotice({
-        type: 'success',
-        message: '¡Sesión de Administrador iniciada correctamente! Acceso total activado.',
+        type: 'error',
+        message: 'No se pudo verificar la sesión con el servidor. Compruebe la conexión.',
       });
-
-      setTimeout(() => {
-        setIsAuthenticating(false);
-        onClose();
-      }, 900);
-      return;
     }
-
-    // 2. Check Ana María access by username (@afire_sb, afire_sb, AnaMaria, Ana María)
-    const isAnaMaria =
-      cleanUser.toLowerCase() === 'anamaria' ||
-      cleanUser.toLowerCase() === 'ana maria' ||
-      cleanUser.toLowerCase() === '@afire_sb' ||
-      cleanUser.toLowerCase() === 'afire_sb';
-
-    if (isAnaMaria) {
-      // Access for Ana María is through X (Twitter)
-      await handleLoginWithTwitter();
-      return;
-    }
-
-    // 3. Check for any registered real model matching handle or name
-    const allAvailableReal = [...realModels, DEFAULT_MODELS[0]];
-    const matchedModel = allAvailableReal.find(
-      (m) =>
-        m.handle.toLowerCase() === (cleanUser.startsWith('@') ? cleanUser.toLowerCase() : `@${cleanUser.toLowerCase()}`) ||
-        m.name.toLowerCase() === cleanUser.toLowerCase() ||
-        m.id.toLowerCase() === cleanUser.toLowerCase()
-    );
-
-    if (matchedModel) {
-      const sessionData: UserSession = {
-        id: `usr-real-${matchedModel.id}-${Date.now()}`,
-        name: matchedModel.name,
-        handle: matchedModel.handle,
-        avatar: matchedModel.avatarUrl,
-        provider: 'x',
-        role: 'creator',
-        associatedModelId: matchedModel.id,
-        allowedModelIds: [matchedModel.id],
-        connectedAt: new Date().toISOString(),
-        xAccountConnected: true,
-      };
-
-      try {
-        await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(sessionData),
-        });
-      } catch (err) {
-        console.warn('Model login API sync fallback:', err);
-      }
-
-      onLogin(sessionData, matchedModel);
-      setStatusNotice({
-        type: 'success',
-        message: `¡Bienvenida ${matchedModel.name}! Entorno agéntico independiente activado.`,
-      });
-
-      setTimeout(() => {
-        setIsAuthenticating(false);
-        onClose();
-      }, 900);
-      return;
-    }
-
-    // 4. If credentials don't match any known profile
-    setIsAuthenticating(false);
-    setStatusNotice({
-      type: 'error',
-      message: 'Credenciales no reconocidas. Verifique su usuario y contraseña o use el acceso oficial con X (Twitter).',
-    });
   };
 
   // Handle Login with X (Twitter) - Official access for Ana María (@afire_sb) and verified creators
@@ -385,9 +365,9 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
         description: `Voz de ${regModelName.trim()} (${cleanHandle})`,
       },
       voiceDna: {
-        isCloned: true,
+        isCloned: false, // Default to false until physical voice is cloned or raw audio uploaded
         sampleDurationSeconds: 8,
-        detectedTone: `Voz de ${regModelName.trim()} (${cleanHandle})`,
+        detectedTone: `Voz auténtica de ${regModelName.trim()} (${cleanHandle})`,
         pitch: 1.15,
         rate: 0.96,
         timbreScore: 99.4,
@@ -438,30 +418,10 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       },
     };
 
-    try {
-      await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          role: 'creator',
-          name: newCreatedModel.name,
-          handle: newCreatedModel.handle,
-          age: newCreatedModel.age,
-          location: newCreatedModel.location,
-          avatarUrl: newCreatedModel.avatarUrl,
-          bio: newCreatedModel.bio,
-          vipLink: newCreatedModel.vipLink,
-          vipPrice: newCreatedModel.vipPrice,
-          vipDiscountCode: newCreatedModel.vipDiscountCode,
-          accent: newCreatedModel.voice.accent,
-          voiceName: newCreatedModel.voice.name,
-        }),
-      });
-    } catch (err) {
-      console.warn('Register API fallback:', err);
-    }
+    const modelPassword = regModelPin.trim() || '20101217.';
 
-    const sessionData: UserSession = {
+    let registeredModel = newCreatedModel;
+    let registeredSession: UserSession = {
       id: `usr-real-${cleanId}-${Date.now()}`,
       name: newCreatedModel.name,
       handle: newCreatedModel.handle,
@@ -475,15 +435,48 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
     };
 
     try {
-      await persistModelToFirestore(newCreatedModel);
-      await auraSyncService.saveUserProfile(sessionData);
-      if (newCreatedModel.mediaVault && newCreatedModel.mediaVault.length > 0) {
-        for (const photo of newCreatedModel.mediaVault) {
+      const regRes = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: 'creator',
+          name: newCreatedModel.name,
+          handle: newCreatedModel.handle,
+          username: cleanId,
+          password: modelPassword,
+          age: newCreatedModel.age,
+          location: newCreatedModel.location,
+          avatarUrl: newCreatedModel.avatarUrl,
+          bio: newCreatedModel.bio,
+          vipLink: newCreatedModel.vipLink,
+          vipPrice: newCreatedModel.vipPrice,
+          vipDiscountCode: newCreatedModel.vipDiscountCode,
+          accent: newCreatedModel.voice.accent,
+          voiceName: newCreatedModel.voice.name,
+        }),
+      });
+
+      const regData = await regRes.json();
+      if (regData.success && regData.session) {
+        registeredSession = regData.session;
+      }
+      if (regData.success && regData.model) {
+        registeredModel = { ...newCreatedModel, ...regData.model };
+      }
+    } catch (err) {
+      console.warn('Register API fallback:', err);
+    }
+
+    try {
+      await persistModelToFirestore(registeredModel);
+      await auraSyncService.saveUserProfile(registeredSession);
+      if (registeredModel.mediaVault && registeredModel.mediaVault.length > 0) {
+        for (const photo of registeredModel.mediaVault) {
           await persistMediaItemToFirestore(cleanId, photo);
         }
       }
-      if (newCreatedModel.voiceClips && newCreatedModel.voiceClips.length > 0) {
-        for (const clip of newCreatedModel.voiceClips) {
+      if (registeredModel.voiceClips && registeredModel.voiceClips.length > 0) {
+        for (const clip of registeredModel.voiceClips) {
           await persistVoiceClipToFirestore(cleanId, clip);
         }
       }
@@ -491,13 +484,12 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       console.warn('Firestore model registration save fallback:', fsErr);
     }
 
-    onRegisterRealModel?.(newCreatedModel);
-
-    onLogin(sessionData, newCreatedModel);
+    onRegisterRealModel?.(registeredModel);
+    onLogin(registeredSession, registeredModel);
 
     setStatusNotice({
       type: 'success',
-      message: `¡Perfil de Modelo Real "${newCreatedModel.name}" registrado con éxito! Tu entorno es 100% independiente.`,
+      message: `¡Perfil de Modelo Real "${registeredModel.name}" registrado con éxito! Usuario y contraseña guardados permanentemente.`,
     });
 
     setTimeout(() => {

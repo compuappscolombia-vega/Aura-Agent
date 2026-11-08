@@ -1,6 +1,54 @@
 {
   "version": "2.6.2",
-  "lastSavedAt": "2026-11-08T06:55:15.300Z",
+  "lastSavedAt": "2026-11-08T10:02:12.762Z",
+  "users": {
+    "administrador": {
+      "id": "usr-admin-default",
+      "username": "administrador",
+      "password": "20101217.",
+      "role": "admin",
+      "name": "Administrador General Aura",
+      "email": "compuappscolombia@gmail.com",
+      "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80",
+      "createdAt": "2026-11-08T10:01:38.698Z"
+    },
+    "afire_sb": {
+      "id": "usr-afire-default",
+      "username": "afire_sb",
+      "handle": "@afire_sb",
+      "password": "20101217.",
+      "role": "creator",
+      "modelId": "afire-sb",
+      "name": "ANAMARIA❣️",
+      "email": "afire@aura.vip",
+      "avatar": "https://pbs.twimg.com/profile_images/2098509842214182916/7dJgS3em_normal.jpg",
+      "createdAt": "2026-11-08T10:01:38.698Z"
+    },
+    "valen_test": {
+      "id": "usr-real-valen_test-1794132108704",
+      "username": "valen_test",
+      "handle": "@valen_test",
+      "password": "mypassword123",
+      "role": "creator",
+      "modelId": "valen_test",
+      "name": "Valentina Test",
+      "email": "valen_test@aura.vip",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80",
+      "createdAt": "2026-11-08T10:01:48.704Z"
+    },
+    "@valen_test": {
+      "id": "usr-real-valen_test-1794132108704",
+      "username": "valen_test",
+      "handle": "@valen_test",
+      "password": "mypassword123",
+      "role": "creator",
+      "modelId": "valen_test",
+      "name": "Valentina Test",
+      "email": "valen_test@aura.vip",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80",
+      "createdAt": "2026-11-08T10:01:48.704Z"
+    }
+  },
   "models": {
     "afire-sb": {
       "id": "afire-sb",
@@ -115,6 +163,57 @@
       "voiceDescription": "Voz dulce, motivadora, pícara, atlética y muy natural",
       "isRealModel": false,
       "isSystemDefault": true
+    },
+    "valen_test": {
+      "id": "valen_test",
+      "name": "Valentina Test",
+      "handle": "@valen_test",
+      "username": "valen_test",
+      "age": 24,
+      "location": "Medellín / Colombia",
+      "avatarUrl": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80",
+      "bannerUrl": "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80",
+      "archetype": "Modelo Oficial • @valen_test",
+      "tagline": "Creadora de contenido exclusiva • @valen_test",
+      "bio": "Creadora de contenido +18 • Modelo Oficial",
+      "vipLink": "https://onlyfans.com/",
+      "vipPrice": "$19.99/mes",
+      "discountCode": "VALEN_TEST_VIP",
+      "conversionThreshold": 75,
+      "accent": "Latino dulce",
+      "pitch": 1.15,
+      "rate": 0.98,
+      "voiceName": "Aoede",
+      "voiceDescription": "Voz auténtica de Valentina Test",
+      "isRealModel": true,
+      "isSystemDefault": false,
+      "xProfileMetrics": {
+        "followers": 120,
+        "following": 85,
+        "tweets": 42,
+        "isVerified": true,
+        "lastSyncedAt": "2026-11-08T10:01:48.704Z",
+        "liveFromX": true
+      },
+      "voiceDna": {
+        "isCloned": true,
+        "sampleDurationSeconds": 6,
+        "sampleTranscription": "Hola amor, qué bueno tenerte por aquí",
+        "detectedTone": "Voz auténtica de Valentina Test",
+        "pitch": 1.15,
+        "rate": 0.98,
+        "timbreScore": 99.4,
+        "calibratedAt": "2026-11-08T10:02:12.761Z",
+        "learningGenerationsCount": 2,
+        "learningHistory": [],
+        "roomAcoustics": "Habitación íntima acústicamente limpia",
+        "ambientPresenceType": "room_intimate",
+        "roomPresenceLevel": 88,
+        "acousticSpaceName": "Habitación Íntima",
+        "calibratedByAi": true
+      },
+      "ambientPresenceType": "room_intimate",
+      "roomAcoustics": "Habitación íntima acústicamente limpia"
     }
   },
   "memories": {
@@ -508,6 +607,23 @@
   ],
   "voiceClips": [
     {
+      "id": "valen_test-vc-1",
+      "modelId": "valen_test",
+      "title": "Saludo Oficial de Valentina Test ☕",
+      "category": "saludo",
+      "durationSeconds": 7,
+      "transcription": "Hola amor, soy Valentina Test, qué lindo saludarte por aquí. Me pillas justo tomándome algo antes de salir, ¿tú qué estás haciendo hoy?",
+      "triggerKeywords": [
+        "hola",
+        "buenas",
+        "saludos",
+        "valen_test",
+        "audio",
+        "voz"
+      ],
+      "createdAt": "2026-11-08"
+    },
+    {
       "id": "afire-vc-1",
       "modelId": "afire-sb",
       "title": "Saludo Íntimo de Ana María en X ☕",
@@ -661,6 +777,17 @@
   ],
   "mediaItems": [
     {
+      "id": "valen_test-med-1",
+      "modelId": "valen_test",
+      "title": "Foto de Bienvenida de Valentina Test",
+      "category": "cafe",
+      "url": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80",
+      "caption": "Tomándome un café pensando en ti ☕",
+      "isExclusive": false,
+      "watermark": "@valen_test / AURA_VERIFIED",
+      "createdAt": "2026-11-08"
+    },
+    {
       "id": "afire-med-1",
       "modelId": "afire-sb",
       "title": "Café de la Mañana de Ana María",
@@ -753,5 +880,14 @@
     "status": "active",
     "statusMessage": "Credenciales oficiales de X API v2 configuradas y listas para operar."
   },
-  "session": null
+  "session": {
+    "id": "usr-admin-1794132128050",
+    "name": "Administrador General Aura",
+    "email": "compuappscolombia@gmail.com",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=160&auto=format&fit=crop&q=80",
+    "provider": "google",
+    "role": "admin",
+    "connectedAt": "2026-11-08T10:02:08.050Z",
+    "xAccountConnected": true
+  }
 }

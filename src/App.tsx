@@ -544,6 +544,39 @@ export default function App() {
 
   const handleSelectModel = (selected: ModelProfile) => {
     setModelProfile(selected);
+
+    // Immediately calibrate the audio engine to this specific model's voice and acoustic DNA
+    voiceEngine.setCalibratedVoiceProfile(
+      {
+        pitch: selected.voiceDna?.pitch ?? selected.voice.pitch,
+        rate: selected.voiceDna?.rate ?? selected.voice.rate,
+        accent: selected.voiceDna?.accentDialect || selected.voice.accent,
+        voiceName: selected.voice.name,
+        isRealVoiceCloned: Boolean(selected.voiceDna?.isCloned),
+        sampleAudioUrl: selected.voiceDna?.sampleAudioUrl,
+        sampleAudioBase64: selected.voiceDna?.sampleAudioBase64,
+      },
+      selected.id
+    );
+
+    // Fetch and hydrate model's vault assets from server disk
+    fetch(`/api/model/${selected.id}/vault`)
+      .then((r) => r.json())
+      .then((vaultData) => {
+        if (vaultData.success) {
+          setModelProfile((prev) => {
+            if (prev.id !== selected.id) return prev;
+            return {
+              ...prev,
+              voiceClips: vaultData.voiceClips?.length > 0 ? vaultData.voiceClips : prev.voiceClips,
+              mediaVault: vaultData.mediaVault?.length > 0 ? vaultData.mediaVault : prev.mediaVault,
+              voiceDna: vaultData.modelInfo?.voiceDna || prev.voiceDna,
+            };
+          });
+        }
+      })
+      .catch(() => {});
+
     if (typeof window !== 'undefined') {
       try {
         const key = `aura_chat_msgs_${selected.id}_${activeUsername}`;
@@ -592,7 +625,7 @@ export default function App() {
 
   const handleSetUserSession = async (sess: UserSession | null, associatedModel?: ModelProfile) => {
     if (!sess) {
-      // Flush and synchronize all profile, photos, voice notes, and learned memories to Firestore before clearing session
+      // Flush and synchronize all profile adjustments, photos, voice notes, and memories before clearing session
       try {
         await auraSyncService.syncOnLogout(currentUserSession, {
           modelProfile,
@@ -607,6 +640,13 @@ export default function App() {
       } catch (err) {
         console.warn('Logout sync fallback:', err);
       }
+
+      // Synchronize latest model profile to backend disk
+      fetch('/api/models', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(modelProfile),
+      }).catch(() => {});
 
       setCurrentUserSession(null);
       if (typeof window !== 'undefined') {
@@ -638,6 +678,48 @@ export default function App() {
 
     if (targetModel) {
       setModelProfile(targetModel);
+      setModels((prev) => {
+        const exists = prev.some((m) => m.id === targetModel.id);
+        const updated = exists ? prev.map((m) => (m.id === targetModel.id ? { ...m, ...targetModel } : m)) : [targetModel, ...prev];
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('aura_models', JSON.stringify(updated));
+          } catch (e) {}
+        }
+        return updated;
+      });
+
+      // Calibrate audio engine immediately for this session
+      voiceEngine.setCalibratedVoiceProfile(
+        {
+          pitch: targetModel.voiceDna?.pitch ?? targetModel.voice.pitch,
+          rate: targetModel.voiceDna?.rate ?? targetModel.voice.rate,
+          accent: targetModel.voiceDna?.accentDialect || targetModel.voice.accent,
+          voiceName: targetModel.voice.name,
+          isRealVoiceCloned: Boolean(targetModel.voiceDna?.isCloned),
+          sampleAudioUrl: targetModel.voiceDna?.sampleAudioUrl,
+          sampleAudioBase64: targetModel.voiceDna?.sampleAudioBase64,
+        },
+        targetModel.id
+      );
+
+      // Fetch and hydrate server vault items (photos, audios)
+      fetch(`/api/model/${targetModel.id}/vault`)
+        .then((r) => r.json())
+        .then((vaultData) => {
+          if (vaultData.success) {
+            setModelProfile((prev) => {
+              if (prev.id !== targetModel.id) return prev;
+              return {
+                ...prev,
+                voiceClips: vaultData.voiceClips?.length > 0 ? vaultData.voiceClips : prev.voiceClips,
+                mediaVault: vaultData.mediaVault?.length > 0 ? vaultData.mediaVault : prev.mediaVault,
+                voiceDna: vaultData.modelInfo?.voiceDna || prev.voiceDna,
+              };
+            });
+          }
+        })
+        .catch(() => {});
     }
 
     // Synchronize all session state, vault photos, cloned audio, and memories with Firestore

@@ -4,6 +4,7 @@ import path from 'path';
 export interface PersistedState {
   version: string;
   lastSavedAt: string;
+  users?: Record<string, any>;
   models: Record<string, any>;
   memories: Record<string, any>;
   leads: any[];
@@ -56,6 +57,7 @@ export function savePersistedState(state: Partial<PersistedState>): boolean {
     const currentState = loadPersistedState() || {
       version: '2.6.2',
       lastSavedAt: new Date().toISOString(),
+      users: {},
       models: {},
       memories: {},
       leads: [],
@@ -66,6 +68,7 @@ export function savePersistedState(state: Partial<PersistedState>): boolean {
     const merged: PersistedState = {
       version: '2.6.2',
       lastSavedAt: new Date().toISOString(),
+      users: { ...(currentState.users || {}), ...(state.users || {}) },
       models: { ...currentState.models, ...(state.models || {}) },
       memories: { ...currentState.memories, ...(state.memories || {}) },
       leads: state.leads || currentState.leads || [],
