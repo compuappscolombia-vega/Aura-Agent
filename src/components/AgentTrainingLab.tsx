@@ -611,9 +611,7 @@ export const AgentTrainingLab: React.FC<AgentTrainingLabProps> = ({
         }),
       });
       const data = await res.json();
-      if (data?.audioBase64) {
-        audioBase64 = data.audioBase64;
-      }
+      audioBase64 = data?.audioBase64 || data?.matchedClipUrl || undefined;
     } catch (e) {
       console.warn('Preview TTS synthesis:', e);
     }
@@ -934,9 +932,7 @@ export const AgentTrainingLab: React.FC<AgentTrainingLabProps> = ({
         }),
       });
       const data = await res.json();
-      if (data?.audioBase64) {
-        audioBase64 = data.audioBase64;
-      }
+      audioBase64 = data?.audioBase64 || data?.matchedClipUrl || undefined;
     } catch (e) {
       console.warn('Channel A TTS error:', e);
     }
@@ -1014,9 +1010,7 @@ export const AgentTrainingLab: React.FC<AgentTrainingLabProps> = ({
           }),
         });
         const data = await res.json();
-        if (data?.audioBase64) {
-          audioBase64 = data.audioBase64;
-        }
+        audioBase64 = data?.audioBase64 || data?.matchedClipUrl || undefined;
       } catch (e) {
         console.warn('Channel B catalog model TTS error:', e);
       }
@@ -1082,9 +1076,7 @@ export const AgentTrainingLab: React.FC<AgentTrainingLabProps> = ({
         }),
       });
       const data = await res.json();
-      if (data?.audioBase64) {
-        audioBase64 = data.audioBase64;
-      }
+      audioBase64 = data?.audioBase64 || data?.matchedClipUrl || undefined;
     } catch (e) {
       console.warn('Channel B variant TTS error:', e);
     }

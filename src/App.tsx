@@ -684,6 +684,17 @@ export default function App() {
       setModelProfile(updated);
     }
     persistModelToFirestore(updated).catch((err) => console.warn('Firestore model update fallback:', err));
+    auraSyncService.saveModelProfile(updated).catch((err) => console.warn('SyncService model update:', err));
+    if (updated.mediaVault && updated.mediaVault.length > 0) {
+      updated.mediaVault.forEach((item) => {
+        auraSyncService.saveMediaItem(updated.id, item).catch(() => {});
+      });
+    }
+    if (updated.voiceClips && updated.voiceClips.length > 0) {
+      updated.voiceClips.forEach((clip) => {
+        auraSyncService.saveVoiceClip(updated.id, clip).catch(() => {});
+      });
+    }
     fetch('/api/models', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -787,6 +798,85 @@ export default function App() {
     ]);
   };
 
+  const handleSelectLeadForChat = (lead: LeadItem) => {
+    setActiveUsername(lead.username);
+    if (lead.memory) {
+      setUserMemory(lead.memory);
+    } else {
+      setUserMemory({
+        userId: lead.id || `lead-${Date.now()}`,
+        username: lead.username,
+        currentMood: 'contento',
+        communicationStyle: 'Directo y Coqueto',
+        moodIntensity: 8,
+        keyFacts: lead.statisticalSignals || ['Prospecto de Alta Propensión en X', 'Interés en contenido VIP'],
+        preferredTopics: ['estilo de vida', 'rutina diaria', 'exclusivo'],
+        interactionCount: 1,
+        lastEmotionalState: 'Alta Propensión de Compra',
+        suggestedApproach: lead.suggestedIcebreaker || 'Iniciar con gancho personalizado y conducir al cierre VIP.',
+        attachmentLevel: 'Alto',
+      });
+    }
+
+    setMetrics({
+      trustScore: lead.trustScore || 45,
+      reciprocity: lead.reciprocity || 70,
+      responseFluency: 94,
+      positiveSentiment: 92,
+      stage: lead.stage || 'warm',
+      threshold: modelProfile.rules?.conversionThreshold || 75,
+      isVipReady: (lead.trustScore || 45) >= (modelProfile.rules?.conversionThreshold || 75),
+      reasoning: `Prospecto agéntico activado: ${lead.username}. Propensión estimada: ${lead.purchasePropensity || 92}%. Aura enfoca el diálogo en construir intimidad y concretar la suscripción OnlyFans.`,
+    });
+
+    const key = `aura_chat_msgs_${modelProfile.id}_${lead.username}`;
+    let existingMsgs: ChatMessage[] = [];
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem(key);
+        if (saved) {
+          existingMsgs = JSON.parse(saved);
+        }
+      } catch (e) {}
+    }
+
+    if (!existingMsgs || existingMsgs.length === 0) {
+      const icebreakerText = lead.suggestedIcebreaker ||
+        `¡Hola ${lead.username.replace('@', '')}! Vi que estuviste viendo mis fotos... me llamó la atención tu perfil 😉 ¿Cómo va tu día?`;
+      const initialChat: ChatMessage[] = [
+        {
+          id: `msg-prospect-init-${Date.now()}`,
+          sender: 'model',
+          text: icebreakerText,
+          timestamp: 'Hace un momento',
+          isEncrypted: true,
+          photoCategory: 'cafe',
+          photoCaption: 'Tomándome un café mientras reviso mensajes ☕',
+        },
+      ];
+      setMessages(initialChat);
+      try {
+        localStorage.setItem(key, JSON.stringify(initialChat));
+      } catch (e) {}
+    } else {
+      setMessages(existingMsgs);
+    }
+
+    setActiveTab('live_ops');
+  };
+
+  const handleRefreshProspectLeads = async () => {
+    try {
+      const res = await fetch('/api/crm/leads');
+      const data = await res.json();
+      if (data.leads) {
+        setLeads(data.leads);
+      }
+    } catch (err) {
+      console.warn('Could not refresh CRM leads:', err);
+    }
+  };
+
   const handleSendMessage = async (text: string) => {
     const userMsg: ChatMessage = {
       id: `msg-user-${Date.now()}`,
@@ -880,6 +970,7 @@ export default function App() {
 
       // Audio generation if sendVoice is true
       let audioBase64: string | undefined = undefined;
+      let voiceClipUrl: string | undefined = undefined;
       if (agentData.sendVoice || isVipReady) {
         try {
           const ttsRes = await fetch('/api/gemini/tts', {
@@ -887,6 +978,7 @@ export default function App() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               text: agentData.voiceScript || agentData.replyText,
+              modelId: modelProfile.id,
               voiceName: modelProfile.voice.name,
               modelName: modelProfile.name,
               accent: modelProfile.voiceDna?.accentDialect || modelProfile.voice.accent,
@@ -902,9 +994,11 @@ export default function App() {
           const ttsData = await ttsRes.json();
           if (ttsData?.audioBase64) {
             audioBase64 = ttsData.audioBase64;
+          } else if (ttsData?.matchedClipUrl) {
+            voiceClipUrl = ttsData.matchedClipUrl;
           }
-        } catch (ttsErr) {
-          console.warn('TTS fetch failed:', ttsErr);
+        } catch {
+          // Transparent fallback to local calibrated voice engine
         }
       }
 
@@ -960,7 +1054,7 @@ export default function App() {
         text: agentData.replyText || 'Jajaja qué risa contigo, me caes súper bien 😉',
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         mediaType: agentData.sendVoice ? 'audio' : agentData.sendPhoto ? 'image' : undefined,
-        mediaUrl,
+        mediaUrl: mediaUrl || voiceClipUrl,
         audioBase64,
         audioDuration: Math.max(4, Math.round((agentData.replyText || '').length / 18)),
         photoCategory,
@@ -1782,11 +1876,9 @@ export default function App() {
           <CRMSubscriptions
             modelProfile={modelProfile}
             leads={leads}
-            onUpdateProfile={(updated) => setModelProfile(updated)}
-            onSelectLeadForChat={(lead) => {
-              setActiveTab('live_ops');
-              handleSelectUser(lead.username);
-            }}
+            onUpdateProfile={(updated) => handleUpdateModel(updated)}
+            onSelectLeadForChat={handleSelectLeadForChat}
+            onProspectLeads={handleRefreshProspectLeads}
           />
         ) : (
           /* Model Voice DNA & Media Vault Hub */

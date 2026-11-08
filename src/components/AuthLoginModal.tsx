@@ -21,7 +21,7 @@ import {
 import { XLogo } from './icons/XLogo';
 import { DEFAULT_MODELS } from '../data/modelsRoster';
 import { generateSessionFingerprint } from '../utils/cryptoSim';
-import { auth, googleProvider, persistModelToFirestore, persistMediaItemToFirestore } from '../lib/firebase';
+import { auth, googleProvider, persistModelToFirestore, persistMediaItemToFirestore, persistVoiceClipToFirestore, auraSyncService } from '../lib/firebase';
 import { signInWithPopup } from 'firebase/auth';
 
 interface AuthLoginModalProps {
@@ -461,18 +461,6 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       console.warn('Register API fallback:', err);
     }
 
-    try {
-      await persistModelToFirestore(newCreatedModel);
-      if (newCreatedModel.mediaVault && newCreatedModel.mediaVault.length > 0) {
-        await persistMediaItemToFirestore(cleanId, newCreatedModel.mediaVault[0]);
-      }
-    } catch (fsErr) {
-      console.warn('Firestore model registration save fallback:', fsErr);
-    }
-
-    onRegisterRealModel?.(newCreatedModel);
-
-
     const sessionData: UserSession = {
       id: `usr-real-${cleanId}-${Date.now()}`,
       name: newCreatedModel.name,
@@ -485,6 +473,25 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
       connectedAt: new Date().toISOString(),
       xAccountConnected: true,
     };
+
+    try {
+      await persistModelToFirestore(newCreatedModel);
+      await auraSyncService.saveUserProfile(sessionData);
+      if (newCreatedModel.mediaVault && newCreatedModel.mediaVault.length > 0) {
+        for (const photo of newCreatedModel.mediaVault) {
+          await persistMediaItemToFirestore(cleanId, photo);
+        }
+      }
+      if (newCreatedModel.voiceClips && newCreatedModel.voiceClips.length > 0) {
+        for (const clip of newCreatedModel.voiceClips) {
+          await persistVoiceClipToFirestore(cleanId, clip);
+        }
+      }
+    } catch (fsErr) {
+      console.warn('Firestore model registration save fallback:', fsErr);
+    }
+
+    onRegisterRealModel?.(newCreatedModel);
 
     onLogin(sessionData, newCreatedModel);
 
@@ -624,7 +631,7 @@ export const AuthLoginModal: React.FC<AuthLoginModalProps> = ({
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-slate-950/80 border border-slate-800/90 p-2.5 shadow-2xl flex items-center justify-center relative group overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/10 via-purple-500/10 to-indigo-500/10 blur-xl pointer-events-none" />
                     <img
-                      src="/assets/aistudio/Gemini_Generated_Image_j5umutj5umutj5um_7f96c1f5.jfif"
+                      src="/assets/aistudio/Gemini_Generated_Image_j5umutj5umutj5um_e53878fa.png"
                       alt="AuraAgent Logo"
                       className="w-full h-full object-contain relative z-10 transition-transform duration-300 group-hover:scale-105"
                     />

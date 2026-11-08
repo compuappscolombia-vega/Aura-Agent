@@ -1,6 +1,6 @@
 {
-  "version": "2.5.0",
-  "lastSavedAt": "2026-11-02T14:52:54.016Z",
+  "version": "2.6.2",
+  "lastSavedAt": "2026-11-08T06:55:15.300Z",
   "models": {
     "afire-sb": {
       "id": "afire-sb",
@@ -63,7 +63,7 @@
       "accent": "Latino / Colombiano suave y dulce",
       "pitch": 1.15,
       "rate": 0.98,
-      "voiceName": "Aoede",
+      "voiceName": "Kore",
       "voiceDescription": "Tono cercano, cálido, femenino, íntimo y sutilmente pícaro",
       "isRealModel": false,
       "isSystemDefault": true
@@ -79,7 +79,7 @@
       "accent": "Español peninsular sofisticado",
       "pitch": 1.05,
       "rate": 0.94,
-      "voiceName": "Aoede",
+      "voiceName": "Zephyr",
       "voiceDescription": "Voz sensual, pausada, elegante, segura, madura y misteriosa",
       "isRealModel": false,
       "isSystemDefault": true
@@ -111,7 +111,7 @@
       "accent": "Mexicano neutral dulce y motivador",
       "pitch": 1.1,
       "rate": 1,
-      "voiceName": "Aoede",
+      "voiceName": "Kore",
       "voiceDescription": "Voz dulce, motivadora, pícara, atlética y muy natural",
       "isRealModel": false,
       "isSystemDefault": true
@@ -213,9 +213,246 @@
       "suggestedApproach": "No abrumar con textos largos. Usar preguntas cortas e intriga casual.",
       "attachmentLevel": "Inicial",
       "recentBotResponses": []
+    },
+    "@marcos_invest": {
+      "userId": "prospect-1794120915299-1",
+      "username": "@marcos_invest",
+      "nameAlias": "marcos",
+      "currentMood": "contento",
+      "communicationStyle": "Directo y Coqueto",
+      "moodIntensity": 8,
+      "keyFacts": [
+        "Gasto medio estimado > $200/mes en plataformas de suscripción exclusiva",
+        "Interacción activa en DMs en ventana de 2 minutos",
+        "Menciones de viajes recurrentes a Miami y Europa",
+        "Alta afinidad con notas de voz íntimas y fotos casuales"
+      ],
+      "preferredTopics": [
+        "exclusividad",
+        "estilo de vida",
+        "fotos privadas"
+      ],
+      "interactionCount": 5,
+      "lastEmotionalState": "Muy receptivo con alta disposición de compra",
+      "suggestedApproach": "Responder con picardía elegante, validar su gusto por la exclusividad y compartir nota de voz invitándolo al VIP con descuento especial.",
+      "attachmentLevel": "Creciendo",
+      "recentBotResponses": []
+    },
+    "@rodrigo_vip": {
+      "userId": "prospect-1794120915299-2",
+      "username": "@rodrigo_vip",
+      "nameAlias": "rodrigo",
+      "currentMood": "coqueto",
+      "communicationStyle": "Directo y Coqueto",
+      "moodIntensity": 8,
+      "keyFacts": [
+        "Historial de propinas altas en contenido deportivo",
+        "Respuesta inmediata a publicaciones de rutina matutina",
+        "Afinidad psicográfica alta con creadoras fitness y seductoras"
+      ],
+      "preferredTopics": [
+        "exclusividad",
+        "estilo de vida",
+        "fotos privadas"
+      ],
+      "interactionCount": 7,
+      "lastEmotionalState": "Muy receptivo con alta disposición de compra",
+      "suggestedApproach": "Conectar por disciplina de entrenamiento, enviar foto casual de gym y cerrar con pase VIP para ver sus rutinas privadas.",
+      "attachmentLevel": "Alto",
+      "recentBotResponses": []
+    },
+    "@lucas_miami": {
+      "userId": "prospect-1794120915299-3",
+      "username": "@lucas_miami",
+      "nameAlias": "lucas",
+      "currentMood": "contento",
+      "communicationStyle": "Directo y Coqueto",
+      "moodIntensity": 8,
+      "keyFacts": [
+        "Frecuente comprador de suscripciones de creadoras latinas",
+        "Alta receptividad a notas de voz con modismos auténticos",
+        "Actividad concentrada en horas nocturnas (9 PM - 1 AM)"
+      ],
+      "preferredTopics": [
+        "exclusividad",
+        "estilo de vida",
+        "fotos privadas"
+      ],
+      "interactionCount": 4,
+      "lastEmotionalState": "Muy receptivo con alta disposición de compra",
+      "suggestedApproach": "Mimar con saludo de voz íntimo (Aoede), establecer complicidad y ofrecer acceso al canal privado.",
+      "attachmentLevel": "Creciendo",
+      "recentBotResponses": []
+    },
+    "@javier_tech": {
+      "userId": "prospect-1794120915299-4",
+      "username": "@javier_tech",
+      "nameAlias": "javier",
+      "currentMood": "contento",
+      "communicationStyle": "Directo y Coqueto",
+      "moodIntensity": 8,
+      "keyFacts": [
+        "Poder adquisitivo probado por transacciones Web3/Crypto",
+        "Busca refugio emocional y charlas de calidad sin clichés",
+        "Tiempo medio de lectura de mensajes alto (>15 seg)"
+      ],
+      "preferredTopics": [
+        "exclusividad",
+        "estilo de vida",
+        "fotos privadas"
+      ],
+      "interactionCount": 3,
+      "lastEmotionalState": "Muy receptivo con alta disposición de compra",
+      "suggestedApproach": "Profundizar en conexión humana sincera, compartir foto de relax en casa y proponer espacio VIP sin censura ni juicios.",
+      "attachmentLevel": "Creciendo",
+      "recentBotResponses": []
+    },
+    "@sergio_val": {
+      "userId": "prospect-1794120915299-5",
+      "username": "@sergio_val",
+      "nameAlias": "sergio",
+      "currentMood": "coqueto",
+      "communicationStyle": "Directo y Coqueto",
+      "moodIntensity": 8,
+      "keyFacts": [
+        "Disparador de compra activado: solicitud directa de contenido VIP",
+        "Trust score por encima del 50% con 8 mensajes mutuos",
+        "Tasa de respuesta inmediata (< 1 min)"
+      ],
+      "preferredTopics": [
+        "exclusividad",
+        "estilo de vida",
+        "fotos privadas"
+      ],
+      "interactionCount": 8,
+      "lastEmotionalState": "Muy receptivo con alta disposición de compra",
+      "suggestedApproach": "Cierre directo inmediato con enlace VIP de OnlyFans y nota de voz susurrada.",
+      "attachmentLevel": "Alto",
+      "recentBotResponses": []
     }
   },
   "leads": [
+    {
+      "id": "prospect-1794120915299-5",
+      "username": "@sergio_val",
+      "platform": "X (Twitter)",
+      "trustScore": 52,
+      "stage": "warm",
+      "reciprocity": 96,
+      "lastMessage": "Ya vi tu teaser en Twitter... dime que tienes más fotos así por favor 🤤",
+      "lastActive": "Hace 5 min",
+      "totalMessages": 8,
+      "unlockedVip": false,
+      "notes": "Lead en fase final. Pidió explícitamente contenido privado. Listo para concretar venta.",
+      "purchasePropensity": 98,
+      "conversionReadiness": "VIP Calificado",
+      "estimatedSpendPower": "High Ticket ($$$$)",
+      "statisticalSignals": [
+        "Disparador de compra activado: solicitud directa de contenido VIP",
+        "Trust score por encima del 50% con 8 mensajes mutuos",
+        "Tasa de respuesta inmediata (< 1 min)"
+      ],
+      "suggestedIcebreaker": "Jajaja me encanta que seas lanzado mor 😉 En mi OnlyFans oficial tienes mis fotos más íntimas sin censura... entra por aquí y te mando un regalito exclusivo ✨",
+      "conversionStrategy": "Cierre directo inmediato con enlace VIP de OnlyFans y nota de voz susurrada.",
+      "scoutedAt": "2026-11-08T06:55:15.299Z"
+    },
+    {
+      "id": "prospect-1794120915299-4",
+      "username": "@javier_tech",
+      "platform": "X (Twitter)",
+      "trustScore": 35,
+      "stage": "rapport",
+      "reciprocity": 86,
+      "lastMessage": "Me encanta cómo combinas tu faceta de modelo con tu personalidad tan natural.",
+      "lastActive": "Hace 25 min",
+      "totalMessages": 3,
+      "unlockedVip": false,
+      "notes": "Ingeniero tech / crypto. Conversación respetuosa, busca desconectar del trabajo.",
+      "purchasePropensity": 85,
+      "conversionReadiness": "Alta Probabilidad",
+      "estimatedSpendPower": "Tier Diamante ($$$)",
+      "statisticalSignals": [
+        "Poder adquisitivo probado por transacciones Web3/Crypto",
+        "Busca refugio emocional y charlas de calidad sin clichés",
+        "Tiempo medio de lectura de mensajes alto (>15 seg)"
+      ],
+      "suggestedIcebreaker": "¡Qué lindo lo que dices Javier! Para mí ser auténtica lo es todo ✨ ¿Tuviste un día muy cargado en el trabajo hoy?",
+      "conversionStrategy": "Profundizar en conexión humana sincera, compartir foto de relax en casa y proponer espacio VIP sin censura ni juicios.",
+      "scoutedAt": "2026-11-08T06:55:15.299Z"
+    },
+    {
+      "id": "prospect-1794120915299-3",
+      "username": "@lucas_miami",
+      "platform": "X (Twitter)",
+      "trustScore": 38,
+      "stage": "rapport",
+      "reciprocity": 88,
+      "lastMessage": "Hola reina, vi que andas por acá en X... ¿te gustaría charlar un rato?",
+      "lastActive": "Hace 18 min",
+      "totalMessages": 4,
+      "unlockedVip": false,
+      "notes": "Residente en Brickell Miami. Disfruta de la vida nocturna y notas de voz con acento dulce.",
+      "purchasePropensity": 89,
+      "conversionReadiness": "Alta Probabilidad",
+      "estimatedSpendPower": "Tier Diamante ($$$)",
+      "statisticalSignals": [
+        "Frecuente comprador de suscripciones de creadoras latinas",
+        "Alta receptividad a notas de voz con modismos auténticos",
+        "Actividad concentrada en horas nocturnas (9 PM - 1 AM)"
+      ],
+      "suggestedIcebreaker": "Hola corazón ✨ Aquí ando descansando un ratico y viendo mensajitos... ¿cómo va tu noche por Miami?",
+      "conversionStrategy": "Mimar con saludo de voz íntimo (Aoede), establecer complicidad y ofrecer acceso al canal privado.",
+      "scoutedAt": "2026-11-08T06:55:15.299Z"
+    },
+    {
+      "id": "prospect-1794120915299-2",
+      "username": "@rodrigo_vip",
+      "platform": "X (Twitter)",
+      "trustScore": 48,
+      "stage": "warm",
+      "reciprocity": 91,
+      "lastMessage": "Esa foto del gym me dejó loco 🔥 se nota la disciplina que tienes.",
+      "lastActive": "Hace 11 min",
+      "totalMessages": 7,
+      "unlockedVip": false,
+      "notes": "Empresario fitness. Responde con rapidez. Busca trato íntimo y fotos sin censura.",
+      "purchasePropensity": 93,
+      "conversionReadiness": "Muy Alta Probabilidad",
+      "estimatedSpendPower": "Tier Diamante ($$$)",
+      "statisticalSignals": [
+        "Historial de propinas altas en contenido deportivo",
+        "Respuesta inmediata a publicaciones de rutina matutina",
+        "Afinidad psicográfica alta con creadoras fitness y seductoras"
+      ],
+      "suggestedIcebreaker": "Casi muero en pierna hoy jaja 💪 pero no hay excusas... ¿tú también entrenas o te tengo que poner a sudar conmigo? 😉",
+      "conversionStrategy": "Conectar por disciplina de entrenamiento, enviar foto casual de gym y cerrar con pase VIP para ver sus rutinas privadas.",
+      "scoutedAt": "2026-11-08T06:55:15.299Z"
+    },
+    {
+      "id": "prospect-1794120915299-1",
+      "username": "@marcos_invest",
+      "platform": "X (Twitter)",
+      "trustScore": 42,
+      "stage": "warm",
+      "reciprocity": 94,
+      "lastMessage": "Qué vibra tan magnética y elegante tienes en tus fotos... me encantaría poder conocerte mejor.",
+      "lastActive": "Hace 3 min",
+      "totalMessages": 5,
+      "unlockedVip": false,
+      "notes": "Inversor privado de 34 años. Alto poder adquisitivo ($$$$). Gran interés en videollamada personalizada y contenido sin censura.",
+      "purchasePropensity": 96,
+      "conversionReadiness": "Muy Alta Probabilidad",
+      "estimatedSpendPower": "High Ticket ($$$$)",
+      "statisticalSignals": [
+        "Gasto medio estimado > $200/mes en plataformas de suscripción exclusiva",
+        "Interacción activa en DMs en ventana de 2 minutos",
+        "Menciones de viajes recurrentes a Miami y Europa",
+        "Alta afinidad con notas de voz íntimas y fotos casuales"
+      ],
+      "suggestedIcebreaker": "Jajaja qué halago tan lindo Marcos 🙈 Me pillas tomándome una copa relajada... ¿tú qué andas haciendo hoy?",
+      "conversionStrategy": "Responder con picardía elegante, validar su gusto por la exclusividad y compartir nota de voz invitándolo al VIP con descuento especial.",
+      "scoutedAt": "2026-11-08T06:55:15.299Z"
+    },
     {
       "id": "lead-1",
       "username": "@carlos_m92",

@@ -302,6 +302,14 @@ export interface LeadItem {
   unlockedVip: boolean;
   notes: string;
   memory?: UserMemory;
+  // Aura AI Autonomous Prospecting & Lead Hunter Fields
+  purchasePropensity?: number; // 0 - 100% (Calculado mediante análisis estadístico de Aura)
+  estimatedSpendPower?: 'Tier Diamante ($$$)' | 'Tier Oro ($$)' | 'High Ticket ($$$$)';
+  conversionReadiness?: 'Alta Probabilidad' | 'Muy Alta Probabilidad' | 'VIP Calificado';
+  statisticalSignals?: string[];
+  suggestedIcebreaker?: string;
+  conversionStrategy?: string;
+  scoutedAt?: string;
 }
 
 export interface UserSession {

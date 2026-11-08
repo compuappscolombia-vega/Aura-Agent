@@ -15,6 +15,8 @@ import {
   Heart,
   Crown,
   Edit3,
+  Camera,
+  Upload,
 } from 'lucide-react';
 import valeriaImg from '../assets/images/model_cafe_selfie_1793159131949.jpg';
 import elenaImg from '../assets/images/elena_russo_avatar_1793188805781.jpg';
@@ -99,6 +101,7 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           text: `Hola, soy ${model.name}. Me encanta que hablemos por aquí, cuéntame qué planes tienes para hoy 😉`,
+          modelId: model.id,
           voiceName: model.voice.name,
           stylePrompt: model.voice.description,
         }),
@@ -106,6 +109,9 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
       const data = await res.json();
       if (data?.audioBase64) {
         const audio = new Audio(`data:audio/wav;base64,${data.audioBase64}`);
+        audio.play();
+      } else if (data?.matchedClipUrl) {
+        const audio = new Audio(data.matchedClipUrl);
         audio.play();
       } else if (window.speechSynthesis) {
         const utterance = new SpeechSynthesisUtterance(
@@ -167,6 +173,20 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
         stealthMode: false,
         fingerprintHash: generateSessionFingerprint(),
       },
+      mediaVault: newModel.mediaVault || [
+        {
+          id: `media-${Date.now()}`,
+          modelId: newModel.handle || 'model',
+          url: newModel.avatarUrl || valeriaImg,
+          title: `Avatar Oficial`,
+          category: 'cafe',
+          caption: 'Foto de perfil oficial',
+          isExclusive: false,
+          watermark: newModel.handle || '@aura',
+          createdAt: new Date().toISOString(),
+        },
+      ],
+      voiceClips: newModel.voiceClips || [],
     };
 
     onAddModel(created);
@@ -456,6 +476,70 @@ export const ModelCatalogModal: React.FC<ModelCatalogModalProps> = ({
                 <p className="text-xs text-slate-400 mt-0.5">
                   Añade a una nueva modelo real con su tono de comunicación, voz personalizada y cuenta de X.
                 </p>
+              </div>
+
+              {/* Real Model Photo Upload & Preview */}
+              <div className="flex items-center gap-4 bg-slate-950/70 p-3 rounded-2xl border border-slate-800">
+                <div className="relative shrink-0">
+                  <img
+                    src={newModel.avatarUrl || valeriaImg}
+                    alt="Preview"
+                    className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-500 shadow-md"
+                  />
+                  <label
+                    htmlFor="catalog-avatar-upload"
+                    className="absolute -bottom-1 -right-1 p-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-full cursor-pointer shadow"
+                    title="Subir Foto de Perfil"
+                  >
+                    <Camera className="w-3 h-3" />
+                  </label>
+                  <input
+                    id="catalog-avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const b64 = reader.result as string;
+                        setNewModel((prev) => ({
+                          ...prev,
+                          avatarUrl: b64,
+                          mediaVault: [
+                            ...(prev.mediaVault || []),
+                            {
+                              id: `media-${Date.now()}`,
+                              modelId: prev.handle || 'model',
+                              title: `Avatar ${file.name}`,
+                              category: 'cafe',
+                              url: b64,
+                              caption: 'Foto de perfil subida',
+                              isExclusive: false,
+                              watermark: prev.handle || '@aura',
+                              createdAt: new Date().toISOString(),
+                            },
+                          ],
+                        }));
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                    className="hidden"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-bold text-white block">Foto de Perfil & Avatar Real</span>
+                  <p className="text-[11px] text-slate-400 mt-0.5">
+                    Sube una foto real desde tu dispositivo para almacenarla en la base de datos de AuraAgent.
+                  </p>
+                  <label
+                    htmlFor="catalog-avatar-upload"
+                    className="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-indigo-300 text-xs rounded-lg cursor-pointer transition-colors font-medium"
+                  >
+                    <Upload className="w-3 h-3" />
+                    <span>Subir Foto Personalizada</span>
+                  </label>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
